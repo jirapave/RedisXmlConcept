@@ -30,3 +30,11 @@ puts "result-1: #{result_one}, result-2: #{result_two}"
 #====NOKOGIRI TEST - doesnt work for now, require don' work====
 #f = File.open("books.xml")
 #doc = Nokogiri::XML(f)
+
+#1. Run nokogiri, fix it so it works
+#2. Load book.xml, choose one node and save it using XML Transformer
+#3. => implement KeyBuilder, there will be changes, maybe we need more methods...change names..
+#4. => implement XML Transformer, atleast save remove and find node
+#5. Tro to save node from book.xml, find it a remove it
+#6. Write tests!
+#7. When this is done, => implementation of document_service
