@@ -1,6 +1,20 @@
 require_relative "../lib/base_interface/db_interface"
-#Nokogiri doesn't work for now, i have installes the gem correctly "gem install nokogiri" but still
-#require "nokogiri"
+require_relative "../lib/transformer/key_builder"
+require "rubygems"
+require "nokogiri"
+
+#keyBuilder test
+puts "KeyBuilder test"
+puts Transformer::KeyBuilder.attributes_key("neco")
+puts Transformer::KeyBuilder.attributes_order_key("neco")
+puts Transformer::KeyBuilder.attributes_order_key("neco<attributes")
+puts Transformer::KeyBuilder.count_key("neco")
+puts Transformer::KeyBuilder.document_info("db::coll::id1::root::movie>1::cast>1::actor>2")
+puts Transformer::KeyBuilder.element_key("db::coll::id1::root::movie>1::cast>1::actor>2", "name", 3);
+puts Transformer::KeyBuilder.next_element_key("db::coll::id1::root::movie>1::cast>1::actor>2");
+puts Transformer::KeyBuilder.parent_key("db::coll::id1::root::movie>1::cast>1::actor>2");
+puts Transformer::KeyBuilder.root_key("db::coll::id1::root::movie>1::cast>1::actor>2");
+puts Transformer::KeyBuilder.text_key("db::coll::id1::root::movie>1::cast>1::actor>2", 4);
 
 #db_interface is Singleton, redis is class variable
 db = BaseInterface::DBInterface.instance
@@ -28,10 +42,10 @@ result_two = db.find_value("key-2")
 puts "result-1: #{result_one}, result-2: #{result_two}"
 
 #====NOKOGIRI TEST - doesnt work for now, require don' work====
-#f = File.open("books.xml")
-#doc = Nokogiri::XML(f)
+f = File.open("books.xml")
+doc = Nokogiri::XML(f)
 
-#1. Run nokogiri, fix it so it works
+#1. Run nokogiri, fix it so it works - DONE
 #2. Load book.xml, choose one node and save it using XML Transformer
 #3. => implement KeyBuilder, there will be changes, maybe we need more methods...change names..
 #4. => implement XML Transformer, atleast save remove and find node

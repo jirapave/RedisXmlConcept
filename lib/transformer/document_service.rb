@@ -1,5 +1,6 @@
 require_relative "xml_transformer"
 require_relative "../xml/document"
+require "nokogiri"
 
 module Transformer
   class DocumentService
@@ -33,11 +34,11 @@ module Transformer
       
     end
     
-    def rename_file(file_name, database=-1. collectio=-1)
+    def rename_file(file_name, database=-1. collection=-1)
       
     end
     
-    def update_document(document)
+    def update_document(file_name, document)
       
     end
   end
