@@ -14,7 +14,7 @@ require "redis"
 #redis.hmset - params: key, *field_value_pairs - rewrites fields, as many pairs we want
 #redis.hmget - params: key, *fields - get all values from all fields as array
 #redis.hdel - params: key, *fields - delete all the given fields
-#redis.hsentx - params: key, field, value - !!!only one field at a time, set field only if the field does not exist
+#redis.hsetnx - params: key, field, value - !!!only one field at a time, set field only if the field does not exist
 
 module BaseInterface
   class DBInterface
@@ -26,27 +26,29 @@ module BaseInterface
     #redis.hmset - params: key, *field_value_pairs - rewrites fields, as many pairs we want
     #redis.hmget - params: key, *fields - get all values from all fields as array
     #redis.hdel - params: key, *fields - delete all the given fields
-    #redis.hsentx - params: key, field, value - !!!only one field at a time, set field only if the field does not exist
-
-    #Hash could be just array?
-    def add_to_hash(key, *hash, overwrite)
+    #redis.hsetnx - params: key, field, value - !!!only one field at a time, set field only if the field does not exist
+    
+    #Hash could be just array? 
+    def add_to_hash(key, hash, overwrite)
       if overwrite
+        puts "Setting hash and overwriting:"
+        puts "#{hash.inspect}"
       @@redis.hmset key, *hash
       else
         fields_only = []
         values_only = []
         (hash.length).times do |x|
-          fields_only << fields[x] if x%2 == 0
-          values_only << fields[x] if x%2 != 0
+          fields_only << hash[x] if x%2 == 0
+          values_only << hash[x] if x%2 != 0
         end
         #Now we have fields and values apart
         fields_only.each_with_index do |field, index|
-          @@redis.hsentx key, field, values_only[index] #set value only if field does not exist
+          @@redis.hsetnx key, field, values_only[index] #set value only if field does not exist
         end
       end
     end
 
-    def add_to_list(key, *values)
+    def add_to_list(key, values)
       values.each do |value|
         @@redis.rpush key, value
       end
@@ -56,8 +58,10 @@ module BaseInterface
       #We probably don't need this
     end
 
+    #Returns incremented value, we will always immediately need it, so we will retrieve it here
     def increment_string(key)
       @@redis.incr key
+      @@redis.get key
     end
 
     def decrement_string(key)
@@ -72,6 +76,10 @@ module BaseInterface
 
     def delete_from_hash(key, *hash_keys)
       @@redis.hdel key, *hash_keys
+    end
+    
+    def hash_value_exist?(key, field)
+      @@redis.hexists key, field
     end
 
     #What values means? Is it indexes or String values? For now use it as String values

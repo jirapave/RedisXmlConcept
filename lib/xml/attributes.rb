@@ -5,7 +5,15 @@ module XML
     attr_accessor :attributes, :node
     def initialize(node, attributes=false)
       attributes ||= []
-      @attributes = attributes
+      key = ""
+      value = ""
+      attributes ||= []
+      @attributes = {}
+      attributes.each do |attr|
+        #TODO according to Nokogiri...attributes can also have prefixes etc.
+        @attributes[attr.localname] = attr.value
+      end
+      
       @node = node
     end
     

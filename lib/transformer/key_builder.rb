@@ -1,4 +1,7 @@
 module Transformer
+  #Maybe change it completly? New idea: what if we change keybuilder into key, key has getter 
+  #and all these methods, so we can than do something like:
+  #key.databa(db).collection(col).attributes_key().text
   class KeyBuilder
     private_class_method :new
     class << self
@@ -16,6 +19,11 @@ module Transformer
       def collection(key, name)
         return "#{key}::#{name}" #TODO nepamatuju se uz, co to melo vracet
       end
+      
+      #Iterator for each collection, used to determine id
+      def iterator_key(key)
+        return "#{key}<id_iterator"
+      end
 
       def database(name) #TODO tady taky nevim
         return name
@@ -26,8 +34,15 @@ module Transformer
       end
 
       def document_info(key)
-        all = (0 .. key.length - 1).find_all { |i| key[i,2] == "::" }
-        return "#{key.slice(0, all[2])}<info" 
+        #all = (0 .. key.length - 1).find_all { |i| key[i,2] == "::" }
+        #return "#{key.slice(0, all[2])}<info" 
+        return "#{key}<info"
+      end
+      
+      def document_key(key, id)
+        #TODO
+        result = key + "::#{id}"
+        return result
       end
 
       def element_key(key, element_name, order)
