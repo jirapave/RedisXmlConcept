@@ -110,22 +110,43 @@ module BaseInterface
     #Key_values should be hash? I hope that *key_string when one string is used returns array, if not, .length
     #will return nonsense
     def save_string_entries(*key_string, overwrite)
-      #controls that key_string has %2 == 0?
-      keys_only = []
-      strings_only = []
-      (key_string.length).times do |x|
-        keys_only << key_string[x] if x%2 == 0
-        strings_only << key_string[x] if x%2 != 0
-      end
-      if overwrite
-        keys_only.each_with_index do |key, index|
-          @@redis.set key, strings_only[index]
-        end
+      # #controls that key_string has %2 == 0?
+      # keys_only = []
+      # strings_only = []
+      # (key_string.length).times do |x|
+        # keys_only << key_string[x] if x%2 == 0
+        # strings_only << key_string[x] if x%2 != 0
+      # end
+#       
+      # #save texts
+      # if overwrite
+        # keys_only.each_with_index do |key, index|
+          # @@redis.set key, strings_only[index]
+        # end
+      # else
+        # keys_only.each_with_index do |key, index|
+          # @@redis.set key, strings_only[index] unless @@redis.exists key
+        # end
+      # end
+      if(overwrite)
+        @@redis.mset(*key_string)
       else
-        keys_only.each_with_index do |key, index|
-          @@redis.set key, strings_only[index] unless @@redis.exists key
-        end
+        @@redis.msetnx(*key_string)
       end
     end
+    
+    def save_entries(key_value_hash, overwrite)
+      key_value_list = []
+      key_value_hash.each do |key, value|
+        key_value_list << key
+        key_value_list << value
+      end
+      if(overwrite)
+        @@redis.mset(*key_value_list)
+      else
+        @@redis.msetnx(*key_value_list)
+      end
+    end
+    
   end
 end

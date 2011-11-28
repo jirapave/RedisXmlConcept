@@ -4,6 +4,7 @@ require_relative "../xml/attr"
 require_relative "../xml/attributes"
 require_relative "../xml/text_content"
 require_relative "../transformer/key_builder"
+require_relative "../transformer/key"
 require "rubygems"
 require "nokogiri"
 require "observer"
@@ -50,6 +51,7 @@ module XML
     end
     
     def start_element_namespace(name, attrs = [], prefix = nil, uri = nil, ns = [])
+      puts "caught start: #{name}"
       @stack.push(@current_tag) if @current_tag != nil
       count = 0
       
@@ -59,6 +61,10 @@ module XML
       if @root_element == true
         @nesting_count["#{name}"] = 0
         @root_element = false
+        @path.push("#{name}")
+        
+        changed
+        notify_observers name
       else
         count = @nesting_count[@path.join('-') + "-#{name}"]
         if count == nil
@@ -66,8 +72,9 @@ module XML
         @nesting_count[@path.join('-') + "-#{name}"] = 0
         end
         @nesting_count[@path.join('-') + "-#{name}"] += 1
+        @path.push("#{name}>#{count}")
       end
-      @path.push("#{name}>#{count}")
+      
       #path contains name of tags preceding this tag in nesting, e.g. aaa>bbb>ccc, aaa>bbb start_tag(ccc)
       parent = @path[@path.length-2] if @path.length > 1
       #Add name of this tag to it's parent child elements
@@ -76,6 +83,7 @@ module XML
       @current_tag = XML::Element.new(name, "", prefix, parent)
       @current_tag.attributes = XML::Attributes.new(name, attrs)
       @root_element = false
+      puts "current_tag saved: #{@current_tag.name}"
     end
     
     def end_element_namespace(name, prefix = nil, uri = nil)
@@ -94,9 +102,20 @@ module XML
       #puts "base_key: #{key}"
       @path.each do |path|
         info = path.split('>')
-        key = @builder.element_key(key, info[0], info[1])
+        if(info.length < 2)
+          key = "#{key}::#{info[0]}"
+        else
+          key = @builder.element_key(key, info[0], info[1])
+        end
       end
-      key = @builder.element_key(key, name, order)
+      
+      # all these ifs are for saving root element without order number!
+      if(key == @base_key)
+        key = "#{key}::#{name}"
+      else
+        key = @builder.element_key(key, name, order)
+      end
+      
       @current_tag.database_key = key
       
       changed
@@ -116,17 +135,29 @@ module XML
     #Method is called when a chunk if text occurs, each calling means one text part, for example:
     #<aaa>aaa<bbb>bbb</bbb>ccc</aaa>, for aaa element it gets called twice for "aaa" and "ccc"
     def characters(text)
+      text = text.sub('\n', '').strip
+      if(text.empty?)
+        return
+      end
+      puts "Text caught: #{text}"
       order = @current_tag.text_nodes_count
-      key = @base_key
+      key = Transformer::Key.build_from_s(@base_key)
       #puts "base_key: #{key}"
       @path.each do |path|
         info = path.split('>')
-        key = @builder.element_key(key, info[0], info[1])
+        if(info.length < 2)
+          key = key.root(info[0])
+        else
+          key.elem!(info[0], info[1].to_i)
+        end
+        # key = @builder.element_key(key, info[0], info[1])
       end
-      key = @builder.text_key(key, order)
+      
+      # key = @builder.text_key(key, order)
       text_tag = XML::TextContent.new(false, text, order)
-      text_tag.database_key = key
-      @current_tag.descendants << text_tag
+      text_tag.database_key = key.text(order)
+      # @current_tag.descendants << text_tag
+      @current_tag.add_text(text_tag)
     end
     
     def cdata_block(string)

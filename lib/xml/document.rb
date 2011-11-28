@@ -12,6 +12,15 @@ module XML
       @version = version
     end
     
+    def metadata():String
+      s = "<?xml"
+      s += " encoding=\"#{@encoding}\"" if(@encoding)
+      s += " standalone=\"#{@standalone}\"" if(@standalone)
+      s += " version=\"#{@version}\"" if(@version)
+      s += " ?>"
+      return s
+    end
+    
     def valid?()
       result = true
       result = false if @doctype

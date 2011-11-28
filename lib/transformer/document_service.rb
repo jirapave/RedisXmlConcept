@@ -1,5 +1,6 @@
 require_relative "xml_transformer"
 require_relative "../xml/document"
+require_relative "../xml/console_sax_document"
 require_relative "../base_interface/db_interface"
 require "nokogiri"
 require "observer"
@@ -28,15 +29,15 @@ module Transformer
           field_values = []
           field_values << "name" << @doc_name
           field_values << "version" << value[0] if value[0] != nil
-          field_values << "encoding" << value[0] if value[1] != nil
-          field_values << "standalone" << value[0] if value[2] != nil
+          field_values << "encoding" << value[1] if value[1] != nil
+          field_values << "standalone" << value[2] if value[2] != nil
           puts "Saving document info..."
           @db_interface.add_to_hash(key, field_values, false)
       elsif value.instance_of? String
         #Root element name
         key = @builder.document_info(@base_key)
-        puts "Saving string values...document info"
-        info = %w(key, value)
+        puts "Saving string values...document info, root_name: #{value}"
+        info = ["root", "#{@base_key}::#{value}"]
         @db_interface.add_to_hash(key, info, false)
       else
         #Element here
@@ -69,6 +70,8 @@ module Transformer
       
       #Now file is saved, we have it's id and we can know proceed to parsing
       parser = Nokogiri::XML::SAX::Parser.new(XML::SaxDocument.new(self, @base_key))
+      # parser = Nokogiri::XML::SAX::Parser.new(XML::ConsoleSaxDocument.new)
+      
       #Main idea here is to SAX parser, events should be handled by SaxDocument, which
       #will prepare whole nodes and when the node ends, it will send event here (update method) so we
       #can use XmlTranformer to save it.
@@ -84,12 +87,44 @@ module Transformer
       
     end
     
-    def find_document(document)
-      
+    def find_document(document)#:XML::Document
+      if(!@collection or !@database)
+        puts "Collection or database not set -> collection: #{@collection}, database: #{@database}"
+        return nil
+      end
+      return find_file(document.file_name, @database, @collection)
     end
     
-    def find_file(file_name, database=-1, collection=-1)
+    def find_file(file_name, database=-1, collection=-1)#:XML::Document
+      col_key = Transformer::Key.collection_key(database, collection)
+      all_files = @db_interface.find_value(col_key)
       
+      #debug purposes
+      puts "All files in this collection:"
+      if all_files != nil 
+        all_files.each do |key, value|
+          puts "soubor: #{key}, id: #{value}"
+        end
+      end
+      #debug purposes
+      
+      file_id = nil
+      if all_files != nil 
+        all_files.each do |key, value|
+          if(key == file_name)
+            file_id = value
+            break
+          end
+        end
+      end
+      
+      if(file_id == nil)
+        puts "File with name #{file_name} not found."
+        return nil
+      end
+      
+      key = Transformer::Key.create(database, collection, file_id)
+      return @xml_transformer.find_node(key)
     end
       
     def remove_document(document)
@@ -125,5 +160,6 @@ module Transformer
       return true if @db_interface.hash_value_exist?(key, file_name)
       return false
     end
+    
   end
 end

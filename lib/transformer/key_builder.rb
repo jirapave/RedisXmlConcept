@@ -22,6 +22,10 @@ module Transformer
       
       #Iterator for each collection, used to determine id
       def iterator_key(key)
+        all_double_double_dots = (0 .. key.length - 1).find_all { |i| key[i,2] == "::" }
+        if(all_double_double_dots.length > 1)
+          return "#{key.slice(0, all_double_double_dots[1])}<id_iterator"
+        end
         return "#{key}<id_iterator"
       end
 
@@ -34,8 +38,10 @@ module Transformer
       end
 
       def document_info(key)
-        #all = (0 .. key.length - 1).find_all { |i| key[i,2] == "::" }
-        #return "#{key.slice(0, all[2])}<info" 
+        all_double_double_dots = (0 .. key.length - 1).find_all { |i| key[i,2] == "::" }
+        if(all_double_double_dots.length > 2)
+          return "#{key.slice(0, all_double_double_dots[2])}<info"
+        end
         return "#{key}<info"
       end
       
@@ -61,7 +67,11 @@ module Transformer
       end
 
       def root_key(key)
-        sub = key.slice(0, key.index(">"))
+        index = key.index(">")
+        if(index < 0)
+          return key.slice(0, key.rindex("::"))
+        end
+        sub = key.slice(0, index)
         return sub.slice(0, sub.rindex("::"))
       end
 

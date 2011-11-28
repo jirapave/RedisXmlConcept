@@ -1,3 +1,4 @@
+require_relative "../lib/transformer/key_element_builder"
 require_relative "../lib/base_interface/db_interface"
 require_relative "../lib/transformer/key_builder"
 require_relative "../lib/transformer/document_service"
@@ -8,16 +9,17 @@ require "nokogiri"
 #keyBuilder test
 #puts "KeyBuilder test"
 #aaa = Transformer::KeyBuilder
-#puts Transformer::KeyBuilder.attributes_key("neco")
-#puts Transformer::KeyBuilder.attributes_order_key("neco")
-#puts Transformer::KeyBuilder.attributes_order_key("neco<attributes")
-#puts Transformer::KeyBuilder.count_key("neco")
-#puts Transformer::KeyBuilder.document_info("db::coll::id1::root::movie>1::cast>1::actor>2")
-#puts Transformer::KeyBuilder.element_key("db::coll::id1::root::movie>1::cast>1::actor>2", "name", 3);
-#puts Transformer::KeyBuilder.next_element_key("db::coll::id1::root::movie>1::cast>1::actor>2");
-#puts Transformer::KeyBuilder.parent_key("db::coll::id1::root::movie>1::cast>1::actor>2");
-#puts Transformer::KeyBuilder.root_key("db::coll::id1::root::movie>1::cast>1::actor>2");
-#puts Transformer::KeyBuilder.text_key("db::coll::id1::root::movie>1::cast>1::actor>2", 4);
+# puts Transformer::KeyBuilder.attributes_key("neco")
+# puts Transformer::KeyBuilder.attributes_order_key("neco")
+# puts Transformer::KeyBuilder.attributes_order_key("neco<attributes")
+# puts Transformer::KeyBuilder.count_key("neco")
+# puts Transformer::KeyBuilder.document_info("db::coll::id1::root::movie>1::cast>1::actor>2")
+# puts Transformer::KeyBuilder.document_info("db::coll::id")
+# puts Transformer::KeyBuilder.element_key("db::coll::id1::root::movie>1::cast>1::actor>2", "name", 3);
+# puts Transformer::KeyBuilder.next_element_key("db::coll::id1::root::movie>1::cast>1::actor>2");
+# puts Transformer::KeyBuilder.parent_key("db::coll::id1::root::movie>1::cast>1::actor>2");
+# puts Transformer::KeyBuilder.root_key("db::coll::id1::root::movie>1::cast>1::actor>2");
+# puts Transformer::KeyBuilder.text_key("db::coll::id1::root::movie>1::cast>1::actor>2", 4);
 
 #db_interface is Singleton, redis is class variable
 db = BaseInterface::DBInterface.instance
@@ -52,8 +54,12 @@ file_name = "books2.xml"
 
 #This is how it will be used when we are done
 document_service = Transformer::DocumentService.new()
-puts "Saving document..."
+# puts "Saving document..."
 document_service.save_document(1,1,file_name)
+
+# retrieve document string
+# puts document_service.find_document(file_name)
+puts document_service.find_file(file_name, 1, 1)
 
 #1. Run nokogiri, fix it so it works - DONE
 #2. Load book.xml, choose one node and save it using XML Transformer
