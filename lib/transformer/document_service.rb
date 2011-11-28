@@ -8,6 +8,9 @@ class Notifier
 end
 
 module Transformer
+  #Class represents a service used to work with whole XML files. It can saves them to the database, verify
+  #their existence in a database and also retrives them.
+  #This class is part of Observer pattern as Notifier, it get's notified by XML::SaxDocument class.
   class DocumentService < Notifier
     def initialize()
       @xml_transformer = Transformer::XMLTransformer.new()
@@ -16,10 +19,9 @@ module Transformer
       @builder = Transformer::KeyBuilder
     end
     
-    #Method will be calles when sax_document will load relevant information. Information will be
-    #sent here so we can save them
+    #This method gets called when a whole element or document information is retrived during
+    #SAX parsing. This information is than saved to the database using XML::Transformer
     def update(value)
-      puts "UPDATE: parser gived us something..."
       if value.instance_of? Array
           #Document information are here, [version, encoding, standalone]
           
@@ -41,11 +43,12 @@ module Transformer
         @db_interface.add_to_hash(key, info, false)
       else
         #Element here
-        puts "Saving element in update..."
         @xml_transformer.save_node(value)
       end
     end
     
+    #Method will save a given file to the given database under the given collection if it doensn't
+    #already exist. SAX parser is used to parse an XML file.
     def save_document(database=-1,collection=-1, file_name)
       @xml_transformer.collection = collection
       @xml_transformer.database = database
@@ -77,16 +80,15 @@ module Transformer
       #can use XmlTranformer to save it.
       puts "Parsing in progress..."
       parser.parse(File.open(file_name, 'rb'))
-      puts "DONE PARSING"
+      puts "Done parsing"
       puts "Document saved"
     end
     
-    #Database and collection are prefixes, when no one is specified, we are searching for all
-    #documents in all databases in each collection
     def all_documents(database=-1,collection=-1)
       
     end
     
+    #Finds a document in a database, returns XML::Document with whole DOM loaded.
     def find_document(document)#:XML::Document
       if(!@collection or !@database)
         puts "Collection or database not set -> collection: #{@collection}, database: #{@database}"
@@ -95,6 +97,7 @@ module Transformer
       return find_file(document.file_name, @database, @collection)
     end
     
+    #Finds a document under the specified database and collection, returns XML::Document with whole DOM loaded.
     def find_file(file_name, database=-1, collection=-1)#:XML::Document
       col_key = Transformer::Key.collection_key(database, collection)
       all_files = @db_interface.find_value(col_key)
@@ -103,7 +106,7 @@ module Transformer
       puts "All files in this collection:"
       if all_files != nil 
         all_files.each do |key, value|
-          puts "soubor: #{key}, id: #{value}"
+          puts "file #{key}, id: #{value}"
         end
       end
       #debug purposes
@@ -147,6 +150,8 @@ module Transformer
       
     end
     
+    #Verifies if a document with a given name exist. Database and collection should be specified before using 
+    #this method.
     def document_exist?(file_name)
       key = @builder.database(@database)
       key = @builder.collection(key, @collection)
@@ -154,7 +159,7 @@ module Transformer
       puts "All files in this collection:"
       if all_files != nil 
       all_files.each do |key, value|
-        puts "soubor: #{key}, id: #{value}"
+        puts "file: #{key}, id: #{value}"
       end
       end
       return true if @db_interface.hash_value_exist?(key, file_name)

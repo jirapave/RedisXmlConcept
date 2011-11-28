@@ -15,13 +15,15 @@ module Transformer
       db = BaseInterface::DBInterface.instance
       @db_interface = db
       @builder = Transformer::KeyBuilder
-      #Added these because node will not know it's databse key, we will have to create it and for this
-      #we have to know databse and collection, these should be set before saving
+      #Deprecated, we don't need them any more
+      #TODO refactoring needed
       @database = database
       @collection = collection
     end
     
-    #parameter Transformer::Key
+    #Finds a node under the given key and build it's structure recursively.
+    #Parameters:
+    #key - Transformer::Key
     def find_node(key):Node
       
       if(key.instance_of? Transformer::Key)
@@ -96,28 +98,12 @@ module Transformer
       
     end
     
+    #Saves a given node in a database, node knows it's database key under which it should be saved.
+    #Node contains only databse key of it's child elements so we can avoid memory requirements when
+    #parsing document.
+    #Parameters:
+    #node - XML::Node
     def save_node(node)
-      puts "Saving key of this element: #{node.database_key}"
-      #puts "DESCENDANTS======"
-      #node.descendants.each do |desc|
-      #  if desc.instance_of? String
-      #    puts "Descendant: #{desc}"
-      #  else
-      #    #Non-element
-      #    puts "Descendant: #{desc.database_key}"
-      #  end
-      #end
-      #puts "================"
-      #puts "Attributes======"
-      #Maybe we'll add each to Attributes class, so we don't have to use it like that
-      #node.attributes.attributes.each do |key, value|
-      #  puts "Attribure: #{key}=\"#{value}\""
-      #end
-      #puts "================"
-      
-      puts "======SAVING ELEMENT======="
-      #So we have database key of a node, so let's save him to the database
-      #First we have to save information about descendants
       key = node.database_key
       descendant_keys = []
       child_keys = []
@@ -135,7 +121,6 @@ module Transformer
           end
         end
       end
-      puts "Saving information about descendants..."
       @db_interface.add_to_list(key, descendant_keys)
       
       #saving descendant counts
@@ -151,7 +136,6 @@ module Transformer
         end
       end
       #DEBUG
-      puts child_hash
       if(!child_hash.empty?)
         @db_interface.save_entries(child_hash, true)
       end
@@ -169,7 +153,7 @@ module Transformer
         @db_interface.save_string_entries(text_count_key, text_count_value, true)
       end
       
-      #And lastly we have to save attributes and their order
+      #And at last we have to save attributes and their order
       attributes = []
       #Ruby's hash order is ok since 1.9, but we don't know if Redis is ok too..so for now, order:
       attributes_order = []
@@ -179,14 +163,11 @@ module Transformer
         attributes_order << key << iter
         iter +=  1
       end
-      puts "savind information abour attributes..."
       attr_key = @builder.attributes_key(key)
       @db_interface.add_to_hash(attr_key, attributes, true) if !attributes.empty?
       
       attr_order_key = @builder.attributes_order_key(key)
       @db_interface.add_to_hash(attr_order_key, attributes_order, true) if !attributes.empty?
-      puts "Saved node: #{node.database_key}"
-      puts "======ELEMENT SAVED======="
     end
     
     def update_node(node)

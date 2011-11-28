@@ -12,16 +12,10 @@ class Notifier
 end
 
 module XML
-  #SAX parser is the only right way to parse really big files, so our services must cooperate with
-  #this class
-  #INFO: Because we have to be able to cooperate with mixed content, parsing has to change! We have to
-  #use stack, for example method characters(text) gets called when a chunk of text is found:
-  #<aaa>first<bbb>bbb</bbb>second</aaa>
-  #callings: start_tag, characters, start_tag, end_tag, characters, end_tag
-  #So we have to use stack to save nesting.
-  #For now we use our own xml representation defined in XML module. Classes are used a bit
-  #differently, it will be changed. For now TextContent represents one chunk of text, it's "parts" 
-  #attributes is unused. Document is not used, information about document are sent directly.
+  #Class represents an event handler for Nokogiri::XML::SAX::Parser. During parsing, events like element starts
+  #or element ends are raised and this class react to them. It is used to build whole elements and when
+  #element is completly loaded, it is sent to document_service
+  #This class is part of Observer pattern as an Observable. It's observer is document_service.
   class SaxDocument < Nokogiri::XML::SAX::Document
     include Observable 
     def initialize(service, base_key)
@@ -51,7 +45,6 @@ module XML
     end
     
     def start_element_namespace(name, attrs = [], prefix = nil, uri = nil, ns = [])
-      puts "caught start: #{name}"
       @stack.push(@current_tag) if @current_tag != nil
       count = 0
       
@@ -75,15 +68,11 @@ module XML
         @path.push("#{name}>#{count}")
       end
       
-      #path contains name of tags preceding this tag in nesting, e.g. aaa>bbb>ccc, aaa>bbb start_tag(ccc)
+      #path contains name of tags preceding this tag in nesting, for example aaa>bbb start_tag(ccc)
       parent = @path[@path.length-2] if @path.length > 1
-      #Add name of this tag to it's parent child elements
-      #No, we will add key of the element
-      #@stack[@stack.length-1].add_child(name) if !@stack.empty?
       @current_tag = XML::Element.new(name, "", prefix, parent)
       @current_tag.attributes = XML::Attributes.new(name, attrs)
       @root_element = false
-      puts "current_tag saved: #{@current_tag.name}"
     end
     
     def end_element_namespace(name, prefix = nil, uri = nil)
@@ -92,8 +81,7 @@ module XML
       if @path.length != 0
         order = @nesting_count[@path.join('-') + "-#{name}"] - 1
       end
-      #TODO nesting_count has to be deleted periodically, or it could be large, it will be needed some
-      #regex on keys based on the name of a apth and it's path
+      #TODO testing needed here, @nesting_count could be periodically deleted, is it needed? Memory leaks here?
       
       @current_tag.order = order
       
@@ -132,14 +120,13 @@ module XML
     def comment(text)
     end
 
-    #Method is called when a chunk if text occurs, each calling means one text part, for example:
+    #Method is called when a chunk of text occurs, each calling means one text part, for example:
     #<aaa>aaa<bbb>bbb</bbb>ccc</aaa>, for aaa element it gets called twice for "aaa" and "ccc"
     def characters(text)
       text = text.sub('\n', '').strip
       if(text.empty?)
         return
       end
-      puts "Text caught: #{text}"
       order = @current_tag.text_nodes_count
       key = Transformer::Key.build_from_s(@base_key)
       #puts "base_key: #{key}"

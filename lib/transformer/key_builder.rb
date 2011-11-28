@@ -1,7 +1,5 @@
 module Transformer
-  #Maybe change it completly? New idea: what if we change keybuilder into key, key has getter 
-  #and all these methods, so we can than do something like:
-  #key.databa(db).collection(col).attributes_key().text
+  #Deprecated, currently not used, see Key class
   class KeyBuilder
     private_class_method :new
     class << self

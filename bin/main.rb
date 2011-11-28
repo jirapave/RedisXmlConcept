@@ -6,6 +6,43 @@ require_relative "../lib/xml/sax_document"
 require "rubygems"
 require "nokogiri"
 
+
+
+def time
+  start = Time.now
+  yield
+  time = Time.now - start
+  puts "Execution time: #{time} s"
+end
+
+#db_interface is Singleton, redis is class variable
+db = BaseInterface::DBInterface.instance
+
+#====DOCUMENT SAVE AND RETRIEVE
+file_name = "books-test5.xml"
+document_service = Transformer::DocumentService.new()
+time do
+#First argument is database name, second is collection
+  document_service.save_document(1,1,file_name)
+end
+
+time do
+  puts "retrieving document from database..."
+  # retrieve document string, whole DOM is created, Node overrides to_s
+  puts document_service.find_file(file_name, 1, 1)
+end
+
+#parser = Nokogiri::XML::SAX::Parser.new(XML::SaxDocument.new(self))
+#parser.parse(File.open(file_name, 'rb'))
+
+#1. Run nokogiri, fix it so it works - DONE
+#2. Load book.xml, choose one node and save it using XML Transformer
+#3. => implement KeyBuilder, there will be changes, maybe we need more methods...change names.. DONE
+#4. => implement XML Transformer, atleast save remove and find node
+#5. Tro to save node from book.xml, find it a remove it
+#6. Write tests!
+#7. When this is done, => implementation of document_service
+
 #keyBuilder test
 #puts "KeyBuilder test"
 #aaa = Transformer::KeyBuilder
@@ -20,9 +57,6 @@ require "nokogiri"
 # puts Transformer::KeyBuilder.parent_key("db::coll::id1::root::movie>1::cast>1::actor>2");
 # puts Transformer::KeyBuilder.root_key("db::coll::id1::root::movie>1::cast>1::actor>2");
 # puts Transformer::KeyBuilder.text_key("db::coll::id1::root::movie>1::cast>1::actor>2", 4);
-
-#db_interface is Singleton, redis is class variable
-db = BaseInterface::DBInterface.instance
 
 #====DBInterface TEST====
 #Add to hash using array and get result hash
@@ -45,26 +79,3 @@ db = BaseInterface::DBInterface.instance
 #result_one = db.find_value("key-1")
 #result_two = db.find_value("key-2")
 #puts "result-1: #{result_one}, result-2: #{result_two}"
-
-#====NOKOGIRI TEST - doesnt work for now, require don' work====
-#Start document event don't give us name, we have to pass name to our SaxDocument
-file_name = "books2.xml"
-#parser = Nokogiri::XML::SAX::Parser.new(XML::SaxDocument.new(self))
-#parser.parse(File.open(file_name, 'rb'))
-
-#This is how it will be used when we are done
-document_service = Transformer::DocumentService.new()
-# puts "Saving document..."
-document_service.save_document(1,1,file_name)
-
-# retrieve document string
-# puts document_service.find_document(file_name)
-puts document_service.find_file(file_name, 1, 1)
-
-#1. Run nokogiri, fix it so it works - DONE
-#2. Load book.xml, choose one node and save it using XML Transformer
-#3. => implement KeyBuilder, there will be changes, maybe we need more methods...change names.. DONE
-#4. => implement XML Transformer, atleast save remove and find node
-#5. Tro to save node from book.xml, find it a remove it
-#6. Write tests!
-#7. When this is done, => implementation of document_service
