@@ -7,7 +7,7 @@ h1. INSTALLATION
 
 p. To use this project correctly, it is needed to download and start Redis instance. Redis doesn't have official
 binaries for Windows, but we have found pretty stable and verified binaries here:
-"https://github.com/dmajkic/redis/downloads":url
+"redis windows binaries":https://github.com/dmajkic/redis/downloads
 We have tested newest version 2.4.2, otherwise when used on UNIX distributions, version from official site can be used.
 For nokogiri it is needed to install gem nokogiri on windows, it should be enough to just:
 gem install nokogiri
@@ -21,4 +21,4 @@ about it here:
 "Redis ruby client":http://redis-rb.keyvalue.org/v2.2.0/
 All callings are based on official documentation of Redis, looks really promising. The list of commands can
 be seen here:
-"Redis commands":http://redis.io/commands#
+"Redis commands":http://redis.io/commands
