@@ -19,7 +19,7 @@ end
 db = BaseInterface::DBInterface.instance
 
 #====DOCUMENT SAVE AND RETRIEVE
-file_name = "books-test5.xml"
+file_name = "auction20.xml"
 document_service = Transformer::DocumentService.new()
 time do
 #First argument is database name, second is collection
@@ -29,5 +29,6 @@ end
 time do
   puts "retrieving document from database..."
   # retrieve document string, whole DOM is created, Node overrides to_s
-  puts document_service.find_file(file_name, 1, 1)
+  # puts document_service.find_file(file_name, 1, 1)
+  document_service.find_file(file_name, 1, 1)
 end

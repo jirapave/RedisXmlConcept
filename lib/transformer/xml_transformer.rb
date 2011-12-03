@@ -77,17 +77,19 @@ module Transformer
         #add descendants
         part_keys = @db_interface.find_value(key.to_s)
         
-        part_keys.each { |key_str|
-          if(Transformer::KeyElementBuilder.text?(key_str))
-            text_content = @db_interface.find_value(key_str)
-            elem.descendants << XML::TextContent.new(false, text_content, Transformer::KeyElementBuilder.text_order(key_str))
-          else
-            #Element
-            child = find_node(Transformer::KeyElementBuilder.build_from_s(key_str))
-            child.parent = elem
-            elem.descendants << child
+        if part_keys # if this element is not empty (like <element />)
+          part_keys.each do |key_str|
+            if(Transformer::KeyElementBuilder.text?(key_str))
+              text_content = @db_interface.find_value(key_str)
+              elem.descendants << XML::TextContent.new(false, text_content, Transformer::KeyElementBuilder.text_order(key_str))
+            else
+              #Element
+              child = find_node(Transformer::KeyElementBuilder.build_from_s(key_str))
+              child.parent = elem
+              elem.descendants << child
+            end
           end
-        }
+        end
         
         return elem
       end

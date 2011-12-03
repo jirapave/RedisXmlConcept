@@ -79,7 +79,12 @@ module Transformer
       #will prepare whole nodes and when the node ends, it will send event here (update method) so we
       #can use XmlTranformer to save it.
       puts "Parsing in progress..."
-      parser.parse(File.open(file_name, 'rb'))
+      
+      #TODO check functionality
+      @db_interface.commit_after do
+        parser.parse(File.open(file_name, 'rb'))
+      end
+      
       puts "Done parsing"
       puts "Document saved"
     end
