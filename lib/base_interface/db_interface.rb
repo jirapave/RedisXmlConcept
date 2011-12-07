@@ -8,7 +8,7 @@ unless $:.include?(redis_dir) || $:.include?(File.expand_path(redis_dir))
 $:.unshift(File.expand_path(redis_dir))
 end
 
-require "redis/connection/hiredis"
+#require "redis/connection/hiredis"
 require "redis"
 
 #WORKING WITH HASHES
