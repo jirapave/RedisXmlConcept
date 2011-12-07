@@ -55,23 +55,9 @@ module Transformer
         #create element (without parent so far)
         elem = XML::Element.new(elem_name, key.to_s, namespace, nil)
         
-        #add attributes in the right order
+        #add attributes
         attrs_hash = @db_interface.find_value(key.attr)
         if(attrs_hash)
-          # attr_order = @db_interface.find_value(key.attr_order)
-#           
-          # #array with sorted attributes
-          # attr_order_a = []
-#           
-          # #sort them into the array
-          # attr_order.each { |key, value|
-            # attr_order_a[value.to_i] = key
-          # }
-#           
-          # #add sorted attributes to Node.attributes
-          # attr_order_a.each { |hash_key|
-            # elem.attributes << XML::Attr.new(hash_key, elem, attrs_hash[hash_key]) 
-          # }
           elem.attributes = XML::Attributes.new(elem_name, attrs_hash)
         end
         
@@ -149,29 +135,16 @@ module Transformer
         @db_interface.save_string_entries(*text_content, true)
       end
       
-      #save text count
-      if(!text_content.empty?)
-        text_count_key = Transformer::KeyElementBuilder.build_from_s(text_content[0]).text_count
-        text_count_value = (text_content.length/2).to_s
-        @db_interface.save_string_entries(text_count_key, text_count_value, true)
-      end
-      
       #And at last we have to save attributes and their order
       attributes = []
-      #Ruby's hash order is ok since 1.9, but we don't know if Redis is ok too..so for now, order:
-      attributes_order = []
       iter = 0
       node.attributes.attrs.each do |key, value|
         attributes << key << value
-        attributes_order << key << iter
         iter +=  1
       end
       @builder = Transformer::KeyElementBuilder.build_from_s(key)
       attr_key = @builder.attr
       @db_interface.add_to_hash(attr_key, attributes, true) if !attributes.empty?
-      
-      attr_order_key = @builder.attr_order
-      @db_interface.add_to_hash(attr_order_key, attributes_order, true) if !attributes.empty?
     end
     
     def update_node(node)

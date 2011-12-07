@@ -68,7 +68,13 @@ module XML
       #path contains name of tags preceding this tag in nesting, for example aaa>bbb start_tag(ccc)
       parent = @path[@path.length-2] if @path.length > 1
       @current_tag = XML::Element.new(name, "", prefix, parent)
-      @current_tag.attributes = XML::Attributes.new(name, attrs)
+      
+      attributes = {}
+      attrs.each do |attr|
+        attributes[attr.localname] = attr.value
+      end
+      
+      @current_tag.attributes = XML::Attributes.new(name, attributes)
       @root_element = false
     end
     
@@ -105,7 +111,6 @@ module XML
       
       changed
       # notify the observers, give them loaded node
-      @current_tag.nesting = @path.dup()
       #Add this element's key to the children of it's parent
       @stack[@stack.length-1].add_child(@current_tag.database_key) if !@stack.empty?
       notify_observers @current_tag
