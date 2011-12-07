@@ -1,6 +1,5 @@
 require_relative "../xml/node"
 require_relative "../xml/element"
-require_relative "../xml/attr"
 require_relative "../xml/attributes"
 require_relative "../xml/text_content"
 require_relative "../transformer/key_builder"

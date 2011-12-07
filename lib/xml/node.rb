@@ -6,7 +6,7 @@ module XML
     attr_accessor :attributes, :nesting, :descendants, :name, :namespace, :parent, :order, :database_key
     def initialize(name, nesting, namespace, parent)
       #TODO Attributes are not array, they have their own class
-      @attributes = []
+      @attributes = XML::Attributes.new(name, {})
       #Changed for now, node will not know about it's database key, it will know however it's nesting
       #so we can create database_key from it after
       @nesting = nesting
@@ -68,9 +68,9 @@ module XML
     
     def self.get_attrs(node):String
       s = ""
-      node.attributes.each { |attr|
-        s += " #{attr.field}=\"#{attr.value}\""
-      }
+      node.attributes.attrs.each do |key, value|
+        s += " #{key}=\"#{value}\""
+      end
       return s
     end
   end

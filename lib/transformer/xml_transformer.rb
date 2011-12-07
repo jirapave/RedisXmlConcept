@@ -58,20 +58,21 @@ module Transformer
         #add attributes in the right order
         attrs_hash = @db_interface.find_value(key.attr)
         if(attrs_hash)
-          attr_order = @db_interface.find_value(key.attr_order)
-          
-          #array with sorted attributes
-          attr_order_a = []
-          
-          #sort them into the array
-          attr_order.each { |key, value|
-            attr_order_a[value.to_i] = key
-          }
-          
-          #add sorted attributes to Node.attributes
-          attr_order_a.each { |hash_key|
-            elem.attributes << XML::Attr.new(hash_key, elem, attrs_hash[hash_key]) 
-          }
+          # attr_order = @db_interface.find_value(key.attr_order)
+#           
+          # #array with sorted attributes
+          # attr_order_a = []
+#           
+          # #sort them into the array
+          # attr_order.each { |key, value|
+            # attr_order_a[value.to_i] = key
+          # }
+#           
+          # #add sorted attributes to Node.attributes
+          # attr_order_a.each { |hash_key|
+            # elem.attributes << XML::Attr.new(hash_key, elem, attrs_hash[hash_key]) 
+          # }
+          elem.attributes = XML::Attributes.new(elem_name, attrs_hash)
         end
         
         #add descendants
@@ -160,7 +161,7 @@ module Transformer
       #Ruby's hash order is ok since 1.9, but we don't know if Redis is ok too..so for now, order:
       attributes_order = []
       iter = 0
-      node.attributes.attributes.each do |key, value|
+      node.attributes.attrs.each do |key, value|
         attributes << key << value
         attributes_order << key << iter
         iter +=  1
