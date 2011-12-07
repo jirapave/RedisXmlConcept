@@ -14,7 +14,7 @@ module Transformer
     def initialize(database=-1, collection=-1)
       db = BaseInterface::DBInterface.instance
       @db_interface = db
-      @builder = Transformer::KeyBuilder
+      @builder = Transformer::KeyElementBuilder
       #Deprecated, we don't need them any more
       #TODO refactoring needed
       @database = database
@@ -166,10 +166,11 @@ module Transformer
         attributes_order << key << iter
         iter +=  1
       end
-      attr_key = @builder.attributes_key(key)
+      @builder = Transformer::KeyElementBuilder.build_from_s(key)
+      attr_key = @builder.attr
       @db_interface.add_to_hash(attr_key, attributes, true) if !attributes.empty?
       
-      attr_order_key = @builder.attributes_order_key(key)
+      attr_order_key = @builder.attr_order
       @db_interface.add_to_hash(attr_order_key, attributes_order, true) if !attributes.empty?
     end
     

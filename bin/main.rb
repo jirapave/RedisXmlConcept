@@ -1,6 +1,5 @@
 require_relative "../lib/transformer/key_element_builder"
 require_relative "../lib/base_interface/db_interface"
-require_relative "../lib/transformer/key_builder"
 require_relative "../lib/transformer/document_service"
 require_relative "../lib/xml/sax_document"
 require "rubygems"
@@ -30,5 +29,5 @@ time do
   puts "retrieving document from database..."
   # retrieve document string, whole DOM is created, Node overrides to_s
   # puts document_service.find_file(file_name, 1, 1)
-  document_service.find_file(file_name, 1, 1)
+  puts document_service.find_file(file_name, 1, 1)
 end

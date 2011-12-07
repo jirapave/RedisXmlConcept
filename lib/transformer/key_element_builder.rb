@@ -8,7 +8,7 @@ module Transformer
     def initialize(db_name, col_name, doc_name, root_name)
       super(db_name, col_name, doc_name)
       @root_name = root_name
-      @root_key = "#{@doc_key}#{:"::"}#{root_name}"
+      @root_key = "#{@document_key}#{:"::"}#{root_name}"
       @elem_str = ""
     end
     

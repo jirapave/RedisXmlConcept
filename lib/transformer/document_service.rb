@@ -16,7 +16,7 @@ module Transformer
       @xml_transformer = Transformer::XMLTransformer.new()
       db = BaseInterface::DBInterface.instance
       @db_interface = db
-      @builder = Transformer::KeyBuilder
+      @builder = Transformer::Key
     end
     
     #This method gets called when a whole element or document information is retrived during
@@ -26,8 +26,7 @@ module Transformer
           #Document information are here, [version, encoding, standalone]
           
           #document_info don't work yet
-          key = @builder.document_info(@base_key)
-          key = @base_key + "<info"
+          key = @builder.info()
           field_values = []
           field_values << "name" << @doc_name
           field_values << "version" << value[0] if value[0] != nil
@@ -37,7 +36,7 @@ module Transformer
           @db_interface.add_to_hash(key, field_values, false)
       elsif value.instance_of? String
         #Root element name
-        key = @builder.document_info(@base_key)
+        key = @builder.info()
         puts "Saving string values...document info, root_name: #{value}"
         info = ["root", "#{@base_key}::#{value}"]
         @db_interface.add_to_hash(key, info, false)
@@ -58,15 +57,13 @@ module Transformer
       puts "Does document exist?"
       return false if document_exist?(file_name)
       puts "No, proceeding with saving..."
-      #Read about KeyBuilder in class description, new idea about how to change it to be more effective, this
-      #is horrible
-      key = @builder.database(@database)
-      key = @builder.collection(key, @collection)
-      iter_key = @builder.iterator_key(key)
+      @builder = Transformer::Key.create(@database, @collection, @doc_name)
+      key = @builder.collection_key
+      iter_key = @builder.iter
       #We will need this key as a base for others
-      id_value = "id-1"
       id_value = @db_interface.increment_string(iter_key)
-      @base_key = @builder.document_key(key, id_value)
+      @builder = Transformer::Key.create(@database, @collection, id_value)
+      @base_key = @builder.document_key
       info = [@doc_name, id_value]
       puts "Saving document: #{info.inspect}"
       @db_interface.add_to_hash(key, info, false)
@@ -104,27 +101,7 @@ module Transformer
     
     #Finds a document under the specified database and collection, returns XML::Document with whole DOM loaded.
     def find_file(file_name, database=-1, collection=-1)#:XML::Document
-      col_key = Transformer::Key.collection_key(database, collection)
-      all_files = @db_interface.find_value(col_key)
-      
-      #debug purposes
-      puts "All files in this collection:"
-      if all_files != nil 
-        all_files.each do |key, value|
-          puts "file #{key}, id: #{value}"
-        end
-      end
-      #debug purposes
-      
-      file_id = nil
-      if all_files != nil 
-        all_files.each do |key, value|
-          if(key == file_name)
-            file_id = value
-            break
-          end
-        end
-      end
+      file_id = document_exist?(file_name, database, collection)
       
       if(file_id == nil)
         puts "File with name #{file_name} not found."
@@ -157,18 +134,32 @@ module Transformer
     
     #Verifies if a document with a given name exist. Database and collection should be specified before using 
     #this method.
-    def document_exist?(file_name)
-      key = @builder.database(@database)
-      key = @builder.collection(key, @collection)
-      all_files = @db_interface.find_value(key)
+    def document_exist?(file_name, database=-1, collection=-1)
+      database = @database if database == -1
+      collection = @collection if collection == -1
+      col_key = Transformer::Key.collection_key(database, collection)
+      all_files = @db_interface.find_value(col_key)
+      
+      #debug purposes
       puts "All files in this collection:"
       if all_files != nil 
-      all_files.each do |key, value|
-        puts "file: #{key}, id: #{value}"
+        all_files.each do |key, value|
+          puts "file #{key}, id: #{value}"
+        end
       end
+      #debug purposes
+      
+      file_id = nil
+      if all_files != nil 
+        all_files.each do |key, value|
+          if(key == file_name)
+            file_id = value
+            break
+          end
+        end
       end
-      return true if @db_interface.hash_value_exist?(key, file_name)
-      return false
+      
+      return file_id
     end
     
   end

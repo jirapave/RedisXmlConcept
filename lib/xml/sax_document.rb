@@ -2,7 +2,6 @@ require_relative "../xml/node"
 require_relative "../xml/element"
 require_relative "../xml/attributes"
 require_relative "../xml/text_content"
-require_relative "../transformer/key_builder"
 require_relative "../transformer/key"
 require "rubygems"
 require "nokogiri"
@@ -21,7 +20,6 @@ module XML
       #Service will be responsible for handling saving, we will notify it when we have complete tag loaded
       add_observer service 
       @base_key = base_key
-      @builder = Transformer::KeyBuilder
       #Incomplete nodes are held in stack until end_tag arrives for them
       @stack = []
       @current_tag = nil
@@ -92,7 +90,7 @@ module XML
         if(info.length < 2)
           key = "#{key}::#{info[0]}"
         else
-          key = @builder.element_key(key, info[0], info[1])
+          key = Transformer::KeyElementBuilder.build_from_s(key.to_s).elem(info[0], info[1])
         end
       end
       
@@ -100,7 +98,7 @@ module XML
       if(key == @base_key)
         key = "#{key}::#{name}"
       else
-        key = @builder.element_key(key, name, order)
+        key = Transformer::KeyElementBuilder.build_from_s(key.to_s).elem(name, order)
       end
       
       @current_tag.database_key = key
@@ -136,10 +134,8 @@ module XML
         else
           key.elem!(info[0], info[1].to_i)
         end
-        # key = @builder.element_key(key, info[0], info[1])
       end
       
-      # key = @builder.text_key(key, order)
       text_tag = XML::TextContent.new(false, text, order)
       text_tag.database_key = key.text(order)
       # @current_tag.descendants << text_tag
