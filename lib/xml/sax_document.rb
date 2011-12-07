@@ -136,7 +136,7 @@ module XML
         end
       end
       
-      text_tag = XML::TextContent.new(false, text, order)
+      text_tag = XML::TextContent.new(text, order)
       text_tag.database_key = key.text(order)
       # @current_tag.descendants << text_tag
       @current_tag.add_text(text_tag)

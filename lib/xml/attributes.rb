@@ -20,7 +20,7 @@ module XML
     end
     
     def length()
-      @attributes.length
+      @attrs.length
     end
   end
 end

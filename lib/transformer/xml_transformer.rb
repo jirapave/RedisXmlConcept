@@ -82,7 +82,7 @@ module Transformer
           part_keys.each do |key_str|
             if(Transformer::KeyElementBuilder.text?(key_str))
               text_content = @db_interface.find_value(key_str)
-              elem.descendants << XML::TextContent.new(false, text_content, Transformer::KeyElementBuilder.text_order(key_str))
+              elem.descendants << XML::TextContent.new(text_content, Transformer::KeyElementBuilder.text_order(key_str))
             else
               #Element
               child = find_node(Transformer::KeyElementBuilder.build_from_s(key_str))
