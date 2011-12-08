@@ -28,10 +28,17 @@ module XML
       #Like path but with nesting and order of elements
       @nesting_count = {}
       @root_element = true
+      #Element names mapping to id
+      @elem_mapping = {}
     end
     
     def start_document()
       puts "SAX starting"
+    end
+    
+    def end_document()
+      changed
+        notify_observers @elem_mapping
     end
     
     def xmldecl(version, encoding, standalone)
@@ -42,6 +49,7 @@ module XML
     end
     
     def start_element_namespace(name, attrs = [], prefix = nil, uri = nil, ns = [])
+      name = rename_elem(name)
       @stack.push(@current_tag) if @current_tag != nil
       count = 0
       
@@ -79,6 +87,7 @@ module XML
     end
     
     def end_element_namespace(name, prefix = nil, uri = nil)
+      name = rename_elem(name)
       @path.pop()
       order = 0;
       if @path.length != 0
@@ -153,6 +162,16 @@ module XML
     
     def error(string)
       
+    end
+    
+    private
+    #Method will use elem_mapping hash and lookup name, if ti does exist, it returns hash value
+    #otherwise it creates new hash value with id based on size of hash
+    def rename_elem(name)
+      if (@elem_mapping[name] == nil)
+        @elem_mapping[name] = "#{@elem_mapping.length}"
+      end
+      return @elem_mapping[name]
     end
   end
 end

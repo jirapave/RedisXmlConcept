@@ -10,7 +10,7 @@ module Transformer
   #Prefixes of databases and collection didn't affect transformer, each Node know it's
   #key, e.g. collection and database
   class XMLTransformer
-    attr_accessor :database, :collection
+    attr_accessor :database, :collection, :mapping
     def initialize(database=-1, collection=-1)
       db = BaseInterface::DBInterface.instance
       @db_interface = db
@@ -19,6 +19,7 @@ module Transformer
       #TODO refactoring needed
       @database = database
       @collection = collection
+      @mapping = {}
     end
     
     #Finds a node under the given key and build it's structure recursively.
@@ -39,12 +40,11 @@ module Transformer
         root_key = info_hash["root"]
         root_key_builder = Transformer::KeyElementBuilder.build_from_s(root_key)
         doc.root_element = find_node(root_key_builder)
-        
+        doc.root_element.name = get_elem_name(doc.root_element.name)
         return doc
         
       elsif(key.instance_of? Transformer::KeyElementBuilder)
-
-        elem_name = key.elem_name
+        elem_name = get_elem_name(key.elem_name)
         ns_split = elem_name.split(':')
         namespace = false
         if(ns_split.length > 1)
@@ -72,6 +72,7 @@ module Transformer
             else
               #Element
               child = find_node(Transformer::KeyElementBuilder.build_from_s(key_str))
+              child.name = get_elem_name(child.name)
               child.parent = elem
               elem.descendants << child
             end
@@ -133,5 +134,16 @@ module Transformer
     def update_node(node)
       
     end
+    
+    private 
+    def get_elem_name(id)
+      mapping.each do |key, value|
+        if (id == value)
+          return key
+        end
+      end
+      return id
+    end
+    
   end
 end

@@ -40,6 +40,16 @@ module Transformer
         puts "Saving string values...document info, root_name: #{value}"
         info = ["root", "#{@base_key}::#{value}"]
         @db_interface.add_to_hash(key, info, false)
+      elsif value.instance_of? Hash
+        #Element mapping is passed here
+        key = @builder.mapping_key()
+        #We have to remap our hash to array
+        field_values = []
+        value.each do |key, value|
+          field_values << key << value
+        end
+        puts "Mapovani ulozena pod klicem: #{key}"
+        @db_interface.add_to_hash(key, field_values, false)
       else
         #Element here
         @xml_transformer.save_node(value)
@@ -49,6 +59,7 @@ module Transformer
     #Method will save a given file to the given database under the given collection if it doensn't
     #already exist. SAX parser is used to parse an XML file.
     def save_document(database=-1,collection=-1, file_name)
+      @xml_transformer = Transformer::XMLTransformer.new()
       @xml_transformer.collection = collection
       @xml_transformer.database = database
       @doc_name = file_name
@@ -101,6 +112,7 @@ module Transformer
     
     #Finds a document under the specified database and collection, returns XML::Document with whole DOM loaded.
     def find_file(file_name, database=-1, collection=-1)#:XML::Document
+      @xml_transformer = Transformer::XMLTransformer.new()
       file_id = document_exist?(file_name, database, collection)
       
       if(file_id == nil)
@@ -108,7 +120,10 @@ module Transformer
         return nil
       end
       
-      key = Transformer::Key.create(database, collection, file_id)
+      key = Transformer::Key.create(@database, @collection, file_id)
+      mapping_key = key.mapping_key()
+      mapping_hash = @db_interface.find_value(mapping_key)
+      @xml_transformer.mapping = mapping_hash
       return @xml_transformer.find_node(key)
     end
       

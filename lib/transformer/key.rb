@@ -57,6 +57,10 @@ module Transformer
     def document_key():String
       @document_key
     end
+    
+    def mapping_key():String
+      "#{@document_key}#{:"<mapping"}"
+    end
 
     # root returns KeyElementBuilder, which require root element to initialize
     # that there is possible to create element_keys and so on    
