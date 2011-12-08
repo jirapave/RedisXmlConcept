@@ -1,5 +1,5 @@
 module BaseInterface
-  class EntriesBean
+  class KeyValueEntry
     
     attr_reader :key
     attr_accessor :value

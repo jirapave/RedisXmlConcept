@@ -26,29 +26,15 @@ module Transformer
     end
 
     def attr():String
-      "#{self.to_s}#{:"<"}#{:"attributes"}"
-    end
-    
-    def attr_order():String
-      "#{self.to_s}#{:"<"}#{:"attributes"}#{:"<"}#{:"order"}"
-    end
-    
-    def count():String
-      if(@elem_str.empty?)
-        puts "There is no element inserted, so cannot create ...<count key. (root element has no count key)"
-        raise NoElementError
-      else
-        last_lt = @elem_str.rindex(">")
-        return "#{@root_key}#{@elem_str.slice(0, last_lt)}#{:"<"}#{:"count"}"
-      end
+      "#{self.to_s}#{:"<"}#{:"a"}"
     end
     
     def text(order):String
-      "#{@root_key}#{@elem_str}#{:">"}#{:"text"}#{:">"}#{order}"
+      "#{@root_key}#{@elem_str}#{:">"}#{:"t"}#{:">"}#{order}"
     end
     
     def text_count():String
-      "#{@root_key}#{@elem_str}#{:">"}#{:"text"}#{:"<"}#{:"count"}"
+      "#{@root_key}#{@elem_str}#{:">"}#{:"t"}#{:"<"}#{:"c"}"
     end
     
     def parent!():KeyElementBuilder
@@ -159,7 +145,7 @@ module Transformer
       if(gt_split.length < 3)
         return -1
       end
-      if(!gt_split[gt_split.length-2] == "text")
+      if(!gt_split[gt_split.length-2] == "t")
         return -1
       end
       return gt_split[gt_split.length-1].to_i 
@@ -183,7 +169,7 @@ module Transformer
       if(gt_split.length < 3)
         return false
       end
-      return gt_split[gt_split.length-2] == "text"
+      return gt_split[gt_split.length-2] == "t"
     end
           
     def self.build_from_s(key_str):KeyElementBuilder

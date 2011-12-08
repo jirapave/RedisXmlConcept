@@ -1,5 +1,5 @@
 require "singleton"
-require_relative "entries_bean"
+require_relative "key_value_entry"
 
 #Adding lib to LOAD_PATH e.g. $:
 #NOTE: $0 contains path to the first open file, e.g. it differs when we start this file or main.rb
@@ -88,7 +88,7 @@ module BaseInterface
       
       check_buffer #buffer full? -> commit will be performed
       
-      bean = BaseInterface::EntriesBean.new(key)
+      bean = BaseInterface::KeyValueEntry.new(key)
       bean.value = hash
       
       if overwrite
@@ -116,7 +116,7 @@ module BaseInterface
       
       check_buffer #buffer full? -> commit will be performed
       
-      bean = BaseInterface::EntriesBean.new(key)
+      bean = BaseInterface::KeyValueEntry.new(key)
       bean.value = values
       @add_to_list_buffer << bean
       
@@ -244,31 +244,31 @@ module BaseInterface
       @redis.multi do
         
         #flush add_to_hash
-        @add_to_hash_buffer_nx.each do |entries_bean|
+        @add_to_hash_buffer_nx.each do |entry|
           fields_only = []
           values_only = []
-          hash = entries_bean.value
+          hash = entry.value
           (hash.length).times do |x|
             fields_only << hash[x] if x%2 == 0
             values_only << hash[x] if x%2 != 0
           end
           #Now we have fields and values apart
           fields_only.each_with_index do |field, index|
-            @redis.hsetnx entries_bean.key, field, values_only[index] #set value only if field does not exist
+            @redis.hsetnx entry.key, field, values_only[index] #set value only if field does not exist
           end
         end
         
-        @add_to_hash_buffer.each { |entries_bean|
-          hash = entries_bean.value
-          @redis.hmset entries_bean.key, *hash
+        @add_to_hash_buffer.each { |entry|
+          hash = entry.value
+          @redis.hmset entry.key, *hash
         }
         @add_to_hash_buffer = []
         
         #flush add_to_list
-        @add_to_list_buffer.each { |entries_bean|
-          values = entries_bean.value
+        @add_to_list_buffer.each { |entry|
+          values = entry.value
           values.each do |value|
-            @redis.rpush entries_bean.key, value #multiple values are not supported
+            @redis.rpush entry.key, value #multiple values are not supported
                                     # although they should be (someone ought to be punished for that...)
             #should've looked like this
             #@redis.rpush entries_bean.key, *values 
