@@ -5,15 +5,14 @@ module Transformer
     
     private_class_method :new
 
-    def initialize(db_name, col_name, doc_name, root_name)
-      super(db_name, col_name, doc_name)
+    def initialize(root_name)
       @root_name = root_name
-      @root_key = "#{@document_key}#{:"::"}#{root_name}"
+      @root_key = "#{root_name}"
       @elem_str = ""
     end
     
-    def self.create(db_name, col_name, doc_name, root_name):KeyElementBuilder
-      new(db_name, col_name, doc_name, root_name)
+    def self.create(root_name):KeyElementBuilder
+      new(root_name)
     end
     
     def elem!(elem_name, order):KeyElementBuilder
@@ -154,10 +153,10 @@ module Transformer
     private
     def self.last_dd_gt_split(key_str):Array
       dd_split = key_str.split("::")
-      if(dd_split.length < 4)
+      if(dd_split.length < 1)
         return nil
       end
-      return dd_split[dd_split.length-1].split('>')
+      return dd_split[-1].split('>')
     end
     
     public
@@ -169,25 +168,21 @@ module Transformer
       if(gt_split.length < 3)
         return false
       end
-      return gt_split[gt_split.length-2] == "t"
+      return gt_split[-2] == "t"
     end
           
     def self.build_from_s(key_str):KeyElementBuilder
       key_split = key_str.split("::")
-      if(key_split.length < 4)
-        puts "#{key_str} cannot be parsed to KeyElementBuilder. Simply said: not enough '::' delimiters."
+      if(key_split.length < 1)
+        puts "#{key_str} cannot be parsed."
         raise NotEnoughParametersError
       end
       
-      db = key_split[0]
-      col = key_split[1]
-      doc = key_split[2]
-      root = key_split[3]
+      root = key_split[0]
       
-      instance = new(db, col, doc, root)
-       
-      if(key_split.length > 4)
-        (4..key_split.length-1).each { |index|
+      instance = new(root)
+      if key_split.length > 1
+        (1..key_split.length-1).each { |index|
           splitted_split = key_split[index].split(">")
           if(splitted_split.length < 2)
             break

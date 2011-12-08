@@ -16,10 +16,9 @@ module XML
   #This class is part of Observer pattern as an Observable. It's observer is document_service.
   class SaxDocument < Nokogiri::XML::SAX::Document
     include Observable 
-    def initialize(service, base_key)
+    def initialize(service)
       #Service will be responsible for handling saving, we will notify it when we have complete tag loaded
       add_observer service 
-      @base_key = base_key
       #Incomplete nodes are held in stack until end_tag arrives for them
       @stack = []
       @current_tag = nil
@@ -98,20 +97,20 @@ module XML
       @current_tag.order = order
       
       #Now we will generate key for this element
-      key = @base_key
+      key = ""
       #puts "base_key: #{key}"
       @path.each do |path|
         info = path.split('>')
         if(info.length < 2)
-          key = "#{key}::#{info[0]}"
+          key = "#{info[0]}"
         else
           key = Transformer::KeyElementBuilder.build_from_s(key.to_s).elem(info[0], info[1])
         end
       end
       
       # all these ifs are for saving root element without order number!
-      if(key == @base_key)
-        key = "#{key}::#{name}"
+      if(key == "")
+        key = "#{name}"
       else
         key = Transformer::KeyElementBuilder.build_from_s(key.to_s).elem(name, order)
       end
@@ -139,12 +138,12 @@ module XML
         return
       end
       order = @current_tag.text_nodes_count
-      key = Transformer::Key.build_from_s(@base_key)
+      key = ""
       #puts "base_key: #{key}"
       @path.each do |path|
         info = path.split('>')
         if(info.length < 2)
-          key = key.root(info[0])
+          key = Transformer::Key.root(info[0])
         else
           key.elem!(info[0], info[1].to_i)
         end

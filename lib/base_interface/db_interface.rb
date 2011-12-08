@@ -190,6 +190,10 @@ module BaseInterface
       #We don't use set or sorted set, so return nil
       return nil
     end
+    
+    def get_hash_value(key, field)
+      @redis.hget key,field
+    end
 
     #Saves multiple string values under the multiple keys specified in an array parameter, example:
     #["key1", "string1", "key2", "string2"]

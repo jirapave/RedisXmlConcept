@@ -37,7 +37,7 @@ module Transformer
       end
       
       def root(root_name):KeyElementBuilder
-        KeyElementBuilder.create(@db_name, @col_name, @doc_name, root_name)
+        KeyElementBuilder.create(root_name)
       end
     end
     
@@ -60,6 +60,10 @@ module Transformer
     
     def mapping_key():String
       "#{@document_key}#{:"<mapping"}"
+    end
+    
+    def content_key():String
+      "#{@document_key}#{:"<content"}"
     end
 
     # root returns KeyElementBuilder, which require root element to initialize

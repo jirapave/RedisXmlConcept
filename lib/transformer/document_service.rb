@@ -38,7 +38,7 @@ module Transformer
         #Root element name
         key = @builder.info()
         puts "Saving string values...document info, root_name: #{value}"
-        info = ["root", "#{@base_key}::#{value}"]
+        info = ["root", "#{value}"]
         @db_interface.add_to_hash(key, info, false)
       elsif value.instance_of? Hash
         #Element mapping is passed here
@@ -74,13 +74,14 @@ module Transformer
       #We will need this key as a base for others
       id_value = @db_interface.increment_string(iter_key)
       @builder = Transformer::Key.create(@database, @collection, id_value)
+      @content_hash = @builder.content_key
       @base_key = @builder.document_key
       info = [@doc_name, id_value]
       puts "Saving document: #{info.inspect}"
       @db_interface.add_to_hash(key, info, false)
-      
+      @xml_transformer.content_hash = @content_hash
       #Now file is saved, we have it's id and we can know proceed to parsing
-      parser = Nokogiri::XML::SAX::Parser.new(XML::SaxDocument.new(self, @base_key))
+      parser = Nokogiri::XML::SAX::Parser.new(XML::SaxDocument.new(self))
       # parser = Nokogiri::XML::SAX::Parser.new(XML::ConsoleSaxDocument.new)
       
       #Main idea here is to SAX parser, events should be handled by SaxDocument, which
@@ -121,9 +122,11 @@ module Transformer
       end
       
       key = Transformer::Key.create(@database, @collection, file_id)
+      
       mapping_key = key.mapping_key()
       mapping_hash = @db_interface.find_value(mapping_key)
       @xml_transformer.mapping = mapping_hash
+      @xml_transformer.content_hash = key.content_key
       return @xml_transformer.find_node(key)
     end
       

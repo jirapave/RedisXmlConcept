@@ -10,7 +10,7 @@ module Transformer
   #Prefixes of databases and collection didn't affect transformer, each Node know it's
   #key, e.g. collection and database
   class XMLTransformer
-    attr_accessor :database, :collection, :mapping
+    attr_accessor :database, :collection, :mapping, :content_hash
     def initialize(database=-1, collection=-1)
       db = BaseInterface::DBInterface.instance
       @db_interface = db
@@ -20,6 +20,7 @@ module Transformer
       @database = database
       @collection = collection
       @mapping = {}
+      @content_hash = ""
     end
     
     #Finds a node under the given key and build it's structure recursively.
@@ -28,6 +29,14 @@ module Transformer
     def find_node(key):Node
       
       if(key.instance_of? Transformer::Key)
+        
+        # temp = @db_interface.find_value(key.content_key)
+        # puts "mapping====="
+        # puts "#{mapping.inspect}"
+        # puts "=================="
+        # puts "#{temp.inspect}"
+        # puts "=================="
+        #return false
         
         info_hash = @db_interface.find_value(key.info)
         
@@ -56,18 +65,38 @@ module Transformer
         elem = XML::Element.new(elem_name, key.to_s, namespace, nil)
         
         #add attributes
-        attrs_hash = @db_interface.find_value(key.attr)
-        if(attrs_hash)
-          elem.attributes = XML::Attributes.new(elem_name, attrs_hash)
+        attrs = @db_interface.get_hash_value(@content_hash, key.attr)
+        if attrs != nil
+        attrs_hash = {}
+        fields_only = []
+        values_only = []
+        attrs.split('|').each_with_index do |x, index|
+          fields_only << x if index%2 == 0
+          values_only << x if index%2 != 0
+        end
+        #Now we have fields and values apart
+        fields_only.each_with_index do |field, index|
+          attrs_hash[field] = values_only[index]
+        end
         end
         
+        elem.attributes = XML::Attributes.new(elem_name, attrs_hash)
+        
         #add descendants
-        part_keys = @db_interface.find_value(key.to_s)
+        desc_keys = @db_interface.get_hash_value(@content_hash, key.to_s)
+        part_keys = []
+        if desc_keys != nil
+        desc_keys.split('|').each do |key|
+          #Last one may be empty, we are adding those as << name << "|", so the last one is empty
+          part_keys << key if key != ""
+        end
+        end
+        
         
         if part_keys # if this element is not empty (like <element />)
           part_keys.each do |key_str|
             if(Transformer::KeyElementBuilder.text?(key_str))
-              text_content = @db_interface.find_value(key_str)
+              text_content = @db_interface.get_hash_value(@content_hash, key_str)
               elem.descendants << XML::TextContent.new(text_content, Transformer::KeyElementBuilder.text_order(key_str))
             else
               #Element
@@ -93,42 +122,44 @@ module Transformer
     #parsing document.
     #Parameters:
     #node - XML::Node
+    #main_hash - key to hash table, where all information about node will be saved
     def save_node(node)
+      main_hash = @content_hash
       key = node.database_key
-      descendant_keys = []
-      child_keys = []
+      descendant_keys = ""
+      child_keys = ""
       text_content = []
       node.descendants.each do |desc|
         if desc.instance_of? String
-          descendant_keys << desc
-          child_keys << desc
+          descendant_keys << desc << "|"
+          child_keys << desc << "|"
         else
           #Non-element
-          descendant_keys << desc.database_key
+            descendant_keys << desc.database_key << "|"
           if desc.text_node?
             text_content << desc.database_key 
             text_content << desc.text_content
           end
         end
       end
-      @db_interface.add_to_list(key, descendant_keys)
+      @db_interface.add_to_hash(main_hash, [key, descendant_keys], false)
       
       
       #Than we will save information about text nodes
       if(!text_content.empty?)
-        @db_interface.save_string_entries(*text_content, true)
+        @db_interface.add_to_hash(main_hash, text_content, true)
       end
       
       #And at last we have to save attributes and their order
-      attributes = []
+      attributes = ""
       iter = 0
       node.attributes.attrs.each do |key, value|
-        attributes << key << value
+        attributes << key << "|" << value << "|"
         iter +=  1
       end
       @builder = Transformer::KeyElementBuilder.build_from_s(key)
       attr_key = @builder.attr
-      @db_interface.add_to_hash(attr_key, attributes, true) if !attributes.empty?
+      @db_interface.add_to_hash(main_hash, [attr_key, attributes], true) if !attributes.empty?
     end
     
     def update_node(node)
