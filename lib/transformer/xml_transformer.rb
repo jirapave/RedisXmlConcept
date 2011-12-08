@@ -112,23 +112,6 @@ module Transformer
       end
       @db_interface.add_to_list(key, descendant_keys)
       
-      #saving descendant counts
-      child_hash = Hash.new
-      child_keys.each do |child|
-        child_count_key = Transformer::KeyElementBuilder.build_from_s(child).count
-        child_count = child_hash[child_count_key]
-        if(child_count)
-          child_count = child_count.to_i + 1
-          child_hash[child_count_key] = child_count
-        else
-          child_hash[child_count_key] = 1
-        end
-      end
-      #DEBUG
-      if(!child_hash.empty?)
-        @db_interface.save_entries(child_hash, true)
-      end
-      
       
       #Than we will save information about text nodes
       if(!text_content.empty?)
