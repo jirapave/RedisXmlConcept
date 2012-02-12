@@ -15,6 +15,7 @@ module XQuery
     XPATH = :xpath #!parts are steps!
     ATTRIBUTE = :attribute
     PREDICATE = :predicate
+    SPECIFIED_PREDICATE = :specified_predicate
     ELEMENT = :element #parts: namespace, name
     STEP = :step
     #XPath
