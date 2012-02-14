@@ -5,7 +5,7 @@ module Transformer
 
     private_class_method :new
     
-    attr_reader :database_key, :collection_key, :document_key, :database_key, :collection_key, :document_key
+    attr_reader :database_key, :collection_key, :document_key, :db_name, :col_name, :doc_name
     
     def initialize(db_name, col_name, doc_id)
       @db_name = db_name
@@ -18,16 +18,16 @@ module Transformer
     
     class << self
       # static - creates new Key with required parameters
-      def create(db_name, col_name, doc_name):Key
+      def create(db_name, col_name, doc_name)#:Key
         return new(db_name, col_name, doc_name)
       end
     
       # static
-      def collection_key(db_name, col_name):String
+      def collection_key(db_name, col_name)#:String
         "#{db_name}#{:"::"}#{col_name}"
       end
     
-      def build_from_s(key_str):Key
+      def build_from_s(key_str)#:Key
         key_split = key_str.split("::")
         if(key_split.length < 3)
           puts "#{key_str} cannot be parsed to Key. Simply said: not enough '::' delimiters."
@@ -42,27 +42,19 @@ module Transformer
     end
     
     
-    def iter():String
+    def iter()#:String
       "#{@collection_key}#{:"<id_iterator"}"
     end
     
-    def info():String
+    def info()#:String
       "#{@document_key}#{:"<info"}"
     end
     
-    def collection_key():String
-      @collection_key
-    end
-    
-    def document_key():String
-      @document_key
-    end
-    
-    def mapping_key():String
+    def mapping_key()#:String
       "#{@document_key}#{:"<mapping"}"
     end
     
-    def content_key():String
+    def content_key()#:String
       "#{@document_key}#{:"<content"}"
     end
 
@@ -72,8 +64,8 @@ module Transformer
       KeyElementBuilder.create(@db_name, @col_name, @doc_name, root_name)
     end
     
-    def to_s():String
-      @doc_key
+    def to_s()#:String
+      @document_key
     end
     
     class NotEnoughParametersError < StandardError

@@ -15,7 +15,7 @@ module XQuery
       expression = XQueryParser.parse_query(query)
       
       #solve parsed expression
-      @xquery_solver.get_results(expression)
+      return @xquery_solver.get_results(expression)
       
       # assume only xpath query for now
       # @xpath.get_results(query)

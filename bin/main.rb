@@ -18,11 +18,11 @@ end
 db = BaseInterface::DBInterface.instance
 
 #====DOCUMENT SAVE AND RETRIEVE
-file_name = "books-20000.xml"
+file_name = "books-5000.xml"
 document_service = Transformer::DocumentService.new()
 time do
 #First argument is database name, second is collection
-  document_service.save_document(1,1,file_name)
+  document_service.save_document(file_name, 1, 1)
 end
 
 time do

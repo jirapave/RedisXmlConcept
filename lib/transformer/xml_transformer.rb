@@ -1,5 +1,4 @@
 require_relative "../base_interface/db_interface"
-require_relative "key"
 require_relative "key_element_builder"
 require_relative "../xml/node"
 require_relative "../xml/document"
@@ -27,7 +26,6 @@ module Transformer
     #Parameters:
     #key - Transformer::Key
     def find_node(key):Node
-      
       if(key.instance_of? Transformer::Key)
         
         # temp = @db_interface.find_value(key.content_key)

@@ -101,17 +101,10 @@ module XQuery
   end
   
   class Function < Expression
+    
     def initialize(parent, name, parameters=[])
-      @type = FUNCTION
-      @parent = parent
-      
-      # add self to the parent's parts
-      if(@parent != nil)
-        @parent.parts << self
-      end
-      
+      super(parent, Expression::FUNCTION, parameters)
       @name = name
-      @parts = parameters
     end
     
     def print_self
@@ -119,19 +112,11 @@ module XQuery
     end
     
     attr_reader :name
-    attr_accessor :parameters
   end
   
   class Variable < Expression
     def initialize(parent, name="", value=nil) #name:String, value:Sequence
-      @type = VARIABLE
-      @parent = parent
-      
-      # add self to the parent's parts
-      if(@parent != nil)
-        @parent.parts << self
-      end
-      
+      super(parent, Expression::VARIABLE)
       @name = name
       @value = value
     end
@@ -144,24 +129,17 @@ module XQuery
   end
   
   class XPathStep < Expression
-    def initialize(parent, subtype=ELEMENT)
-      @type = STEP
-      @parent = parent
-      @parts = []
-      
-      # add self to the parent's parts
-      if(@parent != nil)
-        @parent.parts << self
-      end
-      
+    def initialize(parent, subtype=ELEMENT, name="")
+      super(parent, Expression::STEP)
+      @name = name
       @subtype = subtype
     end
     
     def print_self
-      puts "Expression type:#{@type}, subtype:#{@subtype}"
+      puts "Expression type:#{@type}, subtype:#{@subtype}, maybe name: #{@name}"
     end
     
-    attr_accessor :subtype
+    attr_accessor :subtype, :name
   end
   
 end

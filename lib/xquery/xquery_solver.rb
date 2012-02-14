@@ -20,6 +20,12 @@ module XQuery
       puts "-=WALK=-"
       expression.walkthrough
       
+      if(expression.type == Expression::XPATH)
+        return @xpath_controller.get_results(expression, @result_context)
+      else
+        raise StandardError, "not yet implemented"
+      end
+      
       
       #TODO resolve each xpath sequentially into sequences of nodes/data
       # store each resolved xpath sequences of results into the structured expression

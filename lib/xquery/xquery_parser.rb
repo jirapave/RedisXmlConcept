@@ -179,7 +179,11 @@ module XQuery
                 prev_expr = expression.parts.pop
                 
                 xpath_expr = Expression.new(expression, Expression::XPATH)
-                prev_step = XPathStep.new(xpath_expr, prev_expr.type)
+                if(prev_expr.respond_to?(:name))
+                  prev_step = XPathStep.new(xpath_expr, prev_expr.type, prev_expr.name)
+                else
+                  prev_step = XPathStep.new(xpath_expr, prev_expr.type)
+                end
                 prev_step.parts = prev_expr.parts
                 
                 expression = xpath_expr

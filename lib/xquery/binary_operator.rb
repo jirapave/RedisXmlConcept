@@ -32,7 +32,7 @@ module XQuery
                  VALUE_EQ , VALUE_NE , VALUE_GT , VALUE_GE , VALUE_LT , VALUE_LE,
                  LOGIC_AND, LOGIC_OR]
     
-    def which_operator(pattern)#returns OperatorEnum or nil
+    def self.which_operator(pattern)#returns OperatorEnum or nil
       if(pattern.lentgh == 1 || pattern.length == 2)
         OPERATORS.each { |x|
            if(x.pattern == pattern)
@@ -43,9 +43,18 @@ module XQuery
       return nil
     end
     
-    def evaluate(operator, param1, param2)#returns boolean
+    #operator can be String or OperatorEnum
+    def self.evaluate(operator, param1, param2)#returns boolean
       if(!param1.kind_of?(Sequence) || !param2.kind_of?(Sequence))
         raise StandardError, "wrong parameter type"
+      end
+      
+      if(operator.kind_of?(String))
+        operator = which_operator(operator)
+      end
+      
+      if(operator == nil)
+        raise StandardError, "operator is nil"
       end
       
       if(param1.type == Sequence::ATOMIC_VALUE && param2.type == Sequence::ATOMIC_VALUE)
@@ -57,6 +66,8 @@ module XQuery
       
       case operator
       when GLOBAL_EQ
+        
+        #TODO
         
       end
     end

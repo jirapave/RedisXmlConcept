@@ -58,7 +58,7 @@ module Transformer
     
     #Method will save a given file to the given database under the given collection if it doensn't
     #already exist. SAX parser is used to parse an XML file.
-    def save_document(database=-1,collection=-1, file_name)
+    def save_document(file_name, database=-1, collection=-1)
       @xml_transformer = Transformer::XMLTransformer.new()
       @xml_transformer.collection = collection
       @xml_transformer.database = database
