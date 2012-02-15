@@ -15,8 +15,6 @@ module XQuery
     
     def get_results(expression, result_context)
       
-      @result_list = []
-      @key = nil
       key_array = []
       
       expression.parts.each_with_index { |step, index|
@@ -33,11 +31,7 @@ module XQuery
       #return last step results - strings(atomic values)/elements - greedily loaded
       results = []
       key_array.each { |key|
-        if(key.kind_of?(Transformer::KeyElementBuilder))
-          results << @db_helper.get_node(key)
-        else
-          results << key
-        end
+        results << @db_helper.get_node(key)
       }
       
       return results
@@ -59,11 +53,11 @@ module XQuery
         @db_helper = DBHelper.new(key)
         
       elsif(step.subtype == Expression::VARIABLE)
-        key_array = result_context.variables[step.name]
+        key_array = result_context.variables[step.name] #TODO needs to be Array
         if(key_array == nil)
           raise QueryStringError, "there is no variable \"#{step.name}\" defined"
         end
-        if(!key_array.kind_of?(Array))
+        if(key_array.respond_to_missing?(:each))
           key_array = [ key_array ]
         end
         if(key_array.length > 0)
@@ -94,9 +88,9 @@ module XQuery
         
         if(elem_name == nil || elem_name.empty?) #element name is empty - search whole document from this state
           key_array.each { |key|
-            if(key.instance_of?(Transformer::Key))
+            if(key.respond_to?(:document_key)) #
               new_key_array << @db_helper.root_key
-            elsif(key.instance_of?(Transformer::KeyElementBuilder))
+            elsif(key.respond_to?(:root_key))
               new_key_array.concat(@db_helper.get_children_element_keys(key))
             else
               raise StandardError, "wrong key format #{key.class}"
@@ -109,7 +103,7 @@ module XQuery
           while(!next_round_keys.empty?)
             new_next_round_keys = []
             next_round_keys.each { |key|
-              if(key.instance_of?(Transformer::KeyElementBuilder))
+              if(key.respond_to?(:root_key))
                 new_child_elements = @db_helper.get_children_element_keys(key)
                 new_key_array.concat(new_child_elements)
                 new_next_round_keys.concat(new_child_elements)
@@ -126,9 +120,9 @@ module XQuery
         elsif(elem_name == '*') #wildcard for this hierarchy level elements
           key_array.each { |key|
             puts "each #{key}"
-            if(key.instance_of?(Transformer::Key))
+            if(key.respond_to?(:document_key))
               new_key_array << @db_helper.root_key
-            elsif(key.instance_of?(Transformer::KeyElementBuilder))
+            elsif(key.respond_to?(:root_key))
               new_key_array.concat(@db_helper.get_children_element_keys(key))
             else
               raise StandardError, "wrong key format #{key.class}"
@@ -143,12 +137,12 @@ module XQuery
           
           key_array.each { |key|
             puts "each #{key}"
-            if(key.instance_of?(Transformer::Key))
+            if(key.respond_to?(:document_key))
               if(@db_helper.root_key.root_name != elem_id)
                 raise QueryStringError, "root element name is wrong: #{elem_name}"
               end
               new_key_array << @db_helper.root_key 
-            elsif(key.instance_of?(Transformer::KeyElementBuilder))
+            elsif(key.respond_to?(:root_key))
               #restriction according previous step children
               children_bean = @db_helper.get_children(key)
               elem_count = children_bean.elem_hash[elem_id]

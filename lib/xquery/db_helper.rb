@@ -81,7 +81,10 @@ module XQuery
     end
     
     def get_node(key)
-      @xml_transformer.find_node(key)
+      if(key.respond_to?(:root_key))
+        return @xml_transformer.find_node(key)
+      end
+      return key      
     end
     
     def get_elem_index(elem_name)

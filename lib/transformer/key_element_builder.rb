@@ -1,7 +1,7 @@
 require_relative "key"
 
 module Transformer
-  class KeyElementBuilder < Transformer::Key
+  class KeyElementBuilder
     
     private_class_method :new
     

@@ -33,6 +33,12 @@ module XQuery
                  LOGIC_AND, LOGIC_OR]
     
     def self.which_operator(pattern)#returns OperatorEnum or nil
+      if(pattern == nil)
+        fail StandardError, "pattern cannot be nil"
+      end
+      if(pattern.respond_to?(:pattern))
+        return pattern
+      end
       if(pattern.lentgh == 1 || pattern.length == 2)
         OPERATORS.each { |x|
            if(x.pattern == pattern)
@@ -45,13 +51,12 @@ module XQuery
     
     #operator can be String or OperatorEnum
     def self.evaluate(operator, param1, param2)#returns boolean
-      if(!param1.kind_of?(Sequence) || !param2.kind_of?(Sequence))
-        raise StandardError, "wrong parameter type"
+      if(  param1.respond_to?(:type) && param1.respond_to?(:value) \
+        && param2.respond_to?(:type) && param2.respond_to?(:value))
+        fail StandardError, "wrong parameter type"
       end
       
-      if(operator.kind_of?(String))
-        operator = which_operator(operator)
-      end
+      operator = which_operator(operator)
       
       if(operator == nil)
         raise StandardError, "operator is nil"
@@ -61,7 +66,7 @@ module XQuery
         atomic_type1 = param1.value.type
         atomic_type2 = param2.value.type
       else
-        raise StandardError, "non-atomic value comparisons not yet supported"
+        fail StandardError, "non-atomic value comparisons not yet supported"
       end
       
       case operator

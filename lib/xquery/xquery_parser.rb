@@ -27,18 +27,6 @@ module XQuery
       #bracket stack for validating and right dividing expressions and subexpressions
       bracket_stack = []
       
-      # add to expressions block
-      # add_to_expressions = Proc.new { |ch|
-        # if(bracket_stack.empty?) #check 
-          # atomic_expr.strip!
-          # if(!atomic_expr.empty?)
-            # expressions << atomic_expr #end of expression
-          # end
-          # atomic_expr = ""
-        # else
-          # atomic_expr << ch #expression continues and has some subexpressions
-        # end
-      # }
       
       #recapitulation block
       recapitulation = Proc.new {
@@ -66,7 +54,11 @@ module XQuery
       #add new unspecified expression
       add_expression = Proc.new {
         if(!atomic_expr.empty?)
-          if(expression.type == Expression::STEP || expression.type == Expression::ATTRIBUTE || expression.type == Expression::VARIABLE || expression.type == Expression::BINARY_OPERATOR)
+          if(  expression.type == Expression::STEP \
+            || expression.type == Expression::ATTRIBUTE \
+            || expression.type == Expression::VARIABLE \
+            || expression.type == Expression::BINARY_OPERATOR)
+            
             puts "adding expression: #{atomic_expr}, type: #{expression.type}"
             expression.parts << atomic_expr
             expression = expression.parent
