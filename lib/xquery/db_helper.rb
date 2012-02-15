@@ -32,6 +32,21 @@ module XQuery
     #key - KeyElementBuilder object
     #key needs to be translated into ids (so use get_elem_index method before calling elem method on KeyElementBuilder object)
     def get_children(key)
+      ChildrenBean.new(key, get_children_plain(key))
+    end
+    
+    def get_children_element_keys(key)
+      key_array = []
+      get_children_plain(key).each { |str_key|
+          if(!Transformer::KeyElementBuilder.text?(str_key))
+            new_key = Transformer::KeyElementBuilder.build_from_s(str_key)
+            key_array << new_key
+          end
+        }
+      return key_array
+    end
+    
+    def get_children_plain(key)#String Array
       values = []
       list_str = @db.get_hash_value(@content_hash_key, key)
       if(list_str == nil)
@@ -40,7 +55,29 @@ module XQuery
       list_str.split('|').each { |value|
         values << value if(!value.empty?)
       }
-      ChildrenBean.new(key, values)
+      return values
+    end
+    
+    def get_attributes(key)
+      attribute_hash = Hash.new
+      list_str = @db.get_hash_value(@content_hash_key, key.attr)
+      if(list_str == nil)
+        return attribute_hash #empty hash
+      end
+      fields_only = []
+      values_only = []
+      list_str.split('|').each_with_index { |x, index|
+        fields_only << x if(index%2 == 0)
+        values_only << x if(index%2 != 0)
+      }
+      fields_only.each_with_index { |field, index| #TODO how the attributes are saved? (should be saved as ids, not names)
+        attribute_hash[field] = values_only[index] #so far functioning ok
+      }
+      return attribute_hash
+    end
+    
+    def get_text(key)
+      get_children(key).get_text
     end
     
     def get_node(key)
@@ -73,6 +110,14 @@ module XQuery
           @elem_hash[key.elem_name] = (key.order.to_i + 1)
         end
       }
+    end
+    
+    def get_text
+      text = ""
+      @text_array.each { |t|
+        text << t
+      }
+      return text
     end
     
   end

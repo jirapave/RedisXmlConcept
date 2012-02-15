@@ -33,10 +33,14 @@ module XQuery
       #return last step results - strings(atomic values)/elements - greedily loaded
       results = []
       key_array.each { |key|
-        results << @db_helper.get_node(key)
+        if(key.kind_of?(Transformer::KeyElementBuilder))
+          results << @db_helper.get_node(key)
+        else
+          results << key
+        end
       }
       
-      return results #TODO not checked if this all is functioning
+      return results
     end
     
     
@@ -84,15 +88,59 @@ module XQuery
       
       if(step.subtype == Expression::ELEMENT)
         elem_name = step.parts[0]
-        elem_id = @db_helper.get_elem_index(elem_name)
         
         #check predicate
         predicate = (step.parts.length > 1 && step.parts[1].type == Expression::PREDICATE) ? step.parts[1] : nil
         
-        if(elem_name.empty?) #element name is empty - search whole document from this state
-          raise StandardError, "to be implemented"
+        if(elem_name == nil || elem_name.empty?) #element name is empty - search whole document from this state
+          key_array.each { |key|
+            if(key.instance_of?(Transformer::Key))
+              new_key_array << @db_helper.root_key
+            elsif(key.instance_of?(Transformer::KeyElementBuilder))
+              new_key_array.concat(@db_helper.get_children_element_keys(key))
+            else
+              raise StandardError, "wrong key format #{key.class}"
+            end
+          }
+          
+          #iterate until all elements from this level are saved
+          next_round_keys = []
+          next_round_keys.concat(new_key_array)
+          while(!next_round_keys.empty?)
+            new_next_round_keys = []
+            next_round_keys.each { |key|
+              if(key.instance_of?(Transformer::KeyElementBuilder))
+                new_child_elements = @db_helper.get_children_element_keys(key)
+                new_key_array.concat(new_child_elements)
+                new_next_round_keys.concat(new_child_elements)
+              else
+                raise StandardError, "wrong key format #{key.class}"
+              end
+            }
+            next_round_keys = new_next_round_keys
+          end
+          
+          #TODO there is probably no need to check the predicate... find out! 
+          
+          
+        elsif(elem_name == '*') #wildcard for this hierarchy level elements
+          key_array.each { |key|
+            puts "each #{key}"
+            if(key.instance_of?(Transformer::Key))
+              new_key_array << @db_helper.root_key
+            elsif(key.instance_of?(Transformer::KeyElementBuilder))
+              new_key_array.concat(@db_helper.get_children_element_keys(key))
+            else
+              raise StandardError, "wrong key format #{key.class}"
+            end
+            
+            #TODO solve predicate
+            
+          }
           
         else #element name is specified
+          elem_id = @db_helper.get_elem_index(elem_name)
+          
           key_array.each { |key|
             puts "each #{key}"
             if(key.instance_of?(Transformer::Key))
@@ -105,11 +153,12 @@ module XQuery
               children_bean = @db_helper.get_children(key)
               elem_count = children_bean.elem_hash[elem_id]
               if(elem_count != nil)
+                puts "found"
                 elem_count.to_i.times { |i|
                   new_key_array << Transformer::KeyElementBuilder.build_from_s(key.elem(elem_id, i))
                 }
-              else
-                raise QueryStringError, "element of name #{elem_name} not found in this context of xml"
+                
+              # else #this branch is blind, nothing adding to new_key_array
               end
             else
               raise StandardError, "wrong key format #{key.class}"
@@ -123,25 +172,36 @@ module XQuery
             end
           }
           
-          puts "   generated #{new_key_array.inspect}"
-          
-          return new_key_array
-          
         end
         
-      elsif(step.subtype == Expression::ATTRIBUTE)
-        #TODO
+      elsif(step.subtype == Expression::ATTRIBUTE) # this should be the last step
+        attr_name = step.parts[0]
+        
+        #restriction according previous step children
+        key_array.each { |key|
+          attr_hash = @db_helper.get_attributes(key)
+          value = attr_hash[attr_name]
+          if(value != nil)
+            new_key_array << attr_hash[attr_name]
+          end
+        }
         
       elsif(step.subtype == Expression::FUNCTION) #data, text? TODO
         #TODO
+        raise StandardError, "not yet implemented"
         
       else
         raise QueryStringError, "wrong step type (or unknown by this parser)"
         
       end
+      
+      puts "   generated #{new_key_array.inspect}"
+      return new_key_array
+      
     end
     
     #this specify predicate expressions with SpecifiedPredicate objects
+    #TODO we do this other way
     def specify_predicate(expression)
       if(expression.type != Expression::PREDICATE)
         raise StandardError, "Do not give non-predicate expressions to this method."
@@ -180,7 +240,8 @@ module XQuery
         when Function::NOT
           value = FunctionProcessor.not(expression.parts[0])
         end
-      else
+        
+      else #
         raise StandardError, "not yet implemented"
         
       end

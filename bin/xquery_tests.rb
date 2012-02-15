@@ -26,11 +26,16 @@ query = "for $prod in doc(  \"catalog.xml\"  )/prod:catalog/product[position()<3
 query = "doc(  \"catalog.xml\"  )/prod:catalog/product[position()<3]/@dept[@dept = \"ACC\"]"
 query = "doc(  \"catalog.xml\"  )/catalog/product[position()<3]/@dept"
 query = "doc(  \"catalog.xml\"  )/catalog/product"
+query = "doc(  \"catalog.xml\"  )/catalog/*/@dept"
 
 puts "query: #{query}"
 
 results = xquery_controller.get_results(query)
-puts "whole result: #{results.inspect}"
+puts "whole result (#{results.length})"
+results.each { |result|
+  puts result
+  puts "---"
+}
 
 
 

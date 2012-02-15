@@ -102,6 +102,11 @@ module XQuery
   
   class Function < Expression
     
+    POSITION = :position
+    NOT = :not
+    TEXT = :text
+    DATA = :data
+    
     def initialize(parent, name, parameters=[])
       super(parent, Expression::FUNCTION, parameters)
       @name = name

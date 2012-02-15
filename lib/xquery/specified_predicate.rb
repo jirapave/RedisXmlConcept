@@ -1,4 +1,4 @@
-module XQuery
+module XQuery#DEPRICATED
   class SpecifiedPredicate
     
     #between more predicates
