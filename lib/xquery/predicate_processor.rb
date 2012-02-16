@@ -1,3 +1,5 @@
+require_relative "helper"
+
 module XQuery
   class PredicateProcessor
     
@@ -9,10 +11,30 @@ module XQuery
         case expr.type
         
         when Expression::BASIC
+          value = AtomicValue.new(expr.parts[0])
+          if(expr.parts[0] == '.')
+            value = AtomicValue.new(db_helper.get_node_content(context_key)) 
+          elsif(!Helper.is_number(expr.parts[0])) #element name
+            context_children_bean = db_helper.get_children(context_key)
+            elem_id = db_helper.get_elem_index(expr.parts[0])
+            elem_count = context_children_bean.elem_hash[elem_id]
+            if(elem_count == nil)
+              raise QueryStringError, "wrong element in predicate (#{expr.parts[0]})"
+            end
+            value = Sequence.new
+            elem_count.to_i.times { |i|
+              new_key = Transformer::KeyElementBuilder.build_from_s(context_key.elem(elem_id, i))
+              content = db_helper.get_node_content(new_key)
+              value.values << content
+            }
+            if(value.values.length == 1)
+              value = AtomicValue.new(value.values[0])
+            end
+          end
           if(last_val == nil)
-            last_val = AtomicValue.new(expr.parts[0])
+            last_val = value
           else
-            return BinaryOperator.evaluate(operator, last_val, AtomicValue.new(expr.parts[0]))
+            return BinaryOperator.evaluate(operator, last_val, value)
           end
         
         when Expression::ATOMIC_VALUE

@@ -1,5 +1,6 @@
 require_relative "query_string_error"
 require_relative "sequence"
+require_relative "helper"
 
 module XQuery
   class BinaryOperator
@@ -133,9 +134,9 @@ module XQuery
     end
     
     def self.try_coerce_solve(operator, param1, param2)
-      no1 = make_number(param1)
+      no1 = Helper.make_number(param1)
       if(no1 != nil)
-        no2 = make_number(param2)
+        no2 = Helper.make_number(param2)
         if(no2 != nil)
           param1 = no1
           param2 = no2 
@@ -159,14 +160,6 @@ module XQuery
         raise StandardError, "wrong operator #{operator}"
       end
       
-    end
-    
-    def self.make_number(param)
-      begin
-        Float(param)
-      rescue
-        nil
-      end
     end
     
   end

@@ -32,6 +32,7 @@ query = "for $prod in doc(  \"catalog.xml\"  )/prod:catalog/product[position()<3
 query = "doc(  \"catalog.xml\"  )/prod:catalog/product[position()<3]/@dept[@dept = \"ACC\"]"
 query = "doc(  \"catalog.xml\"  )/catalog/product[@dept = \"ACC\"]"
 query = "doc(  \"catalog.xml\"  )/catalog/*[2 < position()]/@dept"
+query = "doc(  \"catalog.xml\"  )/catalog/product/number[. = 443]"
 # query = "doc(  \"catalog.xml\"  )/catalog/product"
 # query = "doc(  \"catalog.xml\"  )/catalog/*/@dept"
 

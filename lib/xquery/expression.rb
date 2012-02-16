@@ -64,6 +64,9 @@ module XQuery
           @parts = []; @type = IN
         when "at"
           @parts = []; @type = AT
+        else
+          @parts = []
+          @parts << parts
         end
         puts "determined expression type #{@type}"
       end

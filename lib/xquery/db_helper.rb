@@ -81,10 +81,20 @@ module XQuery
     end
     
     def get_node(key)
-      if(key.kind_of?(Transformer::KeyElementBuilder))
-        return @xml_transformer.find_node(key)
-      end
-      return key      
+      return @xml_transformer.find_node(key)
+    end
+    
+    def get_node_content(key)
+      content = ""
+      key_array = get_children_plain(key)
+      key_array.each { |key|
+        if(Transformer::KeyElementBuilder.text?(key))
+          content << @db.get_hash_value(@content_hash_key, key)
+        else
+          content << get_node(Transformer::KeyElementBuilder.build_from_s(key)).to_s
+        end          
+      }
+      return content
     end
     
     def get_elem_index(elem_name)

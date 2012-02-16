@@ -10,7 +10,7 @@ module XQuery
       @type = type
     end
     
-    attr_accessor :value, :type
+    attr_accessor :values, :type
   end
   
   class AtomicValue
