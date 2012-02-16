@@ -1,6 +1,7 @@
 require_relative "function_processor"
 require_relative "specified_predicate"
 require_relative "db_helper"
+require_relative "predicate_processor"
 require_relative "../transformer/key_element_builder"
 require_relative "../base_interface/db_interface"
 
@@ -88,7 +89,7 @@ module XQuery
         
         if(elem_name == nil || elem_name.empty?) #element name is empty - search whole document from this state
           key_array.each { |key|
-            if(key.respond_to?(:document_key)) #
+            if(key.respond_to?(:document_key))
               new_key_array << @db_helper.root_key
             elsif(key.respond_to?(:root_key))
               new_key_array.concat(@db_helper.get_children_element_keys(key))
@@ -135,7 +136,7 @@ module XQuery
         else #element name is specified
           elem_id = @db_helper.get_elem_index(elem_name)
           
-          key_array.each { |key|
+          key_array.each_with_index { |key, index|
             puts "each #{key}"
             if(key.respond_to?(:document_key))
               if(@db_helper.root_key.root_name != elem_id)
@@ -147,9 +148,11 @@ module XQuery
               children_bean = @db_helper.get_children(key)
               elem_count = children_bean.elem_hash[elem_id]
               if(elem_count != nil)
-                puts "found"
                 elem_count.to_i.times { |i|
-                  new_key_array << Transformer::KeyElementBuilder.build_from_s(key.elem(elem_id, i))
+                  context_key = Transformer::KeyElementBuilder.build_from_s(key.elem(elem_id, i))
+                  if(predicate == nil || PredicateProcessor.evaluate(@db_helper, context_key, new_key_array.length + 1, predicate))
+                    new_key_array << context_key
+                  end
                 }
                 
               # else #this branch is blind, nothing adding to new_key_array
@@ -158,12 +161,6 @@ module XQuery
               raise StandardError, "wrong key format #{key.class}"
             end
             
-            #check predicates, then generate KeyElementBuilder objects from ChildrenBean and add them to result key_array and move on
-            #TODO check above, not here
-            if(predicate != nil)
-              raise StandardError, "not yet implemented"
-              #TODO iterate for predicate
-            end
           }
           
         end
@@ -235,7 +232,7 @@ module XQuery
           value = FunctionProcessor.not(expression.parts[0])
         end
         
-      else #
+      else
         raise StandardError, "not yet implemented"
         
       end

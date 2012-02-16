@@ -39,7 +39,7 @@ module XQuery
       if(pattern.respond_to?(:pattern))
         return pattern
       end
-      if(pattern.lentgh == 1 || pattern.length == 2)
+      if(pattern.length == 1 || pattern.length == 2)
         OPERATORS.each { |x|
            if(x.pattern == pattern)
              return x
@@ -51,9 +51,10 @@ module XQuery
     
     #operator can be String or OperatorEnum
     def self.evaluate(operator, param1, param2)#returns boolean
-      if(  param1.respond_to?(:type) && param1.respond_to?(:value) \
-        && param2.respond_to?(:type) && param2.respond_to?(:value))
-        fail StandardError, "wrong parameter type"
+      if(  !param1.respond_to?(:type) || !param2.respond_to?(:type) \
+        || (!param1.respond_to?(:value) && !param1.respond_to?(:values)) \
+        || (!param2.respond_to?(:value) && !param2.respond_to?(:values)) )
+        raise StandardError, "wrong parameter type" #parameters should be Sequences or AtomicValues
       end
       
       operator = which_operator(operator)
@@ -62,18 +63,110 @@ module XQuery
         raise StandardError, "operator is nil"
       end
       
-      if(param1.type == Sequence::ATOMIC_VALUE && param2.type == Sequence::ATOMIC_VALUE)
-        atomic_type1 = param1.value.type
-        atomic_type2 = param2.value.type
+      case operator
+      when GLOBAL_EQ, GLOBAL_NE, GLOBAL_GT, GLOBAL_GE, GLOBAL_LT, GLOBAL_LE
+        if(param1.respond_to?(:values))
+          param1.values.each { |value1|
+            if(param2.respond_to?(:values))
+              param2.values.each { |value2|
+                result = try_coerce_solve(operator, value1, value2)
+                return true if(result)
+              }
+            else
+              result = try_coerce_solve(operator, value1, param2.value)
+              return true if(result)
+            end
+          }
+        else
+          if(param2.respond_to?(:values))
+            param2.values.each { |value2|
+              result = try_coerce_solve(operator, param1.value, value2)
+              return true if(result)
+            }
+          else
+            return try_coerce_solve(operator, param1.value, param2.value)
+          end
+        end
+        return false
+        
+      when VALUE_EQ, VALUE_NE, VALUE_GT, VALUE_GE, VALUE_LT, VALUE_LE
+        if(param1.respond_to?(:values) || param2.respond_to?(:values))
+          raise TypeError.new("parameters cannot be sequences - maybe you want to use a GLOBAL comparison")
+        end
+        param1.value = normalize_value_type(param1)
+        param2.value = normalize_value_type(param2)
+        if(param1.type == param2.type)
+          raise TypeError.new("parameters are different type - maybe you want to use a GLOBAL comparison")
+        end
+        return value_comparison(operator, param1.value, param2.value)
       else
-        fail StandardError, "non-atomic value comparisons not yet supported"
+        fail StandardError, "to be implemented"
+        
+      end
+      
+    end
+    
+    
+    def self.normalize_value_type(param)
+      if(param.type == AtomicValue::UNTYPED)
+        return param.value.to_s
+      end
+      return param.value
+    end
+    
+    def self.value_comparison(operator, param1, param2)
+      case operator
+      when VALUE_EQ
+        return param1 == param2
+      when VALUE_NE
+        return param1 != param2
+      when VALUE_GT
+        return param1 > param2
+      when VALUE_GE
+        return param1 >= param2
+      when VALUE_LT
+        return param1 < param2
+      when VALUE_LE
+        return param1 <= param2
+      else
+        raise StandardError, "wrong operator #{operator}"
+      end
+    end
+    
+    def self.try_coerce_solve(operator, param1, param2)
+      no1 = make_number(param1)
+      if(no1 != nil)
+        no2 = make_number(param2)
+        if(no2 != nil)
+          param1 = no1
+          param2 = no2 
+        end
       end
       
       case operator
       when GLOBAL_EQ
-        
-        #TODO
-        
+        return param1 == param2
+      when GLOBAL_NE
+        return param1 != param2
+      when GLOBAL_GT
+        return param1 > param2
+      when GLOBAL_GE
+        return param1 >= param2
+      when GLOBAL_LT
+        return param1 < param2
+      when GLOBAL_LE
+        return param1 <= param2
+      else
+        raise StandardError, "wrong operator #{operator}"
+      end
+      
+    end
+    
+    def self.make_number(param)
+      begin
+        Float(param)
+      rescue
+        nil
       end
     end
     

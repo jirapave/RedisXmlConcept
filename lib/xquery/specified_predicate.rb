@@ -1,35 +1,53 @@
-module XQuery#DEPRICATED
-  class SpecifiedPredicate
+module XQuery
+  class SpecifiedPredicate #DEPRICATED
     
     #between more predicates
     LOGIC_AND = :and
     LOGIC_OR = :or
     
-  end
-  
-  class IndexPredicate < SpecifiedPredicate
-    
-    #will be added instead of last index
-    AND_MORE = :and_more
-    AND_LESS = :and_less
-    
-    def initialize(*indexes)
-      @indexes = indexes
+    def initialize(db_helper, *predicate_expressions)
+      
+      predicate_values = []
+      predicate_expressions.each { |expr|
+        case expr.type
+        
+        when Expression::BASIC
+          predicate_values << expr.parts[0]
+          
+        when Expression::FUNCTION
+          predicate_values << PredicateFunction.new(expr.name, expr.parts)
+          
+        when Expression::BINARY_OPERATOR
+          
+          
+        end
+      }
+      
+      
     end
     
-    attr_accessor :indexes
-    
   end
   
-  class AttributePredicate < SpecifiedPredicate
+  class PredicateFunction
     
-    #attr_hash will contain attribute name as key and true/false if this attribute is allowed in result
-    def initialize(attr_hash)
-      @attributes = attr_hash
+    def initialize(name, *parameters)
+      #parameters TODO to be implemented
+      @name = name
+      @get_value = nil
+      
+      case name
+      when Function::POSITION
+        @get_value = Proc.new { |position|
+          position
+        }
+        
+      else
+        fail StandardError, "function #{name} not implemented"
+      end
+      
     end
     
-    attr_accessor :attributes
+    attr_reader :get_value
     
   end
-  
 end

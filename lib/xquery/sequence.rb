@@ -5,8 +5,8 @@ module XQuery
     ATOMIC_VALUE = :atomic
     NODE = :node #the "xml/node" one
     
-    def initialize(value=[], type=SEQUENCE)
-      @value = value # array of sequences
+    def initialize(values=[], type=SEQUENCE)
+      @values = values # array of sequences
       @type = type
     end
     
