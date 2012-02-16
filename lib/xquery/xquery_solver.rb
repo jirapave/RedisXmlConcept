@@ -82,9 +82,9 @@ module XQuery
         end
       end
       
-      if(expression.respond_to?(:parts) && expression.parts.respond_to?(:each) && !expression.parts.empty?)
+      if(expression.kind_of?(Expression) && expression.parts.kind_of?(Array) && !expression.parts.empty?)
         expression.parts.each { |part|
-          if(part.respond_to?(:parts))
+          if(part.kind_of?(Expression))
             reduce_groups(part)
           end
         }

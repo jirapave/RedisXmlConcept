@@ -44,7 +44,7 @@ module XQuery
             if(last_val == nil)
               last_val = AtomicValue.new(position, AtomicValue::NUMERIC)
             else
-              return BinaryOperator.evaluate(operator, last_val, position)
+              return BinaryOperator.evaluate(operator, last_val, AtomicValue.new(position, AtomicValue::NUMERIC))
             end
             
           else

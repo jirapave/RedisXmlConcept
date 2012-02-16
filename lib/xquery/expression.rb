@@ -48,7 +48,7 @@ module XQuery
       end
       
       # determine keyword
-      if(type == BASIC && parts.respond_to_missing?(:each, false))
+      if(type == BASIC && !parts.kind_of?(Array))
         case parts
         when "for"
           @parts = []; @type = FOR
@@ -77,13 +77,13 @@ module XQuery
     def walkthrough(tab_count=0)
       (tab_count*TAB_LENGTH).times { printf(" ")  }
       print_self
-      if(@parts.respond_to?(:each))
+      if(@parts.kind_of?(Array))
         @parts.each { |part|
-          if(part.respond_to?(:walkthrough))
+          if(part.kind_of?(Expression))
             part.walkthrough(tab_count + 1)
           else
             ((tab_count+1)*TAB_LENGTH).times { printf(" ")  }
-            if(part.respond_to?(:value) && part.respond_to?(:type))
+            if(part.kind_of?(AtomicValue))
               puts "Atomic value: #{part.value}, type: #{part.type}"
             else
               puts "Atomic value: #{part}"

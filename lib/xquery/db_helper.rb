@@ -81,7 +81,7 @@ module XQuery
     end
     
     def get_node(key)
-      if(key.respond_to?(:root_key))
+      if(key.kind_of?(Transformer::KeyElementBuilder))
         return @xml_transformer.find_node(key)
       end
       return key      

@@ -12,10 +12,10 @@
 		<number>443</number>
 		<name language="en">Deluxe Travel Bag</name>
 	</product>
-	<produc dept="MEN">
+	<product dept="MEN">
 		<number>784</number>
 		<name language="en">Cotton Dress Shirt</name>
 		<colorChoices>white gray</colorChoices>
 		<desc>Our <i>favorite</i> shirt!</desc>
-	</produc>
+	</product>
 </catalog>

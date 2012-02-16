@@ -31,7 +31,7 @@ xquery_controller = XQuery::XQueryController.new(database, collection)
 query = "for $prod in doc(  \"catalog.xml\"  )/prod:catalog/product[position()<3]/@dept[1]  where $prod/@dept<=\"ACC\" order by $prod/name return $prod/name"
 query = "doc(  \"catalog.xml\"  )/prod:catalog/product[position()<3]/@dept[@dept = \"ACC\"]"
 query = "doc(  \"catalog.xml\"  )/catalog/product[@dept = \"ACC\"]"
-# query = "doc(  \"catalog.xml\"  )/catalog/product[position()<3]/@dept"
+query = "doc(  \"catalog.xml\"  )/catalog/*[2 < position()]/@dept"
 # query = "doc(  \"catalog.xml\"  )/catalog/product"
 # query = "doc(  \"catalog.xml\"  )/catalog/*/@dept"
 

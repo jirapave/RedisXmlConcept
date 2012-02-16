@@ -36,7 +36,7 @@ module XQuery
       if(pattern == nil)
         fail StandardError, "pattern cannot be nil"
       end
-      if(pattern.respond_to?(:pattern))
+      if(pattern.kind_of?(OperatorEnum))
         return pattern
       end
       if(pattern.length == 1 || pattern.length == 2)
@@ -51,9 +51,8 @@ module XQuery
     
     #operator can be String or OperatorEnum
     def self.evaluate(operator, param1, param2)#returns boolean
-      if(  !param1.respond_to?(:type) || !param2.respond_to?(:type) \
-        || (!param1.respond_to?(:value) && !param1.respond_to?(:values)) \
-        || (!param2.respond_to?(:value) && !param2.respond_to?(:values)) )
+      if(  (!param1.kind_of?(AtomicValue) && !param1.kind_of?(Sequence)) \
+        || (!param2.kind_of?(AtomicValue) && !param2.kind_of?(Sequence)) )
         raise StandardError, "wrong parameter type" #parameters should be Sequences or AtomicValues
       end
       
@@ -65,9 +64,9 @@ module XQuery
       
       case operator
       when GLOBAL_EQ, GLOBAL_NE, GLOBAL_GT, GLOBAL_GE, GLOBAL_LT, GLOBAL_LE
-        if(param1.respond_to?(:values))
+        if(param1.kind_of?(Sequence))
           param1.values.each { |value1|
-            if(param2.respond_to?(:values))
+            if(param2.kind_of?(Sequence))
               param2.values.each { |value2|
                 result = try_coerce_solve(operator, value1, value2)
                 return true if(result)
@@ -78,7 +77,7 @@ module XQuery
             end
           }
         else
-          if(param2.respond_to?(:values))
+          if(param2.kind_of?(Sequence))
             param2.values.each { |value2|
               result = try_coerce_solve(operator, param1.value, value2)
               return true if(result)
@@ -90,7 +89,7 @@ module XQuery
         return false
         
       when VALUE_EQ, VALUE_NE, VALUE_GT, VALUE_GE, VALUE_LT, VALUE_LE
-        if(param1.respond_to?(:values) || param2.respond_to?(:values))
+        if(param1.kind_of?(Sequence) || param2.kind_of?(Sequence))
           raise TypeError.new("parameters cannot be sequences - maybe you want to use a GLOBAL comparison")
         end
         param1.value = normalize_value_type(param1)
