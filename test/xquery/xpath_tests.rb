@@ -25,7 +25,7 @@ module XQuery
               new_result = result.to_stripped_s
             end
             if(new_result != @results[index])
-              puts "query: #{query}, result expected: #{@results[index]}, result found: #{result.to_stripped_s}"
+              puts "query: #{query}, result expected: #{@results[index]}, result found: #{new_result}"
               return false
             end
           }
@@ -40,8 +40,16 @@ module XQuery
     TEST_CASES = [
       TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. = 443]",
         ["<number>443</number>"]),
+      TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[.=443]",
+        ["<number>443</number>"]),
       TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. >= 563]",
         ["<number>563</number>", "<number>784</number>"]),
+      TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. > 563]",
+        ["<number>784</number>"]),
+      TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. <= 563]",
+        ["<number>557</number>", "<number>563</number>", "<number>443</number>"]),
+      TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. < 563]",
+        ["<number>557</number>", "<number>443</number>"]),
       TestCase.new("doc(\"catalog.xml\")/catalog/product[number = 443]/@dept",
         ["ACC"]), 
       TestCase.new("doc(\"catalog.xml\")/catalog/product[number =443]/@dept",
@@ -49,7 +57,27 @@ module XQuery
       TestCase.new("doc(\"catalog.xml\")/catalog/product[number= 443]/@dept",
         ["ACC"]),
       TestCase.new("doc(\"catalog.xml\")/catalog/product[number=443]/@dept",
-        ["ACC"])
+        ["ACC"]),
+      TestCase.new("doc(\"catalog.xml\")//product[number=443]/@dept",
+        ["ACC"]),
+      TestCase.new("doc(\"catalog.xml\")/catalog/*[number=443]/@dept",
+        ["ACC"]),
+      TestCase.new("doc(\"catalog.xml\")/catalog/*[@dept = 'ACC']/@dept",
+        ["ACC", "ACC"]),
+      TestCase.new("doc(\"catalog.xml\")/catalog/*[@dept = \"ACC\"]/@dept",
+        ["ACC", "ACC"]),
+      TestCase.new("doc(\"catalog.xml\")//@dept",
+        ["WMN", "ACC", "ACC", "MEN"]),
+      TestCase.new("doc(\"catalog.xml\")//product[last()]",
+        ["<product dept=\"MEN\"><number>784</number><name language=\"en\">Cotton Dress Shirt</name><colorChoices>white gray</colorChoices><desc>Our<i>favorite</i>shirt!</desc></product>"]),
+      TestCase.new("doc(\"catalog.xml\")//product[position() >= 4]",
+        ["<product dept=\"MEN\"><number>784</number><name language=\"en\">Cotton Dress Shirt</name><colorChoices>white gray</colorChoices><desc>Our<i>favorite</i>shirt!</desc></product>"]),
+      TestCase.new("doc(\"catalog.xml\")//product[position() > 3]",
+        ["<product dept=\"MEN\"><number>784</number><name language=\"en\">Cotton Dress Shirt</name><colorChoices>white gray</colorChoices><desc>Our<i>favorite</i>shirt!</desc></product>"]),
+      TestCase.new("doc(\"catalog.xml\")//product[3 < position()]",
+        ["<product dept=\"MEN\"><number>784</number><name language=\"en\">Cotton Dress Shirt</name><colorChoices>white gray</colorChoices><desc>Our<i>favorite</i>shirt!</desc></product>"]),
+      TestCase.new("doc(\"catalog.xml\")//product[last()]/name/text()",
+        ["Cotton Dress Shirt"])
       
     ] 
     

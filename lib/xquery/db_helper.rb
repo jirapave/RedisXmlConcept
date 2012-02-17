@@ -24,7 +24,6 @@ module XQuery
       @xml_transformer.content_hash = @content_hash_key
       
       #load root key - KeyElementBuilder object
-      puts @mapping_hash.inspect
       @root_key = Transformer::KeyElementBuilder.create(info_hash["root"])
       
     end
@@ -77,7 +76,7 @@ module XQuery
     end
     
     def get_text(key)
-      get_children(key).get_text
+      get_children(key).get_text(@db, @content_hash_key)
     end
     
     def get_node(key)
@@ -106,17 +105,17 @@ module XQuery
   
   class ChildrenBean
     
-    attr_reader :elem_str_keys, :base_key, :elem_hash, :text_array
+    attr_reader :elem_str_keys, :context_key, :elem_hash, :text_key_array
     
-    def initialize(base_key, key_str_array)
-      @base_key = base_key
+    def initialize(context_key, key_str_array)
+      @context_key = context_key
       @elem_hash = Hash.new #key: elem_name, value: elem_count
-      @text_array = [] #array of key_str
+      @text_key_array = [] #array of key_str
       @elem_str_keys = []
       
       key_str_array.each { |key_str|
         if(Transformer::KeyElementBuilder.text?(key_str))
-          @text_array << key_str
+          @text_key_array << key_str
         else
           @elem_str_keys << key_str
           key = Transformer::KeyElementBuilder.build_from_s(key_str)
@@ -125,10 +124,12 @@ module XQuery
       }
     end
     
-    def get_text
+    def get_text(db_interface, content_hash_key)
       text = ""
-      @text_array.each { |t|
-        text << t
+      @text_key_array.each { |text_key|
+        text_content = db_interface.get_hash_value(content_hash_key, text_key)
+        #TODO strip, really?
+        text << text_content.strip
       }
       return text
     end

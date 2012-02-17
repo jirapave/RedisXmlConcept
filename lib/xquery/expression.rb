@@ -107,6 +107,7 @@ module XQuery
   class Function < Expression
     
     POSITION = :position
+    LAST = :last
     NOT = :not
     TEXT = :text
     DATA = :data

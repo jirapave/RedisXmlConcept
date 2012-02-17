@@ -84,7 +84,6 @@ module XQuery
       if(@last_step)
         raise QueryStringError, "additional step (after attribute, function, ... step) is not allowed"
       end
-      puts "incomming key_array in next: #{key_array.inspect}"
       
       new_key_array = []
       
@@ -94,8 +93,29 @@ module XQuery
         #check predicate
         predicate = (step.parts.length > 1 && step.parts[1].type == Expression::PREDICATE) ? step.parts[1] : nil
         
-        predicated_addition = Proc.new { |context_key, position|
-          if(predicate == nil || PredicateProcessor.evaluate(@db_helper, context_key, position, predicate))
+        #is there a function?
+        if(elem_name.kind_of?(Expression) && elem_name.type == Expression::FUNCTION)#text(), data() ?
+          @last_step = true
+        
+          case elem_name.name
+          when "#{Function::TEXT}"
+            key_array.each { |key|
+              #TODO maybe handle predicate?
+              text_content = @db_helper.get_text(key)
+              if(!text_content.empty?)
+                new_key_array << text_content
+              end
+            }
+            
+          else
+            raise StandardError, "not yet implemented"
+          end
+          
+          return new_key_array
+        end
+        
+        predicated_addition = Proc.new { |context_key, position, max_position|
+          if(predicate == nil || PredicateProcessor.evaluate(@db_helper, context_key, position, max_position, predicate))
             new_key_array << context_key
           end
         }
@@ -127,11 +147,10 @@ module XQuery
           
         elsif(elem_name == '*') #wildcard for this hierarchy level elements
           key_array.each { |key|
-            puts "each #{key}"
             if(key.kind_of?(Transformer::KeyElementBuilder))
               children_element_keys = @db_helper.get_children_element_keys(key)
               children_element_keys.each_with_index { |key, index|
-                predicated_addition.call(key, index + 1)
+                predicated_addition.call(key, index + 1, children_element_keys.length)
               }
             else
               new_key_array << @db_helper.root_key
@@ -145,7 +164,6 @@ module XQuery
           elem_id = @db_helper.get_elem_index(elem_name)
           
           key_array.each_with_index { |key, index|
-            puts "each #{key}"
             if(key.kind_of?(Transformer::KeyElementBuilder))
               #restriction according previous step children
               children_bean = @db_helper.get_children(key)
@@ -153,7 +171,7 @@ module XQuery
               if(elem_count != nil)
                 elem_count.to_i.times { |i|
                   context_key = Transformer::KeyElementBuilder.build_from_s(key.elem(elem_id, i))
-                  predicated_addition.call(context_key, i + 1)
+                  predicated_addition.call(context_key, i + 1, elem_count.to_i)
                 }
               end
               
@@ -182,15 +200,27 @@ module XQuery
         
       elsif(step.subtype == Expression::FUNCTION) #data, text? TODO
         @last_step = true
-        #TODO
-        raise StandardError, "not yet implemented"
+        
+        case step.name
+        when "#{Function::TEXT}"
+          key_array.each { |key|
+            children_bean = @db_helper.get_children(key)
+            text_content = children_bean.text_array.join.strip #TODO strip, really?
+            if(!text_content.empty?)
+              new_key_array << text_content
+            end
+          }
+          
+          
+        else
+          raise StandardError, "not yet implemented"
+        end
         
       else
         raise QueryStringError, "wrong step type (or unknown by this parser)"
         
       end
       
-      puts "   generated #{new_key_array.inspect}"
       return new_key_array
     end
     
