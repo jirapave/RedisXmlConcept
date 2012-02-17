@@ -139,7 +139,7 @@ module XQuery
         no2 = Helper.make_number(param2)
         if(no2 != nil)
           param1 = no1
-          param2 = no2 
+          param2 = no2
         end
       end
       

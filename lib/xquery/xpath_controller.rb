@@ -30,7 +30,12 @@ module XQuery
       #return last step results - strings(atomic values)/elements - greedily loaded
       results = []
       key_array.each { |key|
-        results << @db_helper.get_node(key)
+        if(key.kind_of?(Transformer::KeyElementBuilder))
+          results << @db_helper.get_node(key)
+        else
+          results << key
+        end
+        
       }
       
       return results

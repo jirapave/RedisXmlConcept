@@ -5,6 +5,8 @@ require_relative "../lib/xquery/xquery_controller"
 require_relative "../lib/xml/sax_document"
 require_relative "../lib/xquery/binary_operator"
 require_relative "../lib/xquery/sequence"
+require_relative "../lib/xml/node"
+
 require "rubygems"
 require "nokogiri"
 
@@ -33,6 +35,7 @@ query = "doc(  \"catalog.xml\"  )/prod:catalog/product[position()<3]/@dept[@dept
 query = "doc(  \"catalog.xml\"  )/catalog/product[@dept = \"ACC\"]"
 query = "doc(  \"catalog.xml\"  )/catalog/*[2 < position()]/@dept"
 query = "doc(  \"catalog.xml\"  )/catalog/product/number[. = 443]"
+query = "doc(\"catalog.xml\")/catalog/product[number >= 563]/@dept"
 # query = "doc(  \"catalog.xml\"  )/catalog/product"
 # query = "doc(  \"catalog.xml\"  )/catalog/*/@dept"
 
@@ -42,7 +45,12 @@ puts "query: #{query}"
 results = xquery_controller.get_results(query)
 puts "whole result (#{results.length})"
 results.each { |result|
-  puts result
+  if(result.kind_of?(XML::Node))
+    puts result.to_stripped_s
+  else
+    puts result
+  end
+  
   puts "---"
 }
 
