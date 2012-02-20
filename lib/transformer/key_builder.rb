@@ -15,6 +15,7 @@ module Transformer
       #TODO There should be some error if no mapping is found
       if (map_names)
         @mapping = Transformer::MappingHelper.map_env_coll_doc(env_name, coll_name, doc_name)
+        @mapping_service = Transformer::MappingHelper.create(self)
         @env_id = @mapping["env"]
         @coll_id = @mapping["coll"]
         @doc_id = @mapping["doc"]
@@ -88,7 +89,8 @@ module Transformer
 
     # root returns KeyElementBuilder, which require root element to initialize
     # that there is possible to create element_keys and so on    
-    def root(root_name):KeyElementBuilder
+    def root(root_name, map_names = true):KeyElementBuilder
+      root_name = @mapping_service.unmap_elem_name(root_name) unless map_names
       KeyElementBuilder.create(self, root_name)
     end
     

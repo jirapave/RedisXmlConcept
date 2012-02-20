@@ -8,7 +8,7 @@ module RedXmlApi
     end
     
     def save_document(file_name)
-      
+      @doc_service.save_document(file_name)
     end
     
     def delete_document(file_name)
@@ -20,7 +20,7 @@ module RedXmlApi
     end
     
     def get_document(file_name)
-      
+      @doc_service.find_document(file_name)
     end
     
     def get_all_documents()

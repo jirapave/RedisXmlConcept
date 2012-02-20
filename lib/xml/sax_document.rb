@@ -16,7 +16,8 @@ module XML
   #This class is part of Observer pattern as an Observable. It's observer is document_service.
   class SaxDocument < Nokogiri::XML::SAX::Document
     include Observable 
-    def initialize(service)
+    def initialize(service, mapping)
+      @mapping_service = mapping
       #Service will be responsible for handling saving, we will notify it when we have complete tag loaded
       add_observer service 
       #Incomplete nodes are held in stack until end_tag arrives for them
@@ -29,6 +30,8 @@ module XML
       @root_element = true
       #Element names mapping to id
       @elem_mapping = {}
+      #Attribute names mapping to id
+      @attr_mapping = {}
     end
     
     def start_document()
@@ -78,7 +81,8 @@ module XML
       
       attributes = {}
       attrs.each do |attr|
-        attributes[attr.localname] = attr.value
+        attr_id = rename_attr(attr.localname)
+        attributes["#{attr_id}"] = attr.value
       end
       
       @current_tag.attributes = XML::Attributes.new(name, attributes)
@@ -104,7 +108,7 @@ module XML
         if(info.length < 2)
           key = "#{info[0]}"
         else
-          key = Transformer::KeyElementBuilder.build_from_s(key.to_s).elem(info[0], info[1])
+          key = Transformer::KeyElementBuilder.build_from_s(@mapping_service.key_builder, key.to_s).elem(info[0], info[1], false)
         end
       end
       
@@ -112,7 +116,7 @@ module XML
       if(key == "")
         key = "#{name}"
       else
-        key = Transformer::KeyElementBuilder.build_from_s(key.to_s).elem(name, order)
+        key = Transformer::KeyElementBuilder.build_from_s(@mapping_service.key_builder, key.to_s).elem(name, order, false)
       end
       
       @current_tag.database_key = key
@@ -143,9 +147,10 @@ module XML
       @path.each do |path|
         info = path.split('>')
         if(info.length < 2)
-          key = Transformer::KeyBuilder.root(info[0])
+          #false means that first argument info[0] will not be mapped to id, e.g. is already id
+          key = @mapping_service.key_builder.root(info[0], false)
         else
-          key.elem!(info[0], info[1].to_i)
+          key.elem!(info[0], info[1].to_i, false)
         end
       end
       
@@ -168,9 +173,20 @@ module XML
     #otherwise it creates new hash value with id based on size of hash
     def rename_elem(name)
       if (@elem_mapping[name] == nil)
-        @elem_mapping[name] = "#{@elem_mapping.length}"
+        elem_id = @mapping_service.create_elem_mapping(name)
+        puts "Mapping of element failed, this should not happend." unless elem_id
+        @elem_mapping[name] = elem_id
       end
       return @elem_mapping[name]
+    end
+    
+    def rename_attr(name)
+      if (@attr_mapping[name] == nil)
+        attr_id = @mapping_service.create_attr_mapping(name)
+        puts "Mapping of element failed, this should not happend." unless attr_id
+        @attr_mapping[name] = attr_id
+      end
+      return @attr_mapping[name]
     end
   end
 end

@@ -13,11 +13,12 @@ module Transformer
   #This class is part of Observer pattern as Notifier, it get's notified by XML::SaxDocument class.
   class DocumentService < Notifier
     def initialize(env_name, coll_name)
-      @xml_transformer = Transformer::XMLTransformer.new()
+      @xml_transformer = nil
       @db_interface = BaseInterface::DBInterface.instance
       @doc_key = Transformer::KeyBuilder.documents_key(env_name, coll_name)
       @env_name = env_name
       @coll_name = coll_name
+      @builder = nil
     end
     
     #This method gets called when a whole element or document information is retrived during
@@ -25,8 +26,6 @@ module Transformer
     def update(value)
       if value.instance_of? Array
           #Document information are here, [version, encoding, standalone]
-          
-          #document_info don't work yet
           key = @builder.info()
           field_values = []
           field_values << "name" << @doc_name
@@ -60,7 +59,6 @@ module Transformer
     #Method will save a given file to the given database under the given collection if it doensn't
     #already exist. SAX parser is used to parse an XML file.
     def save_document(file_name)
-      @xml_transformer = Transformer::XMLTransformer.new()
       puts "Does document exist?"
       doc_id = @db_interface.increment_hash(@doc_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
       result = @db_interface.add_to_hash_ne(@doc_key, file_name, doc_id)
@@ -68,12 +66,14 @@ module Transformer
       
       puts "No, proceeding with saving..."
       
-      builder = Transformer::KeyBuilder.create(@env_name, @coll_name, file_name)
+      @builder = Transformer::KeyBuilder.create(@env_name, @coll_name, file_name)
+      @xml_transformer = Transformer::XMLTransformer.new(@builder)
       info = [file_name, doc_id]
       puts "Saving document: #{info.inspect}"
-      @xml_transformer.content_hash = @builder.content_key
       #Now file is saved, we have it's id and we can know proceed to parsing
-      parser = Nokogiri::XML::SAX::Parser.new(XML::SaxDocument.new(self))
+      mapping = Transformer::MappingHelper.create(@builder)
+      parser = Nokogiri::XML::SAX::Parser.new(XML::SaxDocument.new(self, mapping))
+      @doc_name = file_name
       # parser = Nokogiri::XML::SAX::Parser.new(XML::ConsoleSaxDocument.new)
       
       #Main idea here is to SAX parser, events should be handled by SaxDocument, which
@@ -81,12 +81,10 @@ module Transformer
       #can use XmlTranformer to save it.
       puts "Parsing in progress..."
       
-      #TODO check functionality
       @db_interface.commit_after do
         parser.parse(File.open(file_name, 'rb'))
       end
       
-      puts "Done parsing"
       puts "Document saved"
     end
     
@@ -96,7 +94,8 @@ module Transformer
     
     #Finds a document under the specified database and collection, returns XML::Document with whole DOM loaded.
     def find_document(file_name)#:XML::Document
-      @xml_transformer = Transformer::XMLTransformer.new()
+      @builder = Transformer::KeyBuilder.create(@env_name, @coll_name, file_name)
+      @xml_transformer = Transformer::XMLTransformer.new(@builder)
       #TODO Probably useless, when creating keey  with KeyBuilder, mapping helper would
       #raise an exception when file does not exist
       file_id = document_exist?(file_name)
@@ -105,14 +104,7 @@ module Transformer
         puts "Document with name #{file_name} not found."
         return nil
       end
-      
-      key = Transformer::KeyBuilder.create(@env_name, @coll_name, file_name)
-      
-      mapping_key = key.mapping_key()
-      mapping_hash = @db_interface.find_value(mapping_key)
-      @xml_transformer.mapping = mapping_hash
-      @xml_transformer.content_hash = key.content_key
-      return @xml_transformer.find_node(key)
+      return @xml_transformer.find_node(@builder)
     end
       
     def remove_document(document)
@@ -160,12 +152,6 @@ module Transformer
       end
       
       return file_id
-    end
-    
-    class MappingException < StandardError
-      def message
-        "Error has occured during mapping name to id"
-      end
     end
     
   end

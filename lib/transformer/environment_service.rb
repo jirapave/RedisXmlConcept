@@ -1,5 +1,6 @@
 require_relative "../base_interface/db_interface"
 require_relative "key_builder"
+require_relative "exceptions"
 
 module Transformer
   class EnvironmentService
@@ -14,7 +15,7 @@ module Transformer
       env_key = Transformer::KeyBuilder.environments_key()
       env_id = @db_interface.increment_hash(env_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
       result = @db_interface.add_to_hash_ne(env_key, name, env_id)
-      raise MappingException, "Environment with such a name already exist." unless result
+      raise Transformer::MappingException, "Environment with such a name already exist." unless result
       result
     end
     
@@ -32,12 +33,6 @@ module Transformer
     
     def rename_environment(old_name, name)
       
-    end
-    
-    class MappingException < StandardError
-      def message
-        "Error has occured during mapping name to id"
-      end
     end
   end
 end

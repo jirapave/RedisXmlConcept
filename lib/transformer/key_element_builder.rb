@@ -6,27 +6,31 @@ module Transformer
     private_class_method :new
     
     SEPARATOR = ":"
+    ITERATOR_KEY = "<iterator>"
     
     attr_reader :root_key, :root_name
 
-    def initialize(key_builder, root_name)
-      @mapping_helper = Transformer::MappingHelper.create(key_builder)
+    def initialize(key_builder, root_name, map_names = true)
+      @mapping_service = Transformer::MappingHelper.create(key_builder)
+      root_name = @mapping_service.unmap_elem_name(root_name) unless map_names
       @root_name = root_name
-      @root_key = "#{@mapping_helper.map_elem_name(@root_name)}"
+      @root_key = "#{@mapping_service.map_elem_name(@root_name)}"
       @elem_str = ""
     end
     
-    def self.create(doc_content_key, root_name)#:KeyElementBuilder
-      new(doc_content_key, root_name)
+    def self.create(key_builder, root_name, map_names = true)#:KeyElementBuilder
+      new(key_builder, root_name, map_names)
     end
     
-    def elem!(elem_name, order)#:KeyElementBuilder
-      @elem_str += "#{SEPARATOR}#{@mapping_helper.map_elem_name(elem_name)}>#{order}"
+    def elem!(elem_name, order, map_names = true)#:KeyElementBuilder
+      elem_name = @mapping_service.map_elem_name(elem_name) if map_names
+      @elem_str += "#{SEPARATOR}#{elem_name}>#{order}"
       return self
     end
     
-    def elem(elem_name, order)#:String
-      "#{self.to_s}#{SEPARATOR}#{@mapping_helper.map_elem_name(elem_name)}>#{order}"
+    def elem(elem_name, order, map_names = true)#:String
+      elem_name = @mapping_service.map_elem_name(elem_name) if map_names
+      "#{self.to_s}#{SEPARATOR}#{elem_name}>#{order}"
     end
 
     def attr()#:String
@@ -116,7 +120,7 @@ module Transformer
     
     def elem_name()#:String
       if(@elem_str.empty?)
-        return @root_name
+        return @root_key
       else
         dd_split = @elem_str.split(SEPARATOR)
         return dd_split[dd_split.length-1].split('>')[0]
@@ -168,7 +172,7 @@ module Transformer
       return gt_split[-2] == "t"
     end
           
-    def self.build_from_s(key_str)#:KeyElementBuilder
+    def self.build_from_s(key_builder, key_str)#:KeyElementBuilder
       key_split = key_str.split(SEPARATOR)
       if(key_split.length < 1)
         raise NotEnoughParametersError, "#{key_str} cannot be parsed."
@@ -176,14 +180,14 @@ module Transformer
       
       root = key_split[0]
       
-      instance = new(root)
+      instance = Transformer::KeyElementBuilder.create(key_builder, root, false)
       if key_split.length > 1
         (1..key_split.length-1).each { |index|
           splitted_split = key_split[index].split(">")
           if(splitted_split.length < 2)
             break
           end
-          instance.elem!(splitted_split[0], splitted_split[1].to_i)
+          instance.elem!(splitted_split[0], splitted_split[1].to_i, false)
         }
       end
       

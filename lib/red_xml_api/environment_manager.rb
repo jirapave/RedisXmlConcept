@@ -11,7 +11,7 @@ module RedXmlApi
       begin
         @env_service.create_environment(name)
         return Environment.new(name)
-      rescue MappingException => ex
+      rescue Transformer::MappingException => ex
         puts ex.message
         puts "No environment was created."
       end

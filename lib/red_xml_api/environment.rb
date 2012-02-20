@@ -15,7 +15,7 @@ module RedXmlApi
       begin
         @coll_service.create_collection(name)
         return Collection.new(@name, name)
-      rescue MappingException => ex
+      rescue Transformer::MappingException => ex
         puts ex.message
         puts "No environment was created."
       end

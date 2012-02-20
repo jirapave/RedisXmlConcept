@@ -1,6 +1,6 @@
 require_relative "key_builder"
 
-module Trannsformer
+module Transformer
   class CollectionService
     def initialize(env_name)
       @env_name = env_name
@@ -11,7 +11,7 @@ module Trannsformer
     def create_collection(name)
       coll_id = @db_interface.increment_hash(@coll_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
       result = @db_interface.add_to_hash_ne(@coll_key, name, coll_id)
-      raise MappingException, "Collection with such a name already exist." unless result
+      raise Transformer::MappingException, "Collection with such a name already exist." unless result
       result
     end
     
@@ -29,12 +29,6 @@ module Trannsformer
     
     def get_all_collections()
       
-    end
-    
-    class MappingException < StandardError
-      def message
-        "Error has occured during mapping name to id"
-      end
     end
   end
 end
