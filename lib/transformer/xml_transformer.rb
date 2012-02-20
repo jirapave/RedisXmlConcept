@@ -9,16 +9,10 @@ module Transformer
   #Prefixes of databases and collection didn't affect transformer, each Node know it's
   #key, e.g. collection and database
   class XMLTransformer
-    attr_accessor :database, :collection, :mapping, :content_hash
-    def initialize(database=-1, collection=-1)
+    attr_accessor :mapping, :content_hash
+    def initialize()
       db = BaseInterface::DBInterface.instance
       @db_interface = db
-      @builder = Transformer::KeyElementBuilder
-      #Deprecated, we don't need them any more
-      #TODO refactoring needed
-      @database = database
-      @collection = collection
-      @mapping = {}
       @content_hash = ""
     end
     
@@ -26,7 +20,7 @@ module Transformer
     #Parameters:
     #key - Transformer::Key
     def find_node(key):Node
-      if(key.instance_of? Transformer::Key)
+      if(key.instance_of? Transformer::KeyBuilder)
         
         # temp = @db_interface.find_value(key.content_key)
         # puts "mapping====="
@@ -155,8 +149,8 @@ module Transformer
         attributes << key << "|" << value << "|"
         iter +=  1
       end
-      @builder = Transformer::KeyElementBuilder.build_from_s(key)
-      attr_key = @builder.attr
+      builder = Transformer::KeyElementBuilder.build_from_s(key)
+      attr_key = builder.attr
       @db_interface.add_to_hash(main_hash, [attr_key, attributes], true) if !attributes.empty?
     end
     

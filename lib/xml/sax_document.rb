@@ -2,7 +2,7 @@ require_relative "../xml/node"
 require_relative "../xml/element"
 require_relative "../xml/attributes"
 require_relative "../xml/text_content"
-require_relative "../transformer/key"
+require_relative "../transformer/key_builder"
 require "rubygems"
 require "nokogiri"
 require "observer"
@@ -143,7 +143,7 @@ module XML
       @path.each do |path|
         info = path.split('>')
         if(info.length < 2)
-          key = Transformer::Key.root(info[0])
+          key = Transformer::KeyBuilder.root(info[0])
         else
           key.elem!(info[0], info[1].to_i)
         end

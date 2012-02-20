@@ -1,68 +1,68 @@
-require_relative "key"
+require_relative "key_builder"
 
 module Transformer
   class KeyElementBuilder
     
     private_class_method :new
     
+    SEPARATOR = ":"
+    
     attr_reader :root_key, :root_name
 
-    def initialize(root_name)
+    def initialize(key_builder, root_name)
+      @mapping_helper = Transformer::MappingHelper.create(key_builder)
       @root_name = root_name
-      @root_key = "#{root_name}"
+      @root_key = "#{@mapping_helper.map_elem_name(@root_name)}"
       @elem_str = ""
     end
     
-    def self.create(root_name)#:KeyElementBuilder
-      new(root_name)
+    def self.create(doc_content_key, root_name)#:KeyElementBuilder
+      new(doc_content_key, root_name)
     end
     
     def elem!(elem_name, order)#:KeyElementBuilder
-      @elem_str += "#{:"::"}#{elem_name}#{:">"}#{order}"
+      @elem_str += "#{SEPARATOR}#{@mapping_helper.map_elem_name(elem_name)}>#{order}"
       return self
     end
     
     def elem(elem_name, order)#:String
-      "#{self.to_s}#{:"::"}#{elem_name}#{:">"}#{order}"
+      "#{self.to_s}#{SEPARATOR}#{@mapping_helper.map_elem_name(elem_name)}>#{order}"
     end
 
     def attr()#:String
-      "#{self.to_s}#{:"<"}#{:"a"}"
+      "#{self.to_s}<a"
     end
     
     def text(order)#:String
-      "#{@root_key}#{@elem_str}#{:">"}#{:"t"}#{:">"}#{order}"
+      "#{@root_key}#{@elem_str}>t>#{order}"
     end
     
     def text_count()#:String
-      "#{@root_key}#{@elem_str}#{:">"}#{:"t"}#{:"<"}#{:"c"}"
+      "#{@root_key}#{@elem_str}>t<c"
     end
     
     def parent!()#:KeyElementBuilder
       if(@elem_str.empty?)
-        puts "There is no parent element for root element."
-        raise NoElementError
+        raise NoElementError, "There is no parent element for root element."
       else
-        last_double_dot = @elem_str.rindex("::")
-        @elem_str = @elem_str.slice(0, last_double_dot);
+        last_separator = @elem_str.rindex(SEPARATOR)
+        @elem_str = @elem_str.slice(0, last_separator);
         return self
       end
     end
     
     def parent()#:String
       if(@elem_str.empty?)
-        puts "There is no parent element for root element."
-        raise NoElementError
+        raise NoElementError, "There is no parent element for root element."
       else
-        last_double_dot = @elem_str.rindex("::")
-        return "#{@root_key}#{@elem_str.slice(0, last_double_dot)}"
+        last_separator = @elem_str.rindex(SEPARATOR)
+        return "#{@root_key}#{@elem_str.slice(0, last_separator)}"
       end
     end
     
     def next_elem()#:String
       if(@elem_str.empty?)
-        puts "There is no child element of root. Cannot call next_elem, while root is always only one."
-        raise NoElementError
+        raise NoElementError, "There is no child element of root. Cannot call next_elem, while root is always only one."
       else
         last_gt = @elem_str.rindex(">")
         order = @elem_str.slice(last_gt+1).to_i + 1;
@@ -72,8 +72,7 @@ module Transformer
     
     def next_elem!()#:KeyElementBuilder
       if(@elem_str.empty?)
-        puts "There is no child element of root. Cannot call next_elem, while root is always only one."
-        raise NoElementError
+        raise NoElementError, "There is no child element of root. Cannot call next_elem, while root is always only one."
       else
         last_gt = @elem_str.rindex(">")
         order = @elem_str.slice(last_gt+1).to_i + 1;
@@ -84,14 +83,12 @@ module Transformer
     
     def prev_elem()#:String
       if(@elem_str.empty?)
-        puts "There is no child element of root. Cannot call next_elem, while root is always only one."
-        raise NoElementError
+        raise "There is no child element of root. Cannot call next_elem, while root is always only one."
       else
         last_gt = @elem_str.rindex(">")
         order = @elem_str.slice(last_gt+1).to_i;
         if(order <= 0)
-          puts "Cannot decrease order. Order is already 0."
-          raise NegativeOrderError
+          raise NegativeOrderError, "Cannot decrease order. Order is already 0."
         end
         order -= 1
         return "#{@root_key}#{@elem_str.slice(0, last_gt+1)}#{order}"
@@ -100,14 +97,12 @@ module Transformer
     
     def prev_elem!()#:KeyElementBuilder
       if(@elem_str.empty?)
-        puts "There is no child element of root. Cannot call next_elem, while root is always only one."
-        raise NoElementError
+        raise NoElementError, "There is no child element of root. Cannot call next_elem, while root is always only one."
       else
         last_gt = @elem_str.rindex(">")
         order = @elem_str.slice(last_gt+1).to_i;
         if(order <= 0)
-          puts "Cannot decrease order. Order is already 0."
-          raise NegativeOrderError
+          raise NegativeOrderError, "Cannot decrease order. Order is already 0."
         end
         order -= 1
         @elem_str = "#{@elem_str.slice(0, last_gt+1)}#{order}";
@@ -123,7 +118,7 @@ module Transformer
       if(@elem_str.empty?)
         return @root_name
       else
-        dd_split = @elem_str.split("::")
+        dd_split = @elem_str.split(SEPARATOR)
         return dd_split[dd_split.length-1].split('>')[0]
       end
       
@@ -154,7 +149,7 @@ module Transformer
     
     private
     def self.last_dd_gt_split(key_str)#:Array
-      dd_split = key_str.split("::")
+      dd_split = key_str.split(SEPARATOR)
       if(dd_split.length < 1)
         return nil
       end
@@ -174,10 +169,9 @@ module Transformer
     end
           
     def self.build_from_s(key_str)#:KeyElementBuilder
-      key_split = key_str.split("::")
+      key_split = key_str.split(SEPARATOR)
       if(key_split.length < 1)
-        puts "#{key_str} cannot be parsed."
-        raise NotEnoughParametersError
+        raise NotEnoughParametersError, "#{key_str} cannot be parsed."
       end
       
       root = key_split[0]

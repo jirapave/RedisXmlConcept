@@ -14,6 +14,14 @@ def time
   puts "Execution time: #{time} s"
 end
 
+#Now how it should be used:
+#env_manager = EnvironmentManager.new()
+#env = env_manager.create_environment("test")
+#coll = env.create_collection("new")
+#coll.save_document(file_name)
+#document = coll.get_document(file_name)
+#puts document
+
 #db_interface is Singleton, redis is class variable
 db = BaseInterface::DBInterface.instance
 

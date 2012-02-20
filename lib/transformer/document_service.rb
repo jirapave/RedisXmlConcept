@@ -12,11 +12,12 @@ module Transformer
   #their existence in a database and also retrives them.
   #This class is part of Observer pattern as Notifier, it get's notified by XML::SaxDocument class.
   class DocumentService < Notifier
-    def initialize()
+    def initialize(env_name, coll_name)
       @xml_transformer = Transformer::XMLTransformer.new()
-      db = BaseInterface::DBInterface.instance
-      @db_interface = db
-      @builder = Transformer::Key
+      @db_interface = BaseInterface::DBInterface.instance
+      @doc_key = Transformer::KeyBuilder.documents_key(env_name, coll_name)
+      @env_name = env_name
+      @coll_name = coll_name
     end
     
     #This method gets called when a whole element or document information is retrived during
@@ -42,7 +43,7 @@ module Transformer
         @db_interface.add_to_hash(key, info, false)
       elsif value.instance_of? Hash
         #Element mapping is passed here
-        key = @builder.mapping_key()
+        key = @builder.elem_mapping_key()
         #We have to remap our hash to array
         field_values = []
         value.each do |key, value|
@@ -58,28 +59,19 @@ module Transformer
     
     #Method will save a given file to the given database under the given collection if it doensn't
     #already exist. SAX parser is used to parse an XML file.
-    def save_document(file_name, database=-1, collection=-1)
+    def save_document(file_name)
       @xml_transformer = Transformer::XMLTransformer.new()
-      @xml_transformer.collection = collection
-      @xml_transformer.database = database
-      @doc_name = file_name
-      @database = database
-      @collection = collection
       puts "Does document exist?"
-      return false if document_exist?(file_name)
+      doc_id = @db_interface.increment_hash(@doc_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
+      result = @db_interface.add_to_hash_ne(@doc_key, file_name, doc_id)
+      raise MappingException, "Document with such a name already exist." unless result
+      
       puts "No, proceeding with saving..."
-      @builder = Transformer::Key.create(@database, @collection, @doc_name)
-      key = @builder.collection_key
-      iter_key = @builder.iter
-      #We will need this key as a base for others
-      id_value = @db_interface.increment_string(iter_key)
-      @builder = Transformer::Key.create(@database, @collection, id_value)
-      @content_hash = @builder.content_key
-      @base_key = @builder.document_key
-      info = [@doc_name, id_value]
+      
+      builder = Transformer::KeyBuilder.create(@env_name, @coll_name, file_name)
+      info = [file_name, doc_id]
       puts "Saving document: #{info.inspect}"
-      @db_interface.add_to_hash(key, info, false)
-      @xml_transformer.content_hash = @content_hash
+      @xml_transformer.content_hash = @builder.content_key
       #Now file is saved, we have it's id and we can know proceed to parsing
       parser = Nokogiri::XML::SAX::Parser.new(XML::SaxDocument.new(self))
       # parser = Nokogiri::XML::SAX::Parser.new(XML::ConsoleSaxDocument.new)
@@ -102,26 +94,19 @@ module Transformer
       
     end
     
-    #Finds a document in a database, returns XML::Document with whole DOM loaded.
-    def find_document(document)#:XML::Document
-      if(!@collection or !@database)
-        puts "Collection or database not set -> collection: #{@collection}, database: #{@database}"
-        return nil
-      end
-      return find_file(document.file_name, @database, @collection)
-    end
-    
     #Finds a document under the specified database and collection, returns XML::Document with whole DOM loaded.
-    def find_file(file_name, database=-1, collection=-1)#:XML::Document
+    def find_document(file_name)#:XML::Document
       @xml_transformer = Transformer::XMLTransformer.new()
-      file_id = document_exist?(file_name, database, collection)
+      #TODO Probably useless, when creating keey  with KeyBuilder, mapping helper would
+      #raise an exception when file does not exist
+      file_id = document_exist?(file_name)
       
       if(file_id == nil)
-        puts "File with name #{file_name} not found."
+        puts "Document with name #{file_name} not found."
         return nil
       end
       
-      key = Transformer::Key.create(@database, @collection, file_id)
+      key = Transformer::KeyBuilder.create(@env_name, @coll_name, file_name)
       
       mapping_key = key.mapping_key()
       mapping_hash = @db_interface.find_value(mapping_key)
@@ -134,7 +119,7 @@ module Transformer
       
     end
     
-    def remove_file(file_name, database=-1, collection=-1)
+    def remove_file(file_name)
       
     end
     
@@ -142,7 +127,7 @@ module Transformer
       
     end
     
-    def rename_file(file_name, database=-1. collection=-1)
+    def rename_file(file_name)
       
     end
     
@@ -152,11 +137,8 @@ module Transformer
     
     #Verifies if a document with a given name exist. Database and collection should be specified before using 
     #this method.
-    def document_exist?(file_name, database=-1, collection=-1)
-      database = @database if database == -1
-      collection = @collection if collection == -1
-      col_key = Transformer::Key.collection_key(database, collection)
-      all_files = @db_interface.find_value(col_key)
+    def document_exist?(file_name)
+      all_files = @db_interface.find_value(@doc_key)
       
       #debug purposes
       puts "All files in this collection:"
@@ -178,6 +160,12 @@ module Transformer
       end
       
       return file_id
+    end
+    
+    class MappingException < StandardError
+      def message
+        "Error has occured during mapping name to id"
+      end
     end
     
   end

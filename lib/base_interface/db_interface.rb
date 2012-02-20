@@ -135,6 +135,16 @@ module BaseInterface
       @redis.incr key
       @redis.get key
     end
+    
+    def increment_hash(key, field, number)
+      @redis.hincrby key, field, number
+      get_hash_value(key, field)
+    end
+    
+    #Add value to hash field if the field does not exist yet, returns true or false
+    def add_to_hash_ne(key, field, value)
+      @redis.hsetnx key, field, value
+    end
 
     #Decrements value under the given key in a database and returns that value
     def decrement_string(key)
