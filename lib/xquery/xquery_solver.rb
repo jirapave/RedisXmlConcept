@@ -12,16 +12,21 @@ module XQuery
       #clear previous results and create new one
       @result_context = XQueryResultContext.new
       
-      #TODO structure the expression even better (for contains it's values etc.)
-      root_expression = expression
-      
+      #reduce groups in expression
       expression = reduce_groups(expression)
       
-      puts "-=WALK=-"
-      expression.walkthrough
+      #structure the expression even better (FOR clause contains it's values etc.)
+      expression = structure_expression(expression)
       
-      if(expression.type == Expression::XPATH)
-        return @xpath_controller.get_results(expression, @result_context)
+      #remember root expression
+      root_expression = expression
+      
+      #DEBUG
+      puts "-=WALK=-"
+      root_expression.walkthrough
+      
+      if(root_expression.type == Expression::XPATH)
+        return @xpath_controller.get_results(root_expression, @result_context)
       else
         raise StandardError, "not yet implemented"
       end
@@ -36,6 +41,68 @@ module XQuery
     end
 
   private
+  
+    def structure_expression(expression)
+      #scan expression for FLWOR (FOR, LET, WHERE, ORDER_BY and RETURN clauses)
+      #these clauses will be parents of their following siblings
+      actual_clause = nil
+      
+      #FOR clause flags
+      for_iter_count = 0
+      
+      del_expressions = [] #expressions which has to be removed from this expression.parts
+      
+      expression.parts.each { |part|
+        case part.type
+        when Expression::FOR, Expression::LET, Expression::WHERE, Expression::ORDER_BY, Expression::RETURN 
+          actual_clause = part
+          
+        else
+          if(actual_clause != nil)
+            del_expressions << part
+            part.parent = actual_clause unless(actual_clause == nil)
+            
+            case actual_clause.type
+            when Expression::FOR
+              for_iter_count += 1
+              if(for_iter_count == 1 && part.type == Expression::VARIABLE)
+                actual_clause.variable_name = part.parts[0]
+              elsif(for_iter_count == 2 && !part.parts.empty? && part.parts[0] == "in")
+                # just validating query
+              elsif(for_iter_count >= 3 && (part.type == Expression::XPATH || part.type == Expression::VARIABLE))
+                actual_clause.value << part
+              else
+                raise QueryStringError, "wrongly structured FOR clause"
+              end
+              
+            when Expression::LET
+              raise StandardError, "to be implemented"
+              
+            when Expression::WHERE
+              actual_clause.parts << part
+              
+            when Expression::ORDER_BY
+              if(part.type == Expression::XPATH || part.type == Expression::VARIABLE)
+                actual_clause.value << part
+              else
+                raise QueryStringError, "wrong type of expression under ORDER_BY clause: #{part.type}"
+              end
+              
+            when Expression::RETURN
+              actual_clause.parts << part
+              
+            else
+              raise StandardError, "impossible: another clause type #{actual_clause.type}"
+              
+            end
+          end
+        end
+      }
+      
+      del_expressions.each { |del| expression.parts.delete(del) }
+      
+      return expression
+    end
   
     def solve_query(expression)
       if(expression.type == Expression::GROUP)

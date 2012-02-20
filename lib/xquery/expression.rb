@@ -30,12 +30,7 @@ module XQuery
     VARIABLE = :variable
     FUNCTION = :function #1. part as function name, next parts as parameters - other Expressions or strings
     
-    #other keywords
-    IN = :in
-    AT = :at
     
-    KEYWORDS = [FOR, LET, WHERE, ORDER_BY, RETURN,
-                IN, AT]
     
     def initialize(parent=nil, type=BASIC, parts=[])
       @type = type
@@ -47,28 +42,38 @@ module XQuery
         @parent.parts << self
       end
       
-      # determine keyword
+    end
+    
+    def self.create(parent=nil, type=BASIC, parts=[])
       if(type == BASIC && !parts.kind_of?(Array))
         case parts
         when "for"
-          @parts = []; @type = FOR
+          return For.new(parent)
         when "let"
-          @parts = []; @type = LET
+          return Let.new(parent)
         when "where"
-          @parts = []; @type = WHERE
-        when "order"
-          @parts = []; @type = ORDER_BY
+          return Where.new(parent)
+        when "order by"
+          return OrderBy.new(parent)
+        when "by"
+          begin
+            prev = parent.parts.last
+            if(prev.parts[0] == "order")
+              parent.parts.delete(prev)
+              return OrderBy.new(parent)
+            end
+          rescue Exception
+            raise QueryStringError, "keyword BY is not following ORDER"
+          end
         when "return"
-          @parts = []; @type = RETURN
-        when "in"
-          @parts = []; @type = IN
-        when "at"
-          @parts = []; @type = AT
+          return Return.new(parent)
         else
-          @parts = []
-          @parts << parts
+          return new(parent, type, [parts])
         end
-        puts "determined expression type #{@type}"
+        
+      else
+        return new(parent, type, parts)
+        
       end
     end
     
@@ -102,6 +107,63 @@ module XQuery
     
     attr_accessor :type, :parts, :parent
     
+  end
+  
+  
+  class For < Expression
+    
+    attr_accessor :variable_name, :value
+    
+    def initialize(parent)
+      super(parent, Expression::FOR, [])
+      @variable_name = nil
+      @value = []
+    end
+    
+    def print_self
+      puts "Expression type:#{@type}, var_name: #{@variable_name}, value: #{@value.inspect}"
+    end
+  end
+  
+  class Let < Expression
+    
+    attr_accessor :variable_name, :value
+    
+    def initialize(parent)
+      super(parent, Expression::LET, [])
+      @variable_name = nil
+      @value = []
+    end
+    
+    def print_self
+      puts "Expression type:#{@type}, var_name: #{@variable_name}, value: #{@value.inspect}"
+    end
+  end
+  
+  class Where < Expression
+    def initialize(parent)
+      super(parent, Expression::WHERE, [])
+    end
+  end
+  
+  class OrderBy < Expression
+    
+    attr_accessor :value
+    
+    def initialize(parent)
+      super(parent, Expression::ORDER_BY, [])
+      @value = []
+    end
+    
+    def print_self
+      puts "Expression type:#{@type}, value: #{@value.inspect}"
+    end
+  end
+  
+  class Return < Expression #children will be ordinary parts - atomic strings and xpaths/variables
+    def initialize(parent)
+      super(parent, Expression::RETURN, [])
+    end
   end
   
   class Function < Expression

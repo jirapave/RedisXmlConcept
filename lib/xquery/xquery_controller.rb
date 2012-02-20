@@ -11,7 +11,7 @@ module XQuery
     
     def get_results(query)
       
-      #TODO parse query
+      #parse query into Expression object
       expression = XQueryParser.parse_query(query)
       
       #solve parsed expression
