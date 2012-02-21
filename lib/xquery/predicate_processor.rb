@@ -48,9 +48,9 @@ module XQuery
           
         when Expression::ATTRIBUTE
           attribute_hash = db_helper.get_attributes(context_key)
-          attr_val = attribute_hash[expr.parts[0]]
+          attr_val = attribute_hash[expr.name]
           if(attr_val == nil)
-            raise QueryStringError, "attribute #{expr.parts[0]} not found"
+            raise QueryStringError, "attribute #{expr.name} not found"
           end
           if(last_val == nil)
             last_val = AtomicValue.new(attr_val)
@@ -59,7 +59,7 @@ module XQuery
           end
         
         when Expression::BINARY_OPERATOR
-          operator = expr.parts[0]
+          operator = expr.name
           
         when Expression::FUNCTION
           case expr.name

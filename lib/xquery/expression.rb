@@ -166,7 +166,31 @@ module XQuery
     end
   end
   
-  class Function < Expression
+  
+  class NamedExpression < Expression
+    
+    attr_accessor :name
+    
+    def initialize(parent, type, name="", parts=[])
+      super(parent, type, parts)
+      @name = name
+    end
+    
+    def print_self
+      puts "Expression type:#{@type}, name:#{@name}"
+    end
+    
+  end
+  
+  class BinOperator < NamedExpression
+    
+    def initialize(parent, name="")
+      super(parent, Expression::BINARY_OPERATOR, name)
+    end
+  end
+  
+
+  class Function < NamedExpression
     
     POSITION = :position
     LAST = :last
@@ -175,43 +199,83 @@ module XQuery
     DATA = :data
     
     def initialize(parent, name, parameters=[])
-      super(parent, Expression::FUNCTION, parameters)
-      @name = name
+      super(parent, Expression::FUNCTION, name, parameters)
     end
     
     def print_self
       puts "Expression type:#{@type}, name:#{@name}, parameter_count: #{@parts.length}"
     end
-    
-    attr_reader :name
   end
   
-  class Variable < Expression
-    def initialize(parent, name="", value=nil) #name:String, value:Sequence
-      super(parent, Expression::VARIABLE)
-      @name = name
-      @value = value
-    end
+  class Variable < NamedExpression
     
-    def print_self
-      puts "Expression type:#{@type}, name:#{@name}, value: #{@value}"
+    def initialize(parent, name="")
+      super(parent, Expression::VARIABLE, name)
     end
-    
-    attr_accessor :name, :value
   end
   
-  class XPathStep < Expression
+  class Attribute < NamedExpression
+    
+    def initialize(parent, name="")
+      super(parent, Expression::ATTRIBUTE, name)
+    end
+  end
+  
+  class Element
+    
+    def self.namespace(elem_name)
+      splitted = elem_name.split(':')
+      if(splitted.length == 1)
+        return ""
+      elsif(splitted.length == 2)
+        return splitted[0]
+      else
+        raise QueryStringError, "name of the element is not valid: #{elem_name}"
+      end
+    end
+    
+    def name_only(elem_name)
+      splitted = elem_name.split(':')
+      if(splitted.length == 1)
+        return splitted[0]
+      elsif(splitted.length == 2)
+        return splitted[1]
+      else
+        raise QueryStringError, "name of the element is not valid: #{elem_name}"
+      end
+    end
+    
+  end
+  
+  class XPathStep < NamedExpression
+    
+    attr_accessor :subtype
+    
     def initialize(parent, subtype=ELEMENT, name="")
-      super(parent, Expression::STEP)
-      @name = name
-      @subtype = subtype
+      super(parent, Expression::STEP, name)
+      @subtype = subtype #can be ELEMENT, ATTRIBUTE and VARIABLE
+    end
+    
+    def namespace
+      if(@subtype == Expression::ELEMENT)
+        return Element.namespace(@name)
+      else
+        raise StandardError, "cannot return namespace of Attribute or Variable"
+      end
+    end
+    
+    def name_only
+      if(@subtype == Expression::ELEMENT)
+        return Element.name_only(@name)
+      else
+        return @name
+      end
     end
     
     def print_self
       puts "Expression type:#{@type}, subtype:#{@subtype}, maybe name: #{@name}"
     end
-    
-    attr_accessor :subtype, :name
   end
+  
   
 end

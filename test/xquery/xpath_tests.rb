@@ -4,9 +4,10 @@ require_relative "../../lib/xquery/xquery_controller"
 require_relative "../../lib/xml/node"
 require "rubygems"
 require "nokogiri"
+require "test/unit"
 
 module XQuery
-  class XPathTests
+  class XPathTests < Test::Unit::TestCase
     
     class TestCase
       
@@ -16,25 +17,6 @@ module XQuery
         @query = query
         @results = results
       end
-      
-      def match(new_results)
-        if(new_results.length == @results.length)
-          new_results.each_with_index { |result, index|
-            new_result = result
-            if(result.kind_of?(XML::Node))
-              new_result = result.to_stripped_s
-            end
-            if(new_result != @results[index])
-              puts "query: #{query}, result expected: #{@results[index]}, result found: #{new_result}"
-              return false
-            end
-          }
-          return true
-        end
-        puts "query: #{query}, result count expected: #{@results.length}, result found: #{new_results.length}"
-        return false
-      end
-      
     end
     
     TEST_CASES = [
@@ -77,11 +59,12 @@ module XQuery
       TestCase.new("doc(\"catalog.xml\")//product[3 < position()]",
         ["<product dept=\"MEN\"><number>784</number><name language=\"en\">Cotton Dress Shirt</name><colorChoices>white gray</colorChoices><desc>Our<i>favorite</i>shirt!</desc></product>"]),
       TestCase.new("doc(\"catalog.xml\")//product[last()]/name/text()",
-        ["Cotton Dress Shirt"])
-      
+        ["Cotton Dress Shirt"]),
+      TestCase.new("doc(\"catalog.xml\")/catalog/product[name = \"Fleece Pullover\"]/number/text()",
+        ["557"]),
     ] 
     
-    def self.test
+    def test_xpath
       
       db = BaseInterface::DBInterface.instance
       
@@ -95,13 +78,20 @@ module XQuery
       xquery_controller = XQuery::XQueryController.new(database, collection)
       
       TEST_CASES.each { |test_case|
-        results = xquery_controller.get_results(test_case.query)
-        if(!test_case.match(results))
-          fail StandardError, "TEST FAILED"
-        end
+        new_results = xquery_controller.get_results(test_case.query)
+        right_results = test_case.results
+        
+        assert_equal(right_results.length, new_results.length, "for query: #{test_case.query}, result count not the same")
+        
+        right_results.each_with_index { |right_result, index|
+          new_result = new_results[index]
+          if(new_result.kind_of?(XML::Node))
+            new_result = new_result.to_stripped_s
+          end
+          assert_equal(right_result, new_result, "for query: #{test_case.query}, results are not the same")
+        }
+        
       }
-      
-      puts "#{XPathTests} TEST PASSED"
       
     end
     

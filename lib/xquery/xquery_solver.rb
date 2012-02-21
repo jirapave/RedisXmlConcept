@@ -1,16 +1,18 @@
 require_relative "xpath_controller"
 require_relative "expression"
 require_relative "xquery_result_context"
+require_relative "flwor_controller"
 
 module XQuery
   class XQuerySolver
     def initialize(database, collection)
       @xpath_controller = XPathController.new(database, collection)
+      @flwor_controller = FLWORController.new(@xpath_controller)
     end
     
     def get_results(expression)
       #clear previous results and create new one
-      @result_context = XQueryResultContext.new
+      result_context = XQueryResultContext.new
       
       #reduce groups in expression
       expression = reduce_groups(expression)
@@ -25,11 +27,7 @@ module XQuery
       puts "-=WALK=-"
       root_expression.walkthrough
       
-      if(root_expression.type == Expression::XPATH)
-        return @xpath_controller.get_results(root_expression, @result_context)
-      else
-        raise StandardError, "not yet implemented"
-      end
+      return solve_query(root_expression, result_context)
       
       
       #TODO resolve each xpath sequentially into sequences of nodes/data
@@ -41,6 +39,21 @@ module XQuery
     end
 
   private
+  
+    #main SOLVER method
+    def solve_query(expression, result_context)
+      if(expression.type == Expression::GROUP && !expression.parts.empty? && expression.parts[0].type == Expression::FOR)
+        return @flwor_controller.get_results(expression, result_context)
+      
+      elsif(expression.type == Expression::XPATH)
+        return @xpath_controller.get_results(expression, result_context)
+      
+      else
+        raise StandardError, "another type of query not supported - has to be basic FLWOR or XPATH"        
+        
+      end
+    end
+  
   
     def structure_expression(expression)
       #scan expression for FLWOR (FOR, LET, WHERE, ORDER_BY and RETURN clauses)
@@ -66,7 +79,7 @@ module XQuery
             when Expression::FOR
               for_iter_count += 1
               if(for_iter_count == 1 && part.type == Expression::VARIABLE)
-                actual_clause.variable_name = part.parts[0]
+                actual_clause.variable_name = part.name
               elsif(for_iter_count == 2 && !part.parts.empty? && part.parts[0] == "in")
                 # just validating query
               elsif(for_iter_count >= 3 && (part.type == Expression::XPATH || part.type == Expression::VARIABLE))
@@ -104,26 +117,6 @@ module XQuery
       return expression
     end
   
-    def solve_query(expression)
-      if(expression.type == Expression::GROUP)
-        #TODO - this is not good at all
-        expression.parts.each { |part|
-          solve_query(part)
-        }
-        
-      
-      elsif(expression.type == Expression::XPATH)
-        
-        if(result_context.state == XQueryResultContext::INITIAL)
-          result_context.state = XQueryResultContext::XPATH_ONLY
-        end
-        result_context.xpath = @xpath_controller.get_results(expression)
-        
-        
-      end
-    end
-    
-    
   
     # if there is GROUP with only one part -> reduce to the part
     def reduce_groups(expression)

@@ -27,7 +27,7 @@ module XQuery
       bracket_stack = []
       
       
-      #recapitulation block
+      #recapitulation block - DEBUG purposes
       recapitulation = Proc.new {
         puts ""
         puts "----==== REKAPITULACE ====----"
@@ -40,30 +40,30 @@ module XQuery
       #add new STRING expression
       add_string_expression = Proc.new {
         
-        # recapitulation.call
-        
+        #DEBUG TODO delete
         puts "adding expression: #{atomic_expr}, type: Atomic String"
+        
         new_expr = Expression.create(expression, Expression::ATOMIC_VALUE)
         new_expr.parts << AtomicValue.new(atomic_expr, AtomicValue::STRING)
         atomic_expr = ""
-        
-        # recapitulation.call
       }
       
       #add new unspecified expression
       add_expression = Proc.new {
         if(!atomic_expr.empty?)
-          if(  expression.type == Expression::STEP \
-            || expression.type == Expression::ATTRIBUTE \
-            || expression.type == Expression::VARIABLE \
-            || expression.type == Expression::BINARY_OPERATOR)
+          if(expression.kind_of?(NamedExpression))
             
+            #DEBUG TODO delete
             puts "adding expression: #{atomic_expr}, type: #{expression.type}"
-            expression.parts << atomic_expr
+            
+            expression.name = atomic_expr
             expression = expression.parent
+            
           else
             new_expr = Expression.create(expression, Expression::BASIC, atomic_expr)
-            puts "adding expression: #{atomic_expr}, type: #{new_expr.type}"
+            
+            #DEBUG TODO delete
+            puts "adding expression: #{atomic_expr}, type: #{new_expr.type}"  
             
             #is that RETURN? we need to determine that to change this flag
             if(new_expr.type == Expression::RETURN)
@@ -71,7 +71,7 @@ module XQuery
             end
           end
           
-          # rekapitulace
+          # rekapitulace DEBUG TODO delete
           # recapitulation.call
           
           atomic_expr = ""
@@ -138,6 +138,8 @@ module XQuery
                 new_expr = Expression.create(expression, Expression::GROUP)
                 expression = new_expr
               else #FUNCTION
+                
+                #DEBUG TODO delete
                 puts "new function #{atomic_expr} created"
                 
                 new_expr = Function.new(expression, atomic_expr)
@@ -148,7 +150,7 @@ module XQuery
               if(atomic_expr.empty?)
                 raise QueryStringError, "there is nothing before predicate, char number #{i} = #{ch}, query: #{query}"
               end
-              expression.parts << atomic_expr
+              expression.name = atomic_expr
               atomic_expr = ""
               new_expr = Expression.create(expression, Expression::PREDICATE)
               expression = new_expr
@@ -169,6 +171,7 @@ module XQuery
             add_expression.call
             expression = expression.parent
             
+            #DEBUG TODO delete
             puts "bracket #{ch} stepped process up"
             
             # recapitulation.call
@@ -183,13 +186,19 @@ module XQuery
               if(atomic_expr.empty?) #some end of bracket was before or variable or another slash
                 if(expression.type == Expression::STEP) #slash before
                   # empty ELEMENT expression will be stored, we'll know that it is '//'
+                  
+                  #DEBUG TODO delete
                   puts "step up to #{expression.parent.type} and creating STEP"
+                  
                   expression = expression.parent
                 else
                   # we need to create XPATH expression and add it to previouses expression parent 
                   # while this previous expression is the first step of XPATH expression
                   # ! from what I know there is no way the slash would be the first character in XPATH expression 
                   prev_expr = expression.parts.pop
+                  
+                  #DEBUG TODO delete
+                  puts "xpath step previous #{prev_expr}"
                   
                   xpath_expr = Expression.create(expression, Expression::XPATH)
                   if(prev_expr.respond_to?(:name))
@@ -208,7 +217,11 @@ module XQuery
                   
                   xpath_expr = Expression.create(expression, Expression::XPATH)
                   prev_step = XPathStep.new(xpath_expr, prev_expr.type)
-                  prev_step.parts = prev_expr.parts
+                  if(prev_expr.type == Expression::VARIABLE || prev_expr.type == Expression::ATTRIBUTE)
+                    prev_step.name = prev_expr.name
+                  else
+                    prev_step.parts << prev_expr.parts
+                  end
                   
                   expression = xpath_expr
                 end
@@ -223,7 +236,7 @@ module XQuery
             if(expression.type == Expression::STEP)
               expression.subtype = Expression::ATTRIBUTE
             else
-              new_expr = Expression.create(expression, Expression::ATTRIBUTE)
+              new_expr = Attribute.new(expression)
               expression = new_expr
             end
             
@@ -238,12 +251,11 @@ module XQuery
             if(expression.type == Expression::STEP)
               expression.subtype = Expression::VARIABLE
             else
-              new_expr = Expression.create(expression, Expression::VARIABLE)
+              new_expr = Variable.new(expression)
               expression = new_expr
             end
             
             
-          #TODO allow [<>] when after "return" keyword and not enclosed by brackets 
           elsif(ch.match(/[!=<>]/)) # if there is an global comparison expression
                                     # (we have to divide even when no white space between parameters provided)
             
@@ -260,14 +272,14 @@ module XQuery
               
             else                                    
               if(atomic_expr.empty?)
-                new_expr = Expression.create(expression, Expression::BINARY_OPERATOR)
+                new_expr = BinOperator.new(expression)
                 expression = new_expr
               elsif(expression.type != Expression::BINARY_OPERATOR)
                 add_expression.call
                 if(expression.type == Expression::XPATH)
                   expression = expression.parent
                 end
-                new_expr = Expression.create(expression, Expression::BINARY_OPERATOR)
+                new_expr = BinOperator.new(expression)
                 expression = new_expr
               end
             end
@@ -294,6 +306,7 @@ module XQuery
         add_expression.call
       end
       
+      #DEBUG TODO delete
       puts "ENDING:"
       # recapitulation.call
       
