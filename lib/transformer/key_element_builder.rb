@@ -11,7 +11,7 @@ module Transformer
     attr_reader :root_key, :root_name
 
     def initialize(key_builder, root_name, map_names = true)
-      @mapping_service = Transformer::MappingHelper.create(key_builder)
+      @mapping_service = Transformer::MappingService.create(key_builder)
       root_name = @mapping_service.unmap_elem_name(root_name) unless map_names
       @root_name = root_name
       @root_key = "#{@mapping_service.map_elem_name(@root_name)}"

@@ -71,7 +71,7 @@ module Transformer
       info = [file_name, doc_id]
       puts "Saving document: #{info.inspect}"
       #Now file is saved, we have it's id and we can know proceed to parsing
-      mapping = Transformer::MappingHelper.create(@builder)
+      mapping = Transformer::MappingService.create(@builder)
       parser = Nokogiri::XML::SAX::Parser.new(XML::SaxDocument.new(self, mapping))
       @doc_name = file_name
       # parser = Nokogiri::XML::SAX::Parser.new(XML::ConsoleSaxDocument.new)

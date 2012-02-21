@@ -18,7 +18,7 @@ def time
   puts "Execution time: #{time} s"
 end
 
-file_name = "books-10000.xml"
+file_name = "catalog.xml"
 env_manager = RedXmlApi::EnvironmentManager.new()
 env = env_manager.create_environment("test")
 coll = env.create_collection("new")

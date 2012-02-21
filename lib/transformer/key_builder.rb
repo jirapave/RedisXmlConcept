@@ -1,5 +1,5 @@
 require_relative "key_element_builder"
-require_relative "mapping_helper"
+require_relative "mapping_service"
 
 module Transformer
   class KeyBuilder
@@ -14,11 +14,11 @@ module Transformer
     def initialize(env_name, coll_name, doc_name, map_names = true)
       #TODO There should be some error if no mapping is found
       if (map_names)
-        @mapping = Transformer::MappingHelper.map_env_coll_doc(env_name, coll_name, doc_name)
-        @mapping_service = Transformer::MappingHelper.create(self)
-        @env_id = @mapping["env"]
-        @coll_id = @mapping["coll"]
-        @doc_id = @mapping["doc"]
+        @mapping = Transformer::MappingService.map_env_coll_doc(env_name, coll_name, doc_name)
+        @mapping_service = Transformer::MappingService.create(self)
+        @env_id = @mapping[Transformer::MappingService::ENV_KEY]
+        @coll_id = @mapping[Transformer::MappingService::COLL_KEY]
+        @doc_id = @mapping[Transformer::MappingService::DOC_KEY]
       else
         @env_id = env_name
         @coll_id = coll_name
@@ -40,7 +40,7 @@ module Transformer
     
     def self.collections_key(env_name, map_names = true)#:String
       if map_names
-        id_env = Transformer::MappingHelper.map_env(env_name)
+        id_env = Transformer::MappingService.map_env(env_name)
       else
         id_env = env_name
       end
@@ -49,8 +49,8 @@ module Transformer
     
     def self.documents_key(env_name, coll_name, map_names = true)#:String
       if map_names
-        id_map = Transformer::MappingHelper.map_env_coll(env_name, coll_name)
-        value = "#{id_map["env"]}#{SEPARATOR}#{id_map["coll"]}#{SEPARATOR}documents"
+        id_map = Transformer::MappingService.map_env_coll(env_name, coll_name)
+        value = "#{id_map[Transformer::MappingService::ENV_KEY]}#{SEPARATOR}#{id_map[Transformer::MappingService::COLL_KEY]}#{SEPARATOR}documents"
       else
         value = "#{env_name}#{SEPARATOR}#{coll_name}#{SEPARATOR}documents"
       end
