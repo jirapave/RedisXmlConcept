@@ -1,6 +1,6 @@
 require_relative "xml_transformer"
 require_relative "../xml/document"
-require_relative "../xml/console_sax_document"
+require_relative "../xml/sax_document"
 require_relative "../base_interface/db_interface"
 require "nokogiri"
 require "observer"

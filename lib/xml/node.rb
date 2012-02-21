@@ -1,3 +1,5 @@
+require_relative "attributes"
+
 module XML
   class Node
     
@@ -37,13 +39,16 @@ module XML
       
     end
     
-    def to_s():String
+    def to_s()
       Node.get_node_s(self)
     end
     
+    def to_stripped_s()
+      Node.get_node_strip(self)
+    end
     
     # recursively called get_node_s to retrieve proper node string
-    def self.get_node_s(node, tabcount=0, last_text_content=false):String
+    def self.get_node_s(node, tabcount=0, last_text_content=false)#:String
       str = ""
       if(node.instance_of? Document)
         str += "#{node.metadata}\n"
@@ -60,6 +65,24 @@ module XML
       return str
     end
     
+    def self.get_node_strip(node, last_text_content=false)#:String
+      str = ""
+      if(node.instance_of? Document)
+        str += "#{node.metadata}"
+        str += Node.get_node_strip(node.root_element)
+      elsif(node.instance_of? Element)
+        str += "<#{node.name}#{get_attrs(node)}>"
+        node.descendants.each { |descendant|
+          str += Node.get_node_strip(descendant)
+        }
+        str += "</#{node.name}>"
+      elsif(node.instance_of? TextContent)
+        str += "#{node.text_content}"
+      end
+      return str
+    end
+    
+  private
     def self.get_tab_s(tabcount):String
       s = ""
       (tabcount*TAB_LENGTH).times { s += " " }
