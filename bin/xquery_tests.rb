@@ -2,7 +2,6 @@
 #PROPER TESTs will be written in project/test folder and runned by run_tests file in bin folder
 
 
-
 require_relative "../lib/base_interface/db_interface"
 require_relative "../lib/transformer/document_service"
 require_relative "../lib/transformer/key_element_builder"
