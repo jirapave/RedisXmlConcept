@@ -5,6 +5,10 @@ require_relative "../lib/xml/sax_document"
 require "rubygems"
 require "nokogiri"
 
+#require all *.rb files in certain directory
+Dir["../lib/red_xml_api/*.rb"].each {|file| require file }
+
+
 
 
 def time
@@ -14,20 +18,19 @@ def time
   puts "Execution time: #{time} s"
 end
 
-#db_interface is Singleton, redis is class variable
-db = BaseInterface::DBInterface.instance
+file_name = "catalog.xml"
+env_manager = RedXmlApi::EnvironmentManager.new()
+env = env_manager.create_environment("test")
+coll = env.create_collection("new")
 
-#====DOCUMENT SAVE AND RETRIEVE
-file_name = "books-5000.xml"
-document_service = Transformer::DocumentService.new()
 time do
-#First argument is database name, second is collection
-  document_service.save_document(file_name, 1, 1)
+  puts "Saving document..."
+  coll.save_document(file_name)
 end
 
 time do
-  puts "retrieving document from database..."
+  puts "Retrieving document from database..."
   # retrieve document string, whole DOM is created, Node overrides to_s
   # puts document_service.find_file(file_name, 1, 1)
-  puts document_service.find_file(file_name, 1, 1)
+  document = coll.get_document(file_name)
 end
