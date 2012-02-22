@@ -8,9 +8,6 @@ require "nokogiri"
 #require all *.rb files in certain directory
 Dir["../lib/red_xml_api/*.rb"].each {|file| require file }
 
-
-
-
 def time
   start = Time.now
   yield
@@ -18,14 +15,15 @@ def time
   puts "Execution time: #{time} s"
 end
 
-file_name = "catalog.xml"
+file_path = "./catalog.xml"
+file_name = File.basename(file_path)
 env_manager = RedXmlApi::EnvironmentManager.new()
 env = env_manager.create_environment("test")
 coll = env.create_collection("new")
 
 time do
   puts "Saving document..."
-  coll.save_document(file_name)
+  coll.save_document(File.open(file_path))
 end
 
 time do
@@ -33,4 +31,5 @@ time do
   # retrieve document string, whole DOM is created, Node overrides to_s
   # puts document_service.find_file(file_name, 1, 1)
   document = coll.get_document(file_name)
+  puts document
 end

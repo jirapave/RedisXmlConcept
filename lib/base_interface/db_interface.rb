@@ -1,9 +1,7 @@
 require "singleton"
 require_relative "key_value_entry"
 
-#Adding lib to LOAD_PATH e.g. $:
-#NOTE: $0 contains path to the first open file, e.g. it differs when we start this file or main.rb
-redis_dir = File.dirname($0) + '/../lib/'
+redis_dir = "#{File.dirname(__FILE__)}/../../lib/"
 unless $:.include?(redis_dir) || $:.include?(File.expand_path(redis_dir))
 $:.unshift(File.expand_path(redis_dir))
 end

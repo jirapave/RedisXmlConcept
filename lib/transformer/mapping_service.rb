@@ -1,4 +1,5 @@
 require_relative "../base_interface/db_interface"
+require_relative "exceptions"
 require_relative "key_builder"
 
 module Transformer
@@ -131,7 +132,7 @@ module Transformer
       mapping_hash = db_interface.find_value(hash_key)
       name = nil
       mapping_hash.each do |field, value|
-        name = field if value == id
+        name = field if value == id and field != "<iterator>"
       end
       raise Transformer::MappingException, "Environment #{id} does not have mapping to name = does not exist" unless name
       name
