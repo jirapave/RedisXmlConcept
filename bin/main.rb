@@ -23,7 +23,7 @@ coll = env.create_collection("new")
 
 time do
   puts "Saving document..."
-  coll.save_document(File.open(file_path))
+  coll.save_document(file_path)
 end
 
 time do

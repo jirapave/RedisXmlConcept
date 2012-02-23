@@ -88,7 +88,7 @@ module Transformer
       puts "Parsing in progress..."
       
       @db_interface.commit_after do
-        parser.parse(file)
+        parser.parse(File.open(File.absolute_path(file)))
       end
       
       puts "Document saved"
