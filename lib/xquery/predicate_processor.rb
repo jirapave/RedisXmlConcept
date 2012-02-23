@@ -4,7 +4,7 @@ require_relative "binary_operator"
 module XQuery
   class PredicateProcessor
     
-    def self.evaluate(db_helper, context_key, position, max_position, predicate_expression)
+    def self.evaluate(xpath_processor, context_elem, position, max_position, predicate_expression)
       
       last_val = nil
       operator = nil
@@ -13,20 +13,28 @@ module XQuery
         
         when Expression::BASIC
           if(expr.parts[0] == '.')
-            value = AtomicValue.new(db_helper.get_node_content(context_key)) 
+            value = AtomicValue.new(xpath_processor.get_node_content(context_elem)) 
           elsif(!Helper.is_number?(expr.parts[0])) #element name
-            context_children_bean = db_helper.get_children(context_key)
-            elem_id = db_helper.get_elem_index(expr.parts[0])
-            elem_count = context_children_bean.elem_hash[elem_id]
-            if(elem_count == nil)
-              raise QueryStringError, "wrong element in predicate (#{expr.parts[0]})"
-            end
             value = Sequence.new
-            elem_count.to_i.times { |i|
-              new_key = Transformer::KeyElementBuilder.build_from_s(context_key.elem(elem_id, i))
-              content = db_helper.get_node_content(new_key)
+            new_elements = xpath_processor.get_children_elements(context_elem, expr.parts[0])
+            new_elements.each { |elem|
+              content = xpath_processor.get_node_content(elem)
               value.values << content
             }
+            
+            # context_children_bean = xpath_processor.get_children(context_elem)
+            # elem_id = xpath_processor.get_elem_index(expr.parts[0])
+            # elem_count = context_children_bean.elem_hash[elem_id]
+            # if(elem_count == nil)
+              # raise QueryStringError, "wrong element in predicate (#{expr.parts[0]})"
+            # end
+            # value = Sequence.new
+            # elem_count.to_i.times { |i|
+              # new_key = Transformer::KeyElementBuilder.build_from_s(context_elem.elem(elem_id, i))
+              # content = xpath_processor.get_node_content(new_key)
+              # value.values << content
+            # }
+            
             if(value.values.length == 1)
               value = AtomicValue.new(value.values[0])
             end
@@ -47,8 +55,7 @@ module XQuery
           end
           
         when Expression::ATTRIBUTE
-          attribute_hash = db_helper.get_attributes(context_key)
-          attr_val = attribute_hash[expr.name]
+          attr_val = xpath_processor.get_attribute(context_elem, expr.name)
           if(attr_val == nil)
             raise QueryStringError, "attribute #{expr.name} not found"
           end
@@ -88,7 +95,7 @@ module XQuery
           end
           
         else
-          fail StandardError, "other type of expression not yet implemented here (#{expr.type})"
+          raise StandardError, "other type of expression not yet implemented here (#{expr.type})"
           
         end
       }
