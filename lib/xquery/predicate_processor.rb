@@ -55,8 +55,7 @@ module XQuery
           end
           
         when Expression::ATTRIBUTE
-          attribute_hash = xpath_processor.get_attribute_hash(context_elem)
-          attr_val = attribute_hash[expr.name]
+          attr_val = xpath_processor.get_attribute(context_elem, expr.name)
           if(attr_val == nil)
             raise QueryStringError, "attribute #{expr.name} not found"
           end

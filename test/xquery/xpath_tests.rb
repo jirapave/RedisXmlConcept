@@ -1,10 +1,15 @@
 require_relative "../../lib/base_interface/db_interface"
-require_relative "../../lib/transformer/document_service"
+require_relative "../../lib/red_xml_api/environment_manager"
 require_relative "../../lib/xquery/xquery_controller"
 require_relative "../../lib/xml/node"
 require "rubygems"
 require "nokogiri"
 require "test/unit"
+
+#missing in other files
+require_relative "../../lib/transformer/exceptions"
+require_relative "../../lib/transformer/document_service"
+
 
 module XQuery
   class XPathTests < Test::Unit::TestCase
@@ -66,18 +71,28 @@ module XQuery
     
     def test_xpath
       
-      db = BaseInterface::DBInterface.instance
-      
-      database = 1
-      collection = 1
+      env_name = "env_test"
+      coll_name = "coll_test"
       file_name = "catalog.xml"
+      env_manager = RedXmlApi::EnvironmentManager.new()
+      env = env_manager.create_environment(env_name)
+      if(env == nil)
+        env = RedXmlApi::Environment.new(env_name)
+      end
+      coll = env.create_collection(coll_name)
+      if(coll == nil)
+        coll = RedXmlApi::Collection.new(env_name, coll_name)
+      end
+      begin
+        coll.save_document(file_name)
+      rescue Transformer::MappingException
+        puts "ok, document exists"
+      end
       
-      document_service = Transformer::DocumentService.new()
-      document_service.save_document(file_name, database, collection)
       
-      xquery_controller = XQuery::XQueryController.new(database, collection)
+      xquery_controller = XQuery::XQueryController.new(env_name, coll_name)
       
-      TEST_CASES.each { |test_case|
+      TEST_CASES.each_with_index { |test_case, index|
         new_results = xquery_controller.get_results(test_case.query)
         right_results = test_case.results
         
@@ -90,6 +105,8 @@ module XQuery
           end
           assert_equal(right_result, new_result, "for query: #{test_case.query}, results are not the same")
         }
+        
+        puts "test #{index+1}/#{TEST_CASES.length} ok"
         
       }
       

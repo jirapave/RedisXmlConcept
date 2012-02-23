@@ -57,7 +57,7 @@ module XQuery
         key = @function.doc(step.parts[0].parts[0].value) #Key
         result_array = [ key ]
         
-        @xpath_processor = KeyXPathProcessor.new(key)#DBHelper.new(key)
+        @xpath_processor = KeyXPathProcessor.new(key)
         
       elsif(step.subtype == Expression::VARIABLE)
         result_array = result_context.variables[step.name] #Array of nodes
@@ -139,10 +139,9 @@ module XQuery
         
         #restriction according previous step children
         elem_elem.each { |key|
-          attr_hash = @xpath_processor.get_attribute_hash(key)
-          value = attr_hash[attr_name]
+          value = @xpath_processor.get_attribute(key, attr_name)
           if(value != nil)
-            new_elem_elem << attr_hash[attr_name]
+            new_elem_elem << value
           end
         }
         

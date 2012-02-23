@@ -41,7 +41,7 @@ module XQuery
       add_string_expression = Proc.new {
         
         #DEBUG TODO delete
-        puts "adding expression: #{atomic_expr}, type: Atomic String"
+        # puts "adding expression: #{atomic_expr}, type: Atomic String"
         
         new_expr = Expression.create(expression, Expression::ATOMIC_VALUE)
         new_expr.parts << AtomicValue.new(atomic_expr, AtomicValue::STRING)
@@ -54,7 +54,7 @@ module XQuery
           if(expression.kind_of?(NamedExpression))
             
             #DEBUG TODO delete
-            puts "adding expression: #{atomic_expr}, type: #{expression.type}"
+            # puts "adding expression: #{atomic_expr}, type: #{expression.type}"
             
             expression.name = atomic_expr
             expression = expression.parent
@@ -63,7 +63,7 @@ module XQuery
             new_expr = Expression.create(expression, Expression::BASIC, atomic_expr)
             
             #DEBUG TODO delete
-            puts "adding expression: #{atomic_expr}, type: #{new_expr.type}"  
+            # puts "adding expression: #{atomic_expr}, type: #{new_expr.type}"  
             
             #is that RETURN? we need to determine that to change this flag
             if(new_expr.type == Expression::RETURN)
@@ -140,7 +140,7 @@ module XQuery
               else #FUNCTION
                 
                 #DEBUG TODO delete
-                puts "new function #{atomic_expr} created"
+                # puts "new function #{atomic_expr} created"
                 
                 new_expr = Function.new(expression, atomic_expr)
                 atomic_expr = ""
@@ -172,7 +172,7 @@ module XQuery
             expression = expression.parent
             
             #DEBUG TODO delete
-            puts "bracket #{ch} stepped process up"
+            # puts "bracket #{ch} stepped process up"
             
             # recapitulation.call
             
@@ -188,7 +188,7 @@ module XQuery
                   # empty ELEMENT expression will be stored, we'll know that it is '//'
                   
                   #DEBUG TODO delete
-                  puts "step up to #{expression.parent.type} and creating STEP"
+                  # puts "step up to #{expression.parent.type} and creating STEP"
                   
                   expression = expression.parent
                 else
@@ -198,7 +198,7 @@ module XQuery
                   prev_expr = expression.parts.pop
                   
                   #DEBUG TODO delete
-                  puts "xpath step previous #{prev_expr}"
+                  # puts "xpath step previous #{prev_expr}"
                   
                   xpath_expr = Expression.create(expression, Expression::XPATH)
                   if(prev_expr.respond_to?(:name))
@@ -307,7 +307,7 @@ module XQuery
       end
       
       #DEBUG TODO delete
-      puts "ENDING:"
+      # puts "ENDING:"
       # recapitulation.call
       
       return root_expression
