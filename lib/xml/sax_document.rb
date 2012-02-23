@@ -148,6 +148,7 @@ module XML
         info = path.split('>')
         if(info.length < 2)
           #false means that first argument info[0] will not be mapped to id, e.g. is already id
+          @mapping_service.refresh_hash_mapping
           key = @mapping_service.key_builder.root(info[0], false)
         else
           key.elem!(info[0], info[1].to_i, false)
