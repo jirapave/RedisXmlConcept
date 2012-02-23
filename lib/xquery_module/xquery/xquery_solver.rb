@@ -1,5 +1,5 @@
-require_relative "xpath_controller"
-require_relative "expression"
+require_relative "../xpath/xpath_controller"
+require_relative "../expression"
 require_relative "xquery_result_context"
 require_relative "flwor_controller"
 

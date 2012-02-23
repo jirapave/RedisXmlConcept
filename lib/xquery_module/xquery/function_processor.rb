@@ -1,6 +1,6 @@
-require_relative "../transformer/key_builder"
-require_relative "../transformer/document_service"
-require_relative "query_string_error"
+require_relative "../../transformer/key_builder"
+require_relative "../../transformer/document_service"
+require_relative "../exceptions"
 
 
 module XQuery

@@ -1,8 +1,7 @@
-require_relative "function_processor"
+require_relative "../xquery/function_processor"
 require_relative "key_xpath_processor"
 require_relative "predicate_processor"
-require_relative "../transformer/key_element_builder"
-require_relative "../base_interface/db_interface"
+require_relative "../../transformer/key_element_builder"
 
 module XQuery
   class XPathController

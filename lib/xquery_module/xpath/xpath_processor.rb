@@ -8,36 +8,28 @@ module XQuery
     #maybe we dont need this public
     
     
-    #return only element children (nodes or keys)
-    def get_children_elements(value, match_elem_name="")
+    #stripped: true/false
+    def get_text(elem, stripped)
       raise NotImplementedError
     end
     
-    def get_descendant_elements(value)
+    def get_node_content(elem)
       raise NotImplementedError
     end
     
-    def get_children_text(value)
+    def get_children_elements(elem, match_elem_name="*")
       raise NotImplementedError
     end
     
-    def get_attribute_hash(value)
+    def get_descendant_elements(elem)
       raise NotImplementedError
     end
     
-    def get_text(value)
+    def get_node(elem)
       raise NotImplementedError
     end
     
-    def get_node(key)
-      raise NotImplementedError
-    end
-    
-    def get_node_content(key)#:String all descendants are turned into string
-      raise NotImplementedError
-    end
-    
-    def get_elem_index(elem_name)
+    def get_attribute(elem, attr_name)
       raise NotImplementedError
     end
     

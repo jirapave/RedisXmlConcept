@@ -1,6 +1,6 @@
-require_relative "expression"
-require_relative "query_string_error"
-require_relative "helper"
+require_relative "../expression"
+require_relative "../exceptions"
+require_relative "../helper"
 
 module XQuery
   class FLWORController

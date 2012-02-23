@@ -1,6 +1,6 @@
-require_relative "expression"
-require_relative "sequence"
-require_relative "query_string_error"
+require_relative "../expression"
+require_relative "../sequence"
+require_relative "../exceptions"
 
 #TODO handle better the keyword ORDER BY
 

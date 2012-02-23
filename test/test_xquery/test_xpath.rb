@@ -1,6 +1,5 @@
-require_relative "../../lib/base_interface/db_interface"
 require_relative "../../lib/red_xml_api/environment_manager"
-require_relative "../../lib/xquery/xquery_controller"
+require_relative "../../lib/xquery_module/xquery/xquery_controller"
 require_relative "../../lib/xml/node"
 require "rubygems"
 require "nokogiri"
@@ -8,7 +7,7 @@ require "test/unit"
 
 #missing in other files
 require_relative "../../lib/transformer/exceptions"
-require_relative "../../lib/transformer/document_service"
+# require_relative "../../lib/transformer/document_service"
 
 
 module XQuery

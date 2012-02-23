@@ -1,5 +1,5 @@
-require_relative "helper"
-require_relative "binary_operator"
+require_relative "../helper"
+require_relative "../binary_operator"
 
 module XQuery
   class PredicateProcessor

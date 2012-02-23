@@ -1,4 +1,4 @@
-require_relative "query_string_error"
+require_relative "exceptions"
 require_relative "sequence"
 require_relative "helper"
 
