@@ -15,7 +15,7 @@ def time
   puts "Execution time: #{time} s"
 end
 
-file_path = "./catalog.xml"
+file_path = "./books-20000.xml"
 file_name = File.basename(file_path)
 env_manager = RedXmlApi::EnvironmentManager.new()
 env = env_manager.create_environment("test")
@@ -31,5 +31,4 @@ time do
   # retrieve document string, whole DOM is created, Node overrides to_s
   # puts document_service.find_file(file_name, 1, 1)
   document = coll.get_document(file_name)
-  puts document
 end

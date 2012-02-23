@@ -3,34 +3,23 @@ require_relative "key_builder"
 module Transformer
   class KeyElementBuilder
     
-    private_class_method :new
-    
     SEPARATOR = ":"
     ITERATOR_KEY = "<iterator>"
     
-    attr_reader :root_key, :root_name
+    attr_reader :root_key
 
-    def initialize(key_builder, root_name, map_names = true)
-      @mapping_service = Transformer::MappingService.create(key_builder)
-      root_name = @mapping_service.unmap_elem_name(root_name) unless map_names
-      @root_name = root_name
-      @root_key = "#{@mapping_service.map_elem_name(@root_name)}"
+    def initialize(key_builder, root_id)
+      @root_key = "#{root_id}"
       @elem_str = ""
     end
     
-    def self.create(key_builder, root_name, map_names = true)#:KeyElementBuilder
-      new(key_builder, root_name, map_names)
-    end
-    
-    def elem!(elem_name, order, map_names = true)#:KeyElementBuilder
-      elem_name = @mapping_service.map_elem_name(elem_name) if map_names
-      @elem_str += "#{SEPARATOR}#{elem_name}>#{order}"
+    def elem!(elem_id, order)#:KeyElementBuilder
+      @elem_str += "#{SEPARATOR}#{elem_id}>#{order}"
       return self
     end
     
-    def elem(elem_name, order, map_names = true)#:String
-      elem_name = @mapping_service.map_elem_name(elem_name) if map_names
-      "#{self.to_s}#{SEPARATOR}#{elem_name}>#{order}"
+    def elem(elem_id, order)#:String
+      "#{self.to_s}#{SEPARATOR}#{elem_id}>#{order}"
     end
 
     def attr()#:String
@@ -178,16 +167,16 @@ module Transformer
         raise NotEnoughParametersError, "#{key_str} cannot be parsed."
       end
       
-      root = key_split[0]
+      root_id = key_split[0]
       
-      instance = Transformer::KeyElementBuilder.create(key_builder, root, false)
+      instance = Transformer::KeyElementBuilder.new(key_builder, root_id)
       if key_split.length > 1
         (1..key_split.length-1).each { |index|
           splitted_split = key_split[index].split(">")
           if(splitted_split.length < 2)
             break
           end
-          instance.elem!(splitted_split[0], splitted_split[1].to_i, false)
+          instance.elem!(splitted_split[0], splitted_split[1].to_i)
         }
       end
       

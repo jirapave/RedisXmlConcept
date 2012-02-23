@@ -108,7 +108,7 @@ module XML
         if(info.length < 2)
           key = "#{info[0]}"
         else
-          key = Transformer::KeyElementBuilder.build_from_s(@mapping_service.key_builder, key.to_s).elem(info[0], info[1], false)
+          key = Transformer::KeyElementBuilder.build_from_s(@mapping_service.key_builder, key.to_s).elem(info[0], info[1])
         end
       end
       
@@ -116,7 +116,7 @@ module XML
       if(key == "")
         key = "#{name}"
       else
-        key = Transformer::KeyElementBuilder.build_from_s(@mapping_service.key_builder, key.to_s).elem(name, order, false)
+        key = Transformer::KeyElementBuilder.build_from_s(@mapping_service.key_builder, key.to_s).elem(name, order)
       end
       
       @current_tag.database_key = key
@@ -147,11 +147,9 @@ module XML
       @path.each do |path|
         info = path.split('>')
         if(info.length < 2)
-          #false means that first argument info[0] will not be mapped to id, e.g. is already id
-          @mapping_service.refresh_hash_mapping
-          key = @mapping_service.key_builder.root(info[0], false)
+          key = @mapping_service.key_builder.root(info[0])
         else
-          key.elem!(info[0], info[1].to_i, false)
+          key.elem!(info[0], info[1].to_i)
         end
       end
       

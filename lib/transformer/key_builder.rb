@@ -3,57 +3,32 @@ require_relative "mapping_service"
 
 module Transformer
   class KeyBuilder
-
-    private_class_method :new
     
     SEPARATOR = ":"
     ITERATOR_KEY = "<iterator>"
     
     attr_reader :environment_key, :collection_key, :document_key
+    attr_accessor :mapping_service
     
-    def initialize(env_name, coll_name, doc_name, map_names = true)
-      #TODO There should be some error if no mapping is found
-      if (map_names)
-        @mapping = Transformer::MappingService.map_env_coll_doc(env_name, coll_name, doc_name)
-        @mapping_service = Transformer::MappingService.create(self)
-        @env_id = @mapping[Transformer::MappingService::ENV_KEY]
-        @coll_id = @mapping[Transformer::MappingService::COLL_KEY]
-        @doc_id = @mapping[Transformer::MappingService::DOC_KEY]
-      else
-        @env_id = env_name
-        @coll_id = coll_name
-        @doc_id = doc_name
-      end
+    def initialize(env_id, coll_id, doc_id)
+        @env_id = env_id
+        @coll_id = coll_id
+        @doc_id = doc_id
       @environment_key = @env_id
       @collection_key = "#{@environment_key}#{SEPARATOR}#{@coll_id}"
       @document_key = "#{@collection_key}#{SEPARATOR}#{@doc_id}"
-    end
-    
-    #Creates new Key with required parameters
-    def self.create(env_name, coll_name, doc_name)#:Key
-      return new(env_name, coll_name, doc_name)
     end
     
     def self.environments_key()#:String
       "environments"
     end
     
-    def self.collections_key(env_name, map_names = true)#:String
-      if map_names
-        id_env = Transformer::MappingService.map_env(env_name)
-      else
-        id_env = env_name
-      end
-      "#{id_env}#{SEPARATOR}collections"
+    def self.collections_key(env_id)#:String
+      "#{env_id}#{SEPARATOR}collections"
     end
     
-    def self.documents_key(env_name, coll_name, map_names = true)#:String
-      if map_names
-        id_map = Transformer::MappingService.map_env_coll(env_name, coll_name)
-        value = "#{id_map[Transformer::MappingService::ENV_KEY]}#{SEPARATOR}#{id_map[Transformer::MappingService::COLL_KEY]}#{SEPARATOR}documents"
-      else
-        value = "#{env_name}#{SEPARATOR}#{coll_name}#{SEPARATOR}documents"
-      end
+    def self.documents_key(env_id, coll_id)#:String
+      value = "#{env_id}#{SEPARATOR}#{coll_id}#{SEPARATOR}documents"
       value
     end
     
@@ -62,7 +37,7 @@ module Transformer
       if(key_split.length < 3)
         raise NotEnoughParametersError, #{key_str} cannot be parsed to Key. Simply said: not enough '#{SEPARATOR}' delimiters."
       end
-      return new(key_split[0], key_split[1], key_split[2], false)
+      return new(key_split[0], key_split[1], key_split[2])
     end
       
     #Deprecated
@@ -89,10 +64,8 @@ module Transformer
 
     # root returns KeyElementBuilder, which require root element to initialize
     # that there is possible to create element_keys and so on    
-    def root(root_name, map_names = true):KeyElementBuilder
-      @mapping_service.refresh_hash_mapping
-      root_name = @mapping_service.unmap_elem_name(root_name) unless map_names
-      KeyElementBuilder.create(self, root_name)
+    def root(root_id):KeyElementBuilder
+      KeyElementBuilder.new(self, root_id)
     end
     
     def to_s()#:String

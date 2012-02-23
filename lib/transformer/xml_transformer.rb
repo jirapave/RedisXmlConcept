@@ -59,21 +59,7 @@ module Transformer
         elem = XML::Element.new(elem_name, key.to_s, namespace, nil)
         
         #add attributes
-        attrs = @db_interface.get_hash_value(@key_builder.content_key, key.attr)
-        if attrs != nil
-          attrs_hash = {}
-          fields_only = []
-          values_only = []
-          attrs.split(ATTR_SEPARATOR).each_with_index do |x, index|
-            fields_only << x if index%2 == 0
-            values_only << x if index%2 != 0
-          end
-          #Now we have fields and values apart
-          fields_only.each_with_index do |field, index|
-            attr_name = @attr_mapping[field]
-            attrs_hash[attr_name] = values_only[index]
-          end
-        end
+        attrs_hash = get_attributes(key)
         elem.attributes = XML::Attributes.new(elem_name, attrs_hash)
         #add descendants
         desc_keys = @db_interface.get_hash_value(@key_builder.content_key, key.to_s)
@@ -143,6 +129,14 @@ module Transformer
       end
       
       #And at last we have to save attributes and their order
+      save_attributes(node)
+    end
+    
+    def update_node(node)
+      
+    end
+    
+    def save_attributes(node)
       attr_arr = []
       iter = 0
       node.attributes.attrs.each do |key, value|
@@ -150,12 +144,31 @@ module Transformer
         iter +=  1
       end
       attributes = attr_arr.join("#{ATTR_SEPARATOR}" )
-      attr_key = Transformer::KeyElementBuilder.build_from_s(@key_builder, key).attr
-      @db_interface.add_to_hash(main_hash, [attr_key, attributes], true) if !attributes.empty?
+      attr_key = Transformer::KeyElementBuilder.build_from_s(@key_builder, node.database_key).attr
+      if !attributes.empty?
+        @db_interface.add_to_hash(@key_builder.content_key, [attr_key, attributes], true) 
+        return true
+      end
+      return false
     end
     
-    def update_node(node)
-      
+    def get_attributes(key_elem_builder)
+      attrs = @db_interface.get_hash_value(@key_builder.content_key, key_elem_builder.attr)
+        if attrs != nil
+          attrs_hash = {}
+          fields_only = []
+          values_only = []
+          attrs.split(ATTR_SEPARATOR).each_with_index do |x, index|
+            fields_only << x if index%2 == 0
+            values_only << x if index%2 != 0
+          end
+          #Now we have fields and values apart
+          fields_only.each_with_index do |field, index|
+            attr_name = @attr_mapping[field]
+            attrs_hash[attr_name] = values_only[index]
+          end
+        end
+        return attrs_hash
     end
     
     private 
