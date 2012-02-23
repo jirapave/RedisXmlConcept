@@ -58,7 +58,13 @@ module Transformer
     
     #Method will save a given file to the given database under the given collection if it doensn't
     #already exist. SAX parser is used to parse an XML file.
-    def save_document(file_name)
+    def save_document(file)
+      if !File.file?(file)
+        puts "Nejedna se o soubor"
+        return false
+      end
+      
+      file_name = File.basename(file)
       puts "Does document exist?"
       doc_id = @db_interface.increment_hash(@doc_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
       result = @db_interface.add_to_hash_ne(@doc_key, file_name, doc_id)
@@ -82,10 +88,11 @@ module Transformer
       puts "Parsing in progress..."
       
       @db_interface.commit_after do
-        parser.parse(File.open(file_name, 'rb'))
+        parser.parse(file)
       end
       
       puts "Document saved"
+      true
     end
     
     def all_documents(database=-1,collection=-1)

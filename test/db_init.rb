@@ -5,10 +5,10 @@ class DBInit
   COLL_MAP_SIGN = "collections"
   DOC_MAP_SIGN = "documents"
   
-  ELEM_MAP_KEY = "1:1:1<emapping"
-  ATTR_MAP_KEY = "1:1:1<amapping"
+  ELEM_MAP_KEY = "1:2:3<emapping"
+  ATTR_MAP_KEY = "1:2:3<amapping"
   
-  CONTENT_KEY = "1:1:1<content"
+  CONTENT_KEY = "1:2:3<content"
   
   def self.init_database
     db = BaseInterface::DBInterface.instance
@@ -52,10 +52,12 @@ class DBInit
     
     db.commit_after do
       db.add_to_hash(ENV_MAP_SIGN, ["env", "1"], true)
-      db.add_to_hash("1:#{COLL_MAP_SIGN}", ["coll", "1"], true)
-      db.add_to_hash("1:1:#{DOC_MAP_SIGN}", ["test.xml", "1"], true)
+      db.add_to_hash("1:#{COLL_MAP_SIGN}", ["coll", "2"], true)
+      db.add_to_hash("1:2:#{DOC_MAP_SIGN}", ["test.xml", "3"], true)
       db.add_to_hash(ELEM_MAP_KEY, elements, true)
+      db.add_to_hash(ELEM_MAP_KEY, ["<iterator>", "5"], true)
       db.add_to_hash(ATTR_MAP_KEY, attributes, true)
+      db.add_to_hash(ATTR_MAP_KEY, ["<iterator>", "2"], true)
       db.add_to_hash(CONTENT_KEY, content_arr, true)
     end
   end
