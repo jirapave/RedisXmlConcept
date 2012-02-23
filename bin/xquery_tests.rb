@@ -1,6 +1,10 @@
 #This class if for DEBUG purposes only, will be deleted
 #PROPER TESTs will be written in project/test folder and runned by run_tests file in bin folder
 
+file_name = "../bin/catalog.xml"
+puts File.file?(file_name)
+exit
+
 
 require_relative "../lib/base_interface/db_interface"
 require_relative "../lib/transformer/document_service"
@@ -12,17 +16,22 @@ require_relative "../lib/xquery/helper"
 require "rubygems"
 require "nokogiri"
 
-database = 1
-collection = 1
-file_name = "catalog.xml"
-
-
-#db_interface is Singleton, redis is class variable
-db = BaseInterface::DBInterface.instance
-
-document_service = Transformer::DocumentService.new()
-if(!document_service.save_document(file_name, database, collection))
-  puts "Document #{file_name} already exists in database #{database} and collection #{collection}"
+@env_name = "env_test"
+@coll_name = "coll_test"
+file_path = "catalog.xml"
+env_manager = RedXmlApi::EnvironmentManager.new()
+env = env_manager.create_environment(@env_name)
+if(env == nil)
+  env = RedXmlApi::Environment.new(@env_name)
+end
+coll = env.create_collection(@coll_name)
+if(coll == nil)
+  coll = RedXmlApi::Collection.new(@env_name, @coll_name)
+end
+begin
+  coll.save_document(file_path)
+rescue Transformer::MappingException
+  puts "ok, document exists"
 end
 
 

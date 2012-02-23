@@ -12,7 +12,7 @@ require_relative "../../lib/transformer/document_service"
 
 
 module XQuery
-  class XPathTests < Test::Unit::TestCase
+  class TestXPath < Test::Unit::TestCase
     
     class TestCase
       
@@ -67,30 +67,32 @@ module XQuery
         ["Cotton Dress Shirt"]),
       TestCase.new("doc(\"catalog.xml\")/catalog/product[name = \"Fleece Pullover\"]/number/text()",
         ["557"]),
-    ] 
+    ]
     
-    def test_xpath
-      
-      env_name = "env_test"
-      coll_name = "coll_test"
+    def setup
+      @env_name = "env_test"
+      @coll_name = "coll_test"
       file_name = "catalog.xml"
       env_manager = RedXmlApi::EnvironmentManager.new()
-      env = env_manager.create_environment(env_name)
+      env = env_manager.create_environment(@env_name)
       if(env == nil)
-        env = RedXmlApi::Environment.new(env_name)
+        env = RedXmlApi::Environment.new(@env_name)
       end
-      coll = env.create_collection(coll_name)
+      coll = env.create_collection(@coll_name)
       if(coll == nil)
-        coll = RedXmlApi::Collection.new(env_name, coll_name)
+        coll = RedXmlApi::Collection.new(@env_name, @coll_name)
       end
       begin
         coll.save_document(file_name)
       rescue Transformer::MappingException
         puts "ok, document exists"
       end
+    end
+    
+    
+    def test_xpath
       
-      
-      xquery_controller = XQuery::XQueryController.new(env_name, coll_name)
+      xquery_controller = XQuery::XQueryController.new(@env_name, @coll_name)
       
       TEST_CASES.each_with_index { |test_case, index|
         new_results = xquery_controller.get_results(test_case.query)
