@@ -21,25 +21,39 @@ module Transformer
     def initialize(key_builder)
       #KeyElementBuilder will be created here and used as a basis for mapping of elements and attributes
       @key_builder = key_builder
+      @db_interface = BaseInterface::DBInterface.instance
+      @elem_hash = @db_interface.find_value(@key_builder.elem_mapping_key)
+      @attr_hash = @db_interface.find_value(@key_builder.attr_mapping_key)
+      @elem_hash ||= {}
+      @attr_hash ||= {}
     end
 
     def self.create(key_builder)
       return new(key_builder)
     end
     
+    def refresh_hash_mapping()
+      @elem_hash = @db_interface.find_value(@key_builder.elem_mapping_key)
+      @attr_hash = @db_interface.find_value(@key_builder.attr_mapping_key)
+    end
+    
     def create_elem_mapping(elem_name)
-      db_interface = BaseInterface::DBInterface.instance
-      elem_id = db_interface.increment_hash(@key_builder.elem_mapping_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
-      result = db_interface.add_to_hash_ne(@key_builder.elem_mapping_key, elem_name, elem_id)
-      return elem_id if result
+      elem_id = @db_interface.increment_hash(@key_builder.elem_mapping_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
+      result = @db_interface.add_to_hash_ne(@key_builder.elem_mapping_key, elem_name, elem_id)
+      if result
+        @elem_hash[elem_name] = elem_id
+        return elem_id
+      end
       false
     end
     
     def create_attr_mapping(attr_name)
-      db_interface = BaseInterface::DBInterface.instance
-      attr_id = db_interface.increment_hash(@key_builder.attr_mapping_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
-      result = db_interface.add_to_hash_ne(@key_builder.attr_mapping_key, attr_name, attr_id)
-      return attr_id if result
+      attr_id = @db_interface.increment_hash(@key_builder.attr_mapping_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
+      result = @db_interface.add_to_hash_ne(@key_builder.attr_mapping_key, attr_name, attr_id)
+      if result
+        @attr_hash[attr_name] = attr_id
+        return attr_id
+      end
       false
     end
 
@@ -65,15 +79,13 @@ module Transformer
     end
 
     def map_elem_name(elem_name)
-      db_interface = BaseInterface::DBInterface.instance
-      elem_id = db_interface.get_hash_value(@key_builder.elem_mapping_key, elem_name)
+      elem_id = @elem_hash[elem_name]
       raise Transformer::MappingException, "Element #{elem_name} does not have mapping to id" unless elem_id
       elem_id
     end
 
     def map_attr_name(attr_name)
-      db_interface = BaseInterface::DBInterface.instance
-      attr_id = db_interface.get_hash_value(@key_builder.attr_mapping_key, attr_name)
+      attr_id = @attr_hash[attr_name]
       raise Transformer::MappingException, "Element #{attr_name} does not have mapping to id" unless attr_id
       attr_id
     end
@@ -110,12 +122,14 @@ module Transformer
     end
 
     def unmap_elem_name(elem_id)
-      elem_name = Transformer::MappingService.unmap_hash(@key_builder.elem_mapping_key, elem_id)
+      elem_name = Transformer::MappingService.find_hash_key(@elem_hash, elem_id)
+      raise Transformer::MappingException, "Mappping for element with id:#{elem_id} does not exist" unless elem_name
       elem_name
     end
 
     def unmap_attr_name(attr_id)
-      attr_name = Transformer::MappingService.unmap_hash(@key_builder.attr_mapping_key, attr_id)
+      attr_name = Transformer::MappingService.find_hash_key(@attr_hash, attr_id)
+      raise Transformer::MappingException, "Mapping for attribute with id:#{attr_name} does not exist" unless attr_name
       attr_name
     end
     
@@ -130,11 +144,19 @@ module Transformer
     def self.unmap_hash(hash_key, id)
       db_interface = BaseInterface::DBInterface.instance
       mapping_hash = db_interface.find_value(hash_key)
-      name = nil
-      mapping_hash.each do |field, value|
-        name = field if value == id and field != "<iterator>"
-      end
+      name = self.find_hash_key(mapping_hash, id)
       raise Transformer::MappingException, "Environment #{id} does not have mapping to name = does not exist" unless name
+      name
+    end
+    
+    def self.find_hash_key(hash, id)
+      name = nil
+      hash.each do |field, value|
+        if value == id and field != "<iterator>"
+          name = field 
+          break
+        end
+      end
       name
     end
     

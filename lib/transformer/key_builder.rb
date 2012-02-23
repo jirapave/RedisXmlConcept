@@ -90,6 +90,7 @@ module Transformer
     # root returns KeyElementBuilder, which require root element to initialize
     # that there is possible to create element_keys and so on    
     def root(root_name, map_names = true):KeyElementBuilder
+      @mapping_service.refresh_hash_mapping
       root_name = @mapping_service.unmap_elem_name(root_name) unless map_names
       KeyElementBuilder.create(self, root_name)
     end
