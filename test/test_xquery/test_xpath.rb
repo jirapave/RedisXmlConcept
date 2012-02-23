@@ -72,7 +72,7 @@ module XQuery
     def setup
       @env_name = "env_test"
       @coll_name = "coll_test"
-      file_name = "catalog.xml"
+      file_path = "catalog.xml"
       env_manager = RedXmlApi::EnvironmentManager.new()
       env = env_manager.create_environment(@env_name)
       if(env == nil)
@@ -83,7 +83,7 @@ module XQuery
         coll = RedXmlApi::Collection.new(@env_name, @coll_name)
       end
       begin
-        coll.save_document(file_name)
+        coll.save_document(file_path)
       rescue Transformer::MappingException
         puts "ok, document exists"
       end
