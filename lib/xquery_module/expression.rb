@@ -68,6 +68,11 @@ module XQuery
         when "return"
           return Return.new(parent)
         else
+          #check if that is binary operator - value comparison
+          if(BinaryOperator.is_operator_name?(parts))
+            return BinOperator.new(parent, parts)
+          end
+          
           return new(parent, type, [parts])
         end
         

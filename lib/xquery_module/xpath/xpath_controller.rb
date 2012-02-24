@@ -13,14 +13,14 @@ module XQuery
       @xpath_processor = nil
     end
     
-    def get_results(expression, result_context)
+    def get_results(expression, flwor_context)
       
       @last_step = false
       result_array = []
       
       expression.parts.each_with_index { |step, index|
         if(index == 0)
-          result_array = first_step(step, result_context)
+          result_array = first_step(step, flwor_context)
         else
           result_array = next_step_keys(step, result_array)
         end
@@ -46,7 +46,7 @@ module XQuery
     
   private
     
-    def first_step(step, result_context)#:Array with KeyElementBuilder as elements
+    def first_step(step, flwor_context)#:Array with KeyElementBuilder as elements
       if(  step.subtype == Expression::FUNCTION \
         && step.name == "doc" \
         && step.parts.length == 1 \
@@ -59,7 +59,7 @@ module XQuery
         @xpath_processor = KeyXPathProcessor.new(key)
         
       elsif(step.subtype == Expression::VARIABLE)
-        result_array = result_context.variables[step.name] #Array of nodes
+        result_array = flwor_context.variables[step.name] #Array of nodes
         if(result_array == nil)
           raise QueryStringError, "there is no variable \"#{step.name}\" defined"
         end

@@ -29,9 +29,26 @@ module XQuery
     LOGIC_AND = OperatorEnum.new("and") # preference over OR
     LOGIC_OR = OperatorEnum.new("or")
     
-    OPERATORS = [GLOBAL_EQ, GLOBAL_NE, GLOBAL_GT, GLOBAL_GE, GLOBAL_LT, GLOBAL_LE,
-                 VALUE_EQ , VALUE_NE , VALUE_GT , VALUE_GE , VALUE_LT , VALUE_LE,
-                 LOGIC_AND, LOGIC_OR]
+    
+    GLOBAL_OPERATORS = [GLOBAL_EQ, GLOBAL_NE, GLOBAL_GT, GLOBAL_GE, GLOBAL_LT, GLOBAL_LE ]
+    VALUE_OPERATORS = [VALUE_EQ , VALUE_NE , VALUE_GT , VALUE_GE , VALUE_LT , VALUE_LE]
+    LOGIC_OPERATORS = [LOGIC_AND, LOGIC_OR]
+    
+    NAME_OPERATORS = VALUE_OPERATORS | LOGIC_OPERATORS
+    
+    OPERATORS = GLOBAL_OPERATORS | NAME_OPERATORS
+    
+                 
+    def self.is_operator_name?(pattern)
+      if(pattern.length == 2 || pattern.length == 3)
+        NAME_OPERATORS.each { |x|
+           if(x.pattern == pattern)
+             return true
+           end
+        }
+      end
+      return false
+    end
     
     def self.which_operator(pattern)#returns OperatorEnum or nil
       if(pattern == nil)

@@ -1,10 +1,6 @@
 #This class if for DEBUG purposes only, will be deleted
 #PROPER TESTs will be written in project/test folder and runned by run_tests file in bin folder
 
-file_name = "../bin/catalog.xml"
-puts File.file?(file_name)
-exit
-
 
 require_relative "../lib/base_interface/db_interface"
 require_relative "../lib/transformer/document_service"
