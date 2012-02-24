@@ -8,12 +8,12 @@ module XQuery
     
     attr_reader :xpath_processor
     
-    def initialize(database, collection)
-      @function = FunctionProcessor.new(database, collection)
+    def initialize(environment, collection)
+      @function = FunctionProcessor.new(environment, collection)
       @xpath_processor = nil
     end
     
-    def get_results(expression, flwor_context)
+    def get_results(expression, flwor_context=nil)
       
       @last_step = false
       result_array = []
