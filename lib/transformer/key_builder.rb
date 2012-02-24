@@ -8,7 +8,6 @@ module Transformer
     ITERATOR_KEY = "<iterator>"
     
     attr_reader :environment_key, :collection_key, :document_key
-    attr_accessor :mapping_service
     
     def initialize(env_id, coll_id, doc_id)
         @env_id = env_id
@@ -37,7 +36,9 @@ module Transformer
       if(key_split.length < 3)
         raise NotEnoughParametersError, #{key_str} cannot be parsed to Key. Simply said: not enough '#{SEPARATOR}' delimiters."
       end
-      return new(key_split[0], key_split[1], key_split[2])
+      #There can be keys like "1:2:3<info"
+      split = key_split[2].split("<")
+      return new(key_split[0], key_split[1], split[0])
     end
       
     #Deprecated
@@ -65,7 +66,7 @@ module Transformer
     # root returns KeyElementBuilder, which require root element to initialize
     # that there is possible to create element_keys and so on    
     def root(root_id):KeyElementBuilder
-      KeyElementBuilder.new(self, root_id)
+      KeyElementBuilder.new(self, "#{root_id}")
     end
     
     def to_s()#:String

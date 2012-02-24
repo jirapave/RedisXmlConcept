@@ -1,6 +1,6 @@
-require_relative "../db_init"
-require_relative "../../lib/transformer/key_builder"
-require_relative "../../lib/transformer/mapping_service"
+require_relative "#{File.dirname(__FILE__)}/../db_init"
+require_relative "#{File.dirname(__FILE__)}/../../lib/transformer/key_builder"
+require_relative "#{File.dirname(__FILE__)}/../../lib/transformer/mapping_service"
 require "test/unit"
 
 class TestMappingService < Test::Unit::TestCase

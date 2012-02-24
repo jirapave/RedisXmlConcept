@@ -47,7 +47,7 @@ module Transformer
         return doc
         
       elsif(key.instance_of? Transformer::KeyElementBuilder)
-        elem_name = @elem_mapping[key.elem_name]
+        elem_name = @elem_mapping[key.elem_id]
         ns_split = elem_name.split(':')
         namespace = false
         if(ns_split.length > 1)

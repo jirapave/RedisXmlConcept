@@ -1,4 +1,5 @@
 require_relative "key_builder"
+require_relative "exceptions"
 
 module Transformer
   class KeyElementBuilder
@@ -7,6 +8,8 @@ module Transformer
     ITERATOR_KEY = "<iterator>"
     
     attr_reader :root_key
+    
+    MIN_ORDER = 1
 
     def initialize(key_builder, root_id)
       @root_key = "#{root_id}"
@@ -30,13 +33,9 @@ module Transformer
       "#{@root_key}#{@elem_str}>t>#{order}"
     end
     
-    def text_count()#:String
-      "#{@root_key}#{@elem_str}>t<c"
-    end
-    
     def parent!()#:KeyElementBuilder
       if(@elem_str.empty?)
-        raise NoElementError, "There is no parent element for root element."
+        raise Transformer::NoElementError, "There is no parent element for root element."
       else
         last_separator = @elem_str.rindex(SEPARATOR)
         @elem_str = @elem_str.slice(0, last_separator);
@@ -46,7 +45,7 @@ module Transformer
     
     def parent()#:String
       if(@elem_str.empty?)
-        raise NoElementError, "There is no parent element for root element."
+        raise Transformer::NoElementError, "There is no parent element for root element."
       else
         last_separator = @elem_str.rindex(SEPARATOR)
         return "#{@root_key}#{@elem_str.slice(0, last_separator)}"
@@ -55,20 +54,21 @@ module Transformer
     
     def next_elem()#:String
       if(@elem_str.empty?)
-        raise NoElementError, "There is no child element of root. Cannot call next_elem, while root is always only one."
+        raise Transformer::NoElementError, "There is no child element of root. Cannot call next_elem, while root is always only one."
       else
         last_gt = @elem_str.rindex(">")
-        order = @elem_str.slice(last_gt+1).to_i + 1;
+        order = @elem_str.slice((last_gt+1)..-1).to_i + 1;
         return "#{@root_key}#{@elem_str.slice(0, last_gt+1)}#{order}"
       end
     end
     
     def next_elem!()#:KeyElementBuilder
       if(@elem_str.empty?)
-        raise NoElementError, "There is no child element of root. Cannot call next_elem, while root is always only one."
+        raise Transformer::NoElementError, "There is no child element of root. Cannot call next_elem, while root is always only one."
       else
         last_gt = @elem_str.rindex(">")
-        order = @elem_str.slice(last_gt+1).to_i + 1;
+        #Slice from last_gt+1 till the end [-1] using range object
+        order = @elem_str.slice((last_gt+1)..-1).to_i + 1;
         @elem_str = "#{@elem_str.slice(0, last_gt+1)}#{order}";
         return self
       end
@@ -76,12 +76,12 @@ module Transformer
     
     def prev_elem()#:String
       if(@elem_str.empty?)
-        raise "There is no child element of root. Cannot call next_elem, while root is always only one."
+        raise Transformer::NoElementError, "There is no child element of root. Cannot call next_elem, while root is always only one."
       else
         last_gt = @elem_str.rindex(">")
-        order = @elem_str.slice(last_gt+1).to_i;
-        if(order <= 0)
-          raise NegativeOrderError, "Cannot decrease order. Order is already 0."
+        order = @elem_str.slice((last_gt+1)..-1).to_i;
+        if(order <= MIN_ORDER)
+          raise WrongOrderError, "Cannot decrease order. Order is already #{MIN_ORDER}."
         end
         order -= 1
         return "#{@root_key}#{@elem_str.slice(0, last_gt+1)}#{order}"
@@ -90,12 +90,12 @@ module Transformer
     
     def prev_elem!()#:KeyElementBuilder
       if(@elem_str.empty?)
-        raise NoElementError, "There is no child element of root. Cannot call next_elem, while root is always only one."
+        raise Transformer::NoElementError, "There is no child element of root. Cannot call next_elem, while root is always only one."
       else
         last_gt = @elem_str.rindex(">")
-        order = @elem_str.slice(last_gt+1).to_i;
-        if(order <= 0)
-          raise NegativeOrderError, "Cannot decrease order. Order is already 0."
+        order = @elem_str.slice((last_gt+1)..-1).to_i;
+        if(order <= MIN_ORDER)
+          raise WrongOrderError, "Cannot decrease order. Order is already #{MIN_ORDER}."
         end
         order -= 1
         @elem_str = "#{@elem_str.slice(0, last_gt+1)}#{order}";
@@ -107,7 +107,7 @@ module Transformer
       @elem_str.empty?
     end
     
-    def elem_name()#:String
+    def elem_id()#:String
       if(@elem_str.empty?)
         return @root_key
       else
@@ -119,7 +119,7 @@ module Transformer
     
     def order()#:Integer
       if(@elem_str.empty?)
-        return -1
+        raise WrongOrderError, "Cannot return order of the root element."
       else
         gt_split = @elem_str.split('>')
         return gt_split[gt_split.length-1].to_i 
@@ -129,13 +129,13 @@ module Transformer
     def self.text_order(key_str)#:Integer
       gt_split = self.last_dd_gt_split(key_str)
       if(gt_split == nil)
-        return -1
+        raise WrongOrderError, "No text order to return."
       end
       if(gt_split.length < 3)
-        return -1
+        raise WrongOrderError, "No text order to return."
       end
       if(!gt_split[gt_split.length-2] == "t")
-        return -1
+        raise WrongOrderError, "No text order to return."
       end
       return gt_split[gt_split.length-1].to_i 
     end
@@ -173,27 +173,26 @@ module Transformer
       if key_split.length > 1
         (1..key_split.length-1).each { |index|
           splitted_split = key_split[index].split(">")
+          #Does not support text keys, e.g. 1:2>2>t>3 is translated to 1:2>2
           if(splitted_split.length < 2)
             break
+          else
+            instance.elem!(splitted_split[0], splitted_split[1].to_i)
           end
-          instance.elem!(splitted_split[0], splitted_split[1].to_i)
         }
       end
       
       return instance
     end
     
-    def to_s()#:String
-      "#{@root_key}#{@elem_str}"
+    def key_str()
+      return "#{@root_key}#{@elem_str}"
     end
     
-  end
-  
-  #exceptions
-  class NoElementError < StandardError
-  end
-  
-  class NegativeOrderError < StandardError
+    def to_s()#:String
+      return key_str()
+    end
+    
   end
   
 end
