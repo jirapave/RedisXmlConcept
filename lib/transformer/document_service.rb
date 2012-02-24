@@ -12,12 +12,12 @@ module Transformer
   #their existence in a database and also retrives them.
   #This class is part of Observer pattern as Notifier, it get's notified by XML::SaxDocument class.
   class DocumentService < Notifier
-    def initialize(env_name, coll_name)
+    def initialize(env_id, coll_id)
       @xml_transformer = nil
       @db_interface = BaseInterface::DBInterface.instance
-      @doc_key = Transformer::KeyBuilder.documents_key(env_name, coll_name)
-      @env_name = env_name
-      @coll_name = coll_name
+      @doc_key = Transformer::KeyBuilder.documents_key(env_id, coll_id)
+      @env_id = env_id
+      @coll_id = coll_id
       @builder = nil
     end
     
@@ -72,12 +72,12 @@ module Transformer
       
       puts "No, proceeding with saving..."
       
-      @builder = Transformer::KeyBuilder.create(@env_name, @coll_name, file_name)
+      @builder = Transformer::KeyBuilder.new(@env_id, @coll_id, doc_id)
       @xml_transformer = Transformer::XMLTransformer.new(@builder)
       info = [file_name, doc_id]
       puts "Saving document: #{info.inspect}"
       #Now file is saved, we have it's id and we can know proceed to parsing
-      mapping = Transformer::MappingService.create(@builder)
+      mapping = Transformer::MappingService.new(@builder)
       parser = Nokogiri::XML::SAX::Parser.new(XML::SaxDocument.new(self, mapping))
       @doc_name = file_name
       # parser = Nokogiri::XML::SAX::Parser.new(XML::ConsoleSaxDocument.new)
@@ -101,16 +101,15 @@ module Transformer
     
     #Finds a document under the specified database and collection, returns XML::Document with whole DOM loaded.
     def find_document(file_name)#:XML::Document
-      @builder = Transformer::KeyBuilder.create(@env_name, @coll_name, file_name)
-      @xml_transformer = Transformer::XMLTransformer.new(@builder)
-      #TODO Probably useless, when creating keey  with KeyBuilder, mapping helper would
-      #raise an exception when file does not exist
       file_id = document_exist?(file_name)
       
       if(file_id == nil)
         puts "Document with name #{file_name} not found."
         return nil
       end
+      
+      @builder = Transformer::KeyBuilder.new(@env_id, @coll_id, file_id)
+      @xml_transformer = Transformer::XMLTransformer.new(@builder)
       return @xml_transformer.find_node(@builder)
     end
       

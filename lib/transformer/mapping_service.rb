@@ -10,8 +10,6 @@ module Transformer
     COLL_KEY = "coll"
     DOC_KEY = "doc"
     
-    private_class_method :new
-    
     attr_accessor :key_builder
     
     #db_interface insttance is obtained in almost each method, unfortunately, we are unable to create
@@ -26,10 +24,6 @@ module Transformer
       @attr_hash = @db_interface.find_value(@key_builder.attr_mapping_key)
       @elem_hash ||= {}
       @attr_hash ||= {}
-    end
-
-    def self.create(key_builder)
-      return new(key_builder)
     end
     
     def refresh_hash_mapping()
@@ -61,18 +55,28 @@ module Transformer
       env_id = self.map_to_id(Transformer::KeyBuilder.environments_key, env_name, "Environment")
       env_id
     end
+    
+    def self.map_coll(env_id, coll_name)
+      coll_id = self.map_to_id(Transformer::KeyBuilder.collections_key(env_id), coll_name, "Collection")
+      coll_id
+    end
+    
+    def self.map_doc(env_id, coll_id, doc_name)
+      doc_id = self.map_to_id(Transformer::KeyBuilder.documents_key(env_id, coll_id), doc_name, "Document")
+      doc_id
+    end
 
     def self.map_env_coll(env_name, coll_name)
       env_id = self.map_to_id(Transformer::KeyBuilder.environments_key, env_name, "Environment")
-      coll_id = self.map_to_id(Transformer::KeyBuilder.collections_key(env_id, false), coll_name, "Collection")
+      coll_id = self.map_to_id(Transformer::KeyBuilder.collections_key(env_id), coll_name, "Collection")
       result = {ENV_KEY => env_id, COLL_KEY => coll_id}
       result
     end
     
-    def self.map_env_coll_doc(env_name, coll_name, file_name)
+    def self.map_env_coll_doc(env_name, coll_name, doc_name)
       env_id = self.map_to_id(Transformer::KeyBuilder.environments_key, env_name, "Environment")
-      coll_id = self.map_to_id(Transformer::KeyBuilder.collections_key(env_id, false), coll_name, "Collection")
-      doc_id = self.map_to_id(Transformer::KeyBuilder.documents_key(env_id, coll_id, false), file_name, "Document")
+      coll_id = self.map_to_id(Transformer::KeyBuilder.collections_key(env_id), coll_name, "Collection")
+      doc_id = self.map_to_id(Transformer::KeyBuilder.documents_key(env_id, coll_id), doc_name, "Document")
       
       result = {ENV_KEY => env_id, COLL_KEY => coll_id, DOC_KEY => doc_id}
       result
@@ -86,7 +90,7 @@ module Transformer
 
     def map_attr_name(attr_name)
       attr_id = @attr_hash[attr_name]
-      raise Transformer::MappingException, "Element #{attr_name} does not have mapping to id" unless attr_id
+      raise Transformer::MappingException, "Attribute #{attr_name} does not have mapping to id" unless attr_id
       attr_id
     end
 
@@ -96,11 +100,24 @@ module Transformer
       env_name
     end
 
+#TODO Mapping completion
+    def self.unmap_coll(env_id, coll_id)
+      coll_mapping_key = Transformer::KeyBuilder.collections_key(env_id)
+      coll_name = self.unmap_hash(coll_mapping_key, coll_id)
+      coll_name
+    end
+    
+    def self.unmap_doc(env_id, coll_id, doc_id)
+      doc_mapping_key = Transformer::KeyBuilder.documents_key(env_id, coll_id)
+      doc_name = self.unmap_hash(doc_mapping_key, doc_id)
+      doc_name
+    end
+
     def self.unmap_env_coll(env_id, coll_id)
       env_mapping_key = Transformer::KeyBuilder.environments_key
       env_name = self.unmap_hash(env_mapping_key, env_id)
       
-      coll_mapping_key = Transformer::KeyBuilder.collections_key(env_id, false)
+      coll_mapping_key = Transformer::KeyBuilder.collections_key(env_id)
       coll_name = self.unmap_hash(coll_mapping_key, coll_id)
       
       result = {ENV_KEY => env_name, COLL_KEY => coll_name}
@@ -111,10 +128,10 @@ module Transformer
       env_mapping_key = Transformer::KeyBuilder.environments_key
       env_name = self.unmap_hash(env_mapping_key, env_id)
       
-      coll_mapping_key = Transformer::KeyBuilder.collections_key(env_id, false)
+      coll_mapping_key = Transformer::KeyBuilder.collections_key(env_id)
       coll_name = self.unmap_hash(coll_mapping_key, coll_id)
       
-      doc_mapping_key = Transformer::KeyBuilder.documents_key(env_id, coll_id, false)
+      doc_mapping_key = Transformer::KeyBuilder.documents_key(env_id, coll_id)
       doc_name = self.unmap_hash(doc_mapping_key, doc_id)
       
       result = {ENV_KEY => env_name, COLL_KEY => coll_name, DOC_KEY => doc_name}
