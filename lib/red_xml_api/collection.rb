@@ -3,8 +3,8 @@ require_relative "../base_interface/db_interface"
 module RedXmlApi
   class Collection
     
-    def initialize(env_name, coll_name)
-      @doc_service = Transformer::DocumentService.new(env_name, coll_name)
+    def initialize(env_id, coll_id)
+      @doc_service = Transformer::DocumentService.new(env_id, coll_id)
     end
     
     def save_document(file_name)

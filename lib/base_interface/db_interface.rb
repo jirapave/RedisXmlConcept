@@ -19,6 +19,9 @@ module BaseInterface
   #Class represents an interface between redis database and our application. It encapsulates redis commands.
   class DBInterface
     include Singleton
+    
+    #TODO Important! This interfce must be rewritten, for EACH command which does query database except multi
+    #there MUST exist buffer. Each such a command will than
 
     @@BUFFER_COUNT = 1000000 #of all entry operations - then flush to redis
     @@STACK_LEVEL_LIMIT = 8000 #stack level too deep error prevention (@redis.mset *values)
@@ -157,10 +160,10 @@ module BaseInterface
       end
     end
 
-    #Deletes certain pairs from hash located under the given key. Pairs are specified using an array parameter of 
+    #Delete certain fields from hash, returns numbr of deleted fields
     #fields==keys
-    def delete_from_hash(key, *hash_keys)
-      @redis.hdel key, *hash_keys
+    def delete_from_hash(key, *hash_fields)
+      @redis.hdel key, *hash_fields
     end
 
     #Determines if the given field exist in a hash located under the given key
@@ -201,6 +204,10 @@ module BaseInterface
     
     def get_hash_value(key, field)
       @redis.hget key,field
+    end
+    
+    def get_all_hash_values(key)
+      @redis.hvals key
     end
 
     #Saves multiple string values under the multiple keys specified in an array parameter, example:

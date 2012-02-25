@@ -14,4 +14,10 @@ module Transformer
   #get previous element from key 1:2>1, because there isn't any. 
   class WrongOrderError < StandardError
   end
+  
+  #Raised when some mostly unknown error occures and when data is lost. For example when some service
+  #rename something, it means deleting old and create new...if we delete and creation failed, we have
+  #lost data, this exception is raised.
+  class FatalError < StandardError
+  end
 end
