@@ -1,9 +1,10 @@
 require_relative "../base_interface/db_interface"
 require_relative "../transformer/document_service"
+require_relative "../transformer/mapping_service"
 
 module RedXmlApi
   class Collection
-    
+
     def initialize(env_id, coll_id)
       @doc_service = Transformer::DocumentService.new(env_id, coll_id)
     end

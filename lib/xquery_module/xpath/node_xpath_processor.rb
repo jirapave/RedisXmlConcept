@@ -4,8 +4,6 @@ module XQuery
   class NodeXPathProcessor < XPathProcessor
     
     
-    #TODO TODO TODO - untested so far!!
-    
     #stripped: true/false
     def get_text(node, stripped)
       text = ""

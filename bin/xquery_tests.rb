@@ -1,32 +1,31 @@
 #This class if for DEBUG purposes only, will be deleted
 #PROPER TESTs will be written in project/test folder and runned by run_tests file in bin folder
 
-file_name = "../bin/catalog.xml"
-puts File.file?(file_name)
-exit
-
 
 require_relative "../lib/base_interface/db_interface"
 require_relative "../lib/transformer/document_service"
 require_relative "../lib/transformer/key_element_builder"
-require_relative "../lib/xquery/xquery_controller"
+require_relative "../lib/xquery_module/xquery/xquery_controller"
 require_relative "../lib/xml/node"
-require_relative "../lib/xquery/helper"
+require_relative "../lib/xquery_module/helper"
+require_relative "../lib/red_xml_api/environment_manager"
+require_relative "../lib/red_xml_api/environment"
+require_relative "../lib/red_xml_api/collection"
 
 require "rubygems"
 require "nokogiri"
 
-@env_name = "env_test"
-@coll_name = "coll_test"
+env_name = "env_test"
+coll_name = "coll_test"
 file_path = "catalog.xml"
 env_manager = RedXmlApi::EnvironmentManager.new()
-env = env_manager.create_environment(@env_name)
+env = env_manager.create_environment(env_name)
 if(env == nil)
-  env = RedXmlApi::Environment.new(@env_name)
+  env = RedXmlApi::Environment.new(env_name)
 end
-coll = env.create_collection(@coll_name)
+coll = env.create_collection(coll_name)
 if(coll == nil)
-  coll = RedXmlApi::Collection.new(@env_name, @coll_name)
+  coll = RedXmlApi::Collection.new(env_name, coll_name)
 end
 begin
   coll.save_document(file_path)
@@ -35,9 +34,8 @@ rescue Transformer::MappingException
 end
 
 
-xquery_controller = XQuery::XQueryController.new(database, collection)
+xquery_controller = XQuery::XQueryController.new(env_name, coll_name)
 
-query = "for $prod in doc(  \"catalog.xml\"  )/prod:catalog/product[position()<3]/@dept[1]  where $prod/@dept<=\"ACC\" order by $prod/name return $prod/name"
 query = "for $prod in doc(  \"catalog.xml\"  )/catalog/product[position()<=3]  where $prod/@dept<=\"ACC\" order by $prod/name return <elem>$prod/name</elem>"
 # query = "doc(  \"catalog.xml\"  )/prod:catalog/product[position()<3]/@dept[@dept = \"ACC\"]"
 # query = "doc(  \"catalog.xml\"  )/catalog/product[@dept = \"ACC\"]"

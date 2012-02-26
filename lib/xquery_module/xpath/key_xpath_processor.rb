@@ -13,19 +13,15 @@ module XQuery
       @key_builder = key_builder
       
       #load file hashes
-      @mapping_service = Transformer::MappingService.create(key_builder)
+      @mapping_service = Transformer::MappingService.new(key_builder)
       @content_hash_key = key_builder.content_key
       info_hash = @db.find_value(key_builder.info)
       
       #init xml transformer
       @xml_transformer = Transformer::XMLTransformer.new(key_builder)
-      # @xml_transformer.database = key.db_name
-      # @xml_transformer.collection = key.col_name
-      # @xml_transformer.mapping = @mapping_hash
-      # @xml_transformer.content_hash = @content_hash_key
       
       #load root key - KeyElementBuilder object
-      @root_key = Transformer::KeyElementBuilder.create(key_builder, info_hash["root"], false)
+      @root_key = Transformer::KeyElementBuilder.new(key_builder, info_hash["root"])
       
     end
     
@@ -67,7 +63,6 @@ module XQuery
       
       get_children_plain(key).each { |str_key|
           if(!Transformer::KeyElementBuilder.text?(str_key))
-            elem_name =  
             new_key = Transformer::KeyElementBuilder.build_from_s(@key_builder, str_key)
             #check match_elem_name
             if(match_elem_id == "*" || new_key.elem_name == match_elem_id)
@@ -100,6 +95,7 @@ module XQuery
     end
     
     def get_attribute(key, attr_name)
+      # attr_hash = @xml_transformer.get_attributes(key) #TODO resolve with Pavel
       attr_hash = get_attribute_hash(key)
       return attr_hash[get_attr_index(attr_name)]
     end

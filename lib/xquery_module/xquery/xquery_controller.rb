@@ -5,8 +5,8 @@ require_relative "xquery_parser"
 module XQuery
   class XQueryController
     
-    def initialize(database, collection)
-      @xquery_solver = XQuerySolver.new(database, collection)
+    def initialize(environment, collection)
+      @xquery_solver = XQuerySolver.new(environment, collection)
     end
     
     def get_results(query)
@@ -16,9 +16,6 @@ module XQuery
       
       #solve parsed expression
       return @xquery_solver.get_results(expression)
-      
-      # assume only xpath query for now
-      # @xpath.get_results(query)
       
     end
     

@@ -1,19 +1,16 @@
 require_relative "../xpath/xpath_controller"
 require_relative "../expression"
-require_relative "xquery_result_context"
+require_relative "flwor_context"
 require_relative "flwor_controller"
 
 module XQuery
   class XQuerySolver
-    def initialize(database, collection)
-      @xpath_controller = XPathController.new(database, collection)
+    def initialize(environment, collection)
+      @xpath_controller = XPathController.new(environment, collection)
       @flwor_controller = FLWORController.new(@xpath_controller)
     end
     
     def get_results(expression)
-      #clear previous results and create new one
-      result_context = XQueryResultContext.new
-      
       #reduce groups in expression
       expression = reduce_groups(expression)
       
@@ -24,10 +21,10 @@ module XQuery
       root_expression = expression
       
       #DEBUG TODO delete
-      # puts "-=WALK=-"
-      # root_expression.walkthrough
+      puts "-=WALK=-"
+      root_expression.walkthrough
       
-      return solve_query(root_expression, result_context)
+      return solve_query(root_expression)
       
       
       #TODO resolve each xpath sequentially into sequences of nodes/data
@@ -41,12 +38,12 @@ module XQuery
   private
   
     #main SOLVER method
-    def solve_query(expression, result_context)
+    def solve_query(expression)
       if(expression.type == Expression::GROUP && !expression.parts.empty? && expression.parts[0].type == Expression::FOR)
-        return @flwor_controller.get_results(expression, result_context)
+        return @flwor_controller.get_results(expression)
       
       elsif(expression.type == Expression::XPATH)
-        return @xpath_controller.get_results(expression, result_context)
+        return @xpath_controller.get_results(expression)
       
       else
         raise StandardError, "another type of query not supported - has to be basic FLWOR or XPATH"        

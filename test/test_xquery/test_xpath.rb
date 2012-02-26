@@ -26,9 +26,15 @@ module XQuery
     TEST_CASES = [
       TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. = 443]",
         ["<number>443</number>"]),
+      TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. eq 443]",
+        []),#TODO this should be TypeError
+      TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. eq '443']",
+        ["<number>443</number>"]),
       TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[.=443]",
         ["<number>443</number>"]),
       TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. >= 563]",
+        ["<number>563</number>", "<number>784</number>"]),
+      TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. ge '563']",
         ["<number>563</number>", "<number>784</number>"]),
       TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. > 563]",
         ["<number>784</number>"]),

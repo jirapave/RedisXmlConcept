@@ -21,20 +21,6 @@ module XQuery
               content = xpath_processor.get_node_content(elem)
               value.values << content
             }
-            
-            # context_children_bean = xpath_processor.get_children(context_elem)
-            # elem_id = xpath_processor.get_elem_index(expr.parts[0])
-            # elem_count = context_children_bean.elem_hash[elem_id]
-            # if(elem_count == nil)
-              # raise QueryStringError, "wrong element in predicate (#{expr.parts[0]})"
-            # end
-            # value = Sequence.new
-            # elem_count.to_i.times { |i|
-              # new_key = Transformer::KeyElementBuilder.build_from_s(context_elem.elem(elem_id, i))
-              # content = xpath_processor.get_node_content(new_key)
-              # value.values << content
-            # }
-            
             if(value.values.length == 1)
               value = AtomicValue.new(value.values[0])
             end
