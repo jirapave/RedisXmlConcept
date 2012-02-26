@@ -1,6 +1,7 @@
 <catalog>
 	<product dept="WMN">
-		<number>557</number>
+		<number>557<![CDATA[
+			cdata cast<>]]></number>
 		<name language="en">Fleece Pullover</name>
 		<colorChoices>navy black</colorChoices>
 	</product>
@@ -9,6 +10,7 @@
 		<name language="en">Floppy Sun Hat</name>
 	</product>
 	<product dept="ACC">
+		<!-- Commentary -->
 		<number>443</number>
 		<name language="en">Deluxe Travel Bag</name>
 	</product>
@@ -16,6 +18,6 @@
 		<number>784</number>
 		<name language="en">Cotton Dress Shirt</name>
 		<colorChoices>white gray</colorChoices>
-		<desc>Our <i>favorite</i> shirt!</desc>
+		<desc>Our <i>favorite</i> shirt! <!-- Second commentary --></desc>
 	</product>
 </catalog>

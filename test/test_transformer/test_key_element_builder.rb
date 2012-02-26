@@ -1,12 +1,11 @@
-require_relative "#{File.dirname(__FILE__)}/../db_init"
-require_relative "#{File.dirname(__FILE__)}/../../lib/transformer/key_builder"
-require_relative "#{File.dirname(__FILE__)}/../../lib/transformer/key_element_builder"
+require_relative "../db_init"
+require_relative "../../lib/transformer/key_builder"
+require_relative "../../lib/transformer/key_element_builder"
 require "test/unit"
 
 class TestKeyElementBuilder < Test::Unit::TestCase
   
   def setup()
-    puts "Test SETUP"
     @key_builder = Transformer::KeyBuilder.new("1", "2", "3")
     @key_elem_builder = Transformer::KeyElementBuilder.new(@key_builder, "1")
   end
@@ -34,6 +33,16 @@ class TestKeyElementBuilder < Test::Unit::TestCase
   def test_text()
     assert_equal(true, @key_elem_builder.text(3) == "1>t>3")
     assert_equal(true, @key_elem_builder.elem!(981, 312).text("1001") == "1:981>312>t>1001")
+  end
+  
+  def test_comment()
+    assert_equal(true, @key_elem_builder.comment(5) == "1>c>5")
+    assert_equal(true, @key_elem_builder.elem!(122, 91).comment("1000") == "1:122>91>c>1000")
+  end
+    
+  def test_cdata()
+    assert_equal(true, @key_elem_builder.cdata(99) == "1>d>99")
+    assert_equal(true, @key_elem_builder.elem!(2, 272).cdata("99") == "1:2>272>d>99")
   end
   
   def test_parent!()
@@ -165,6 +174,22 @@ class TestKeyElementBuilder < Test::Unit::TestCase
     assert_equal(true, Transformer::KeyElementBuilder.text?("1:56>4>t>4:99>100") == false)
     assert_equal(true, Transformer::KeyElementBuilder.text?("1:3>4>t>99") == true)
     assert_equal(true, Transformer::KeyElementBuilder.text?("1:3>65>t>11:4>5>t>2") == true)
+  end
+  
+  def test_comment?()
+    assert_equal(true, Transformer::KeyElementBuilder.comment?("1") == false)
+    assert_equal(true, Transformer::KeyElementBuilder.comment?("1:2>1") == false)
+    assert_equal(true, Transformer::KeyElementBuilder.comment?("1:56>4>c>4:99>100") == false)
+    assert_equal(true, Transformer::KeyElementBuilder.comment?("1:3>4>c>99") == true)
+    assert_equal(true, Transformer::KeyElementBuilder.comment?("1:3>65>c>11:4>5>c>2") == true)
+  end
+  
+  def test_cdata?()
+    assert_equal(true, Transformer::KeyElementBuilder.cdata?("1") == false)
+    assert_equal(true, Transformer::KeyElementBuilder.cdata?("1:2>1") == false)
+    assert_equal(true, Transformer::KeyElementBuilder.cdata?("1:56>4>d>4:99>100") == false)
+    assert_equal(true, Transformer::KeyElementBuilder.cdata?("1:3>4>d>99") == true)
+    assert_equal(true, Transformer::KeyElementBuilder.cdata?("1:3>65>t>11:4>5>d>2") == true)
   end
   
   def test_build_from_s()

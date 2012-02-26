@@ -132,35 +132,17 @@ module XML
     end
 
     def comment(text)
+      save_text_node(text, XML::TextContent::COMMENT)
     end
 
     #Method is called when a chunk of text occurs, each calling means one text part, for example:
     #<aaa>aaa<bbb>bbb</bbb>ccc</aaa>, for aaa element it gets called twice for "aaa" and "ccc"
     def characters(text)
-      text = text.sub('\n', '').strip
-      if(text.empty?)
-        return
-      end
-      order = @current_tag.text_nodes_count
-      key = ""
-      #puts "base_key: #{key}"
-      @path.each do |path|
-        info = path.split('>')
-        if(info.length < 2)
-          key = @mapping_service.key_builder.root(info[0])
-        else
-          key.elem!(info[0], info[1].to_i)
-        end
-      end
-      
-      text_tag = XML::TextContent.new(text, order)
-      text_tag.database_key = key.text(order)
-      # @current_tag.descendants << text_tag
-      @current_tag.add_text(text_tag)
+      save_text_node(text, XML::TextContent::PLAIN)
     end
     
     def cdata_block(string)
-      
+      save_text_node(string, XML::TextContent::CDATA)
     end
     
     def error(string)
@@ -186,6 +168,39 @@ module XML
         @attr_mapping[name] = attr_id
       end
       return @attr_mapping[name]
+    end
+    
+    def save_text_node(text, type)
+      text = text.sub('\n', '').strip
+      if(text.empty?)
+        return
+      end
+      order = @current_tag.text_nodes_count
+      key = ""
+      #puts "base_key: #{key}"
+      @path.each do |path|
+        info = path.split('>')
+        if(info.length < 2)
+          key = @mapping_service.key_builder.root(info[0])
+        else
+          key.elem!(info[0], info[1].to_i)
+        end
+      end
+      
+      text_tag = XML::TextContent.new(text, order, type)
+      case type
+        when XML::TextContent::PLAIN
+          text_tag.database_key = key.text(order)
+        when XML::TextContent::COMMENT
+          text_tag.database_key = key.comment(order)
+        when XML::TextContent::CDATA
+          text_tag.database_key = key.cdata(order)
+        else
+          puts "This should never happend, text_type doesn't correspond: #{type}"
+          text_tag.database_key = key.text(order)
+      end
+      # @current_tag.descendants << text_tag
+      @current_tag.add_text(text_tag)
     end
   end
 end

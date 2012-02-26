@@ -15,9 +15,7 @@ module Transformer
   class WrongOrderError < StandardError
   end
   
-  #Raised when some mostly unknown error occures and when data is lost. For example when some service
-  #rename something, it means deleting old and create new...if we delete and creation failed, we have
-  #lost data, this exception is raised.
-  class FatalError < StandardError
+  #Raised when next* method is called on some iterator and there are no more items to iterate over
+  class NoIteratorNext < StandardError
   end
 end

@@ -1,5 +1,6 @@
 require_relative "../transformer/collection_service"
 require_relative "collection"
+require_relative "environment_manager"
 
 module RedXmlApi
   class Environment
@@ -22,11 +23,21 @@ module RedXmlApi
     end
     
     def delete_collection(name)
-      
+      begin
+        @coll_service.delete_collection(name)
+      rescue Exception => ex
+        puts "#{ex.message}"
+        puts "Unknown error has occured."
+      end
     end
     
     def delete_all_collections()
-      
+      begin
+        @coll_service.delete_all_collections
+      rescue Exception => ex
+        puts "#{ex.message}"
+        puts "Unknown error has occured."
+      end
     end
     
     def get_collection(name)
@@ -53,8 +64,29 @@ module RedXmlApi
       end
     end
     
+    def get_all_collections_names()
+      @coll_service.get_all_collections_names
+    end
+    
+    def rename_collection(old_name, name)
+      begin
+        @coll_service.rename_collection(old_name, name)
+        return true
+      rescue Transformer::MappingException => ex
+        puts ex.message
+        puts "Collection could't be renamed."
+        return false
+      end
+    end
+    
     def rename!(old_name, name)
-      @env_manager.rename_environment?(old_name, name)
+      begin
+        return @env_manager.rename_environment?(old_name, name)
+      rescue Transformer::MappingException => ex
+        puts ex.message
+        puts "Collection could't be renamed."
+        return false
+      end
     end
   end
 end

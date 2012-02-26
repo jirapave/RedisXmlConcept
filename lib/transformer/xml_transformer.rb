@@ -73,9 +73,13 @@ module Transformer
         
         if part_keys # if this element is not empty (like <element />)
           part_keys.each do |key_str|
+            text_content = @db_interface.get_hash_value(@key_builder.content_key, key_str)
             if(Transformer::KeyElementBuilder.text?(key_str))
-              text_content = @db_interface.get_hash_value(@key_builder.content_key, key_str)
-              elem.descendants << XML::TextContent.new(text_content, Transformer::KeyElementBuilder.text_order(key_str))
+              elem.descendants << XML::TextContent.new(text_content, Transformer::KeyElementBuilder.text_order(key_str), XML::TextContent::PLAIN)
+            elsif(Transformer::KeyElementBuilder.comment?(key_str))
+              elem.descendants << XML::TextContent.new(text_content, Transformer::KeyElementBuilder.text_order(key_str), XML::TextContent::COMMENT)
+            elsif(Transformer::KeyElementBuilder.cdata?(key_str))
+              elem.descendants << XML::TextContent.new(text_content, Transformer::KeyElementBuilder.text_order(key_str), XML::TextContent::CDATA)
             else
               #Element
               child = find_node(Transformer::KeyElementBuilder.build_from_s(@key_builder, key_str))
@@ -115,6 +119,7 @@ module Transformer
           #Non-element
             descendant_keys << desc.database_key << "|"
           if desc.text_node?
+            #text_node is plain text, commnt and cdata, sax_parser is creating keys for them, we don't bother here
             text_content << desc.database_key 
             text_content << desc.text_content
           end

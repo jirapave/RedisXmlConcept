@@ -32,8 +32,8 @@ module Transformer
     end
     
     def create_elem_mapping(elem_name)
-      elem_id = @db_interface.increment_hash(@key_builder.elem_mapping_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
-      result = @db_interface.add_to_hash_ne(@key_builder.elem_mapping_key, elem_name, elem_id)
+      elem_id = @db_interface.increment_hash(@key_builder.elem_mapping_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1, true)
+      result = @db_interface.add_to_hash_ne(@key_builder.elem_mapping_key, elem_name, elem_id, true)
       if result
         @elem_hash[elem_name] = elem_id
         return elem_id
@@ -42,8 +42,8 @@ module Transformer
     end
     
     def create_attr_mapping(attr_name)
-      attr_id = @db_interface.increment_hash(@key_builder.attr_mapping_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
-      result = @db_interface.add_to_hash_ne(@key_builder.attr_mapping_key, attr_name, attr_id)
+      attr_id = @db_interface.increment_hash(@key_builder.attr_mapping_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1, true)
+      result = @db_interface.add_to_hash_ne(@key_builder.attr_mapping_key, attr_name, attr_id, true)
       if result
         @attr_hash[attr_name] = attr_id
         return attr_id

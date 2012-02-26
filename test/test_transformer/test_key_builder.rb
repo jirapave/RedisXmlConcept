@@ -1,6 +1,6 @@
-require_relative "#{File.dirname(__FILE__)}/../db_init"
-require_relative "#{File.dirname(__FILE__)}/../../lib/transformer/key_builder"
-require_relative "#{File.dirname(__FILE__)}/../../lib/transformer/key_element_builder"
+require_relative "../db_init"
+require_relative "../../lib/transformer/key_builder"
+require_relative "../../lib/transformer/key_element_builder"
 require "test/unit"
 
 class TestKeyBuilder < Test::Unit::TestCase

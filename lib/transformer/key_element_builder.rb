@@ -1,3 +1,4 @@
+require_relative "../xml/text_content"
 require_relative "key_builder"
 require_relative "exceptions"
 
@@ -31,6 +32,14 @@ module Transformer
     
     def text(order)#:String
       "#{@root_key}#{@elem_str}>t>#{order}"
+    end
+    
+    def comment(order)#:String
+      "#{@root_key}#{@elem_str}>c>#{order}"
+    end
+    
+    def cdata(order)#:String
+      "#{@root_key}#{@elem_str}>d>#{order}"
     end
     
     def parent!()#:KeyElementBuilder
@@ -149,8 +158,18 @@ module Transformer
       return dd_split[-1].split('>')
     end
     
-    public
-    def self.text?(key_str)
+    def self.text_type?(key_str, type)
+      type_char = ""
+      case type
+          when XML::TextContent::PLAIN
+            type_char = "t"
+          when XML::TextContent::COMMENT
+            type_char = "c"
+          when XML::TextContent::CDATA
+            type_char = "d"
+          else
+            return false
+        end
       gt_split = self.last_dd_gt_split(key_str)
       if(gt_split == nil)
         return false
@@ -158,8 +177,21 @@ module Transformer
       if(gt_split.length < 3)
         return false
       end
-      return gt_split[-2] == "t"
+      return gt_split[-2] == type_char
     end
+    
+    public
+    def self.text?(key_str)
+      self.text_type?(key_str, XML::TextContent::PLAIN)
+    end
+    
+    def self.comment?(key_str)
+      self.text_type?(key_str, XML::TextContent::COMMENT)
+    end
+    
+    def self.cdata?(key_str)
+      self.text_type?(key_str, XML::TextContent::CDATA)
+    end  
           
     def self.build_from_s(key_builder, key_str)#:KeyElementBuilder
       key_split = key_str.split(SEPARATOR)

@@ -2,6 +2,7 @@ require_relative "xml_transformer"
 require_relative "../xml/document"
 require_relative "../xml/sax_document"
 require_relative "../base_interface/db_interface"
+require_relative "exceptions"
 require "nokogiri"
 require "observer"
 class Notifier
@@ -48,7 +49,6 @@ module Transformer
         value.each do |key, value|
           field_values << key << value
         end
-        puts "Mapovani ulozena pod klicem: #{key}"
         @db_interface.add_to_hash(key, field_values, false)
       else
         #Element here
@@ -87,7 +87,7 @@ module Transformer
       #can use XmlTranformer to save it.
       puts "Parsing in progress..."
       
-      @db_interface.commit_after do
+      @db_interface.transaction do
         parser.parse(File.open(File.absolute_path(file)))
       end
       
@@ -95,38 +95,102 @@ module Transformer
       true
     end
     
-    def all_documents(database=-1,collection=-1)
-      
-    end
-    
     #Finds a document under the specified database and collection, returns XML::Document with whole DOM loaded.
     def find_document(file_name)#:XML::Document
-      file_id = document_exist?(file_name)
+      file_id = get_document_id(file_name)
       
       if(file_id == nil)
-        puts "Document with name #{file_name} not found."
+        raise Transformer::MappingException, "Document with name #{file_name} not found."
         return nil
       end
-      
       @builder = Transformer::KeyBuilder.new(@env_id, @coll_id, file_id)
       @xml_transformer = Transformer::XMLTransformer.new(@builder)
       return @xml_transformer.find_node(@builder)
     end
-      
-    def remove_document(document)
-      
+    
+    def get_document_id(name)
+      doc_id = @db_interface.get_hash_value(@doc_key, name)
+      return doc_id
     end
     
-    def remove_file(file_name)
-      
+    def get_all_documents_ids()
+      #Remember there is a field <iterator> which we have to exclude
+      iter_id = @db_interface.get_hash_value(@doc_key, Transformer::KeyBuilder::ITERATOR_KEY)
+      #We have to exclude first occurence of iter_id
+      result = @db_interface.get_all_hash_values(@doc_key)
+      if iter_id
+        ind = nil
+        result.each_with_index do |id, index|
+          if id == iter_id
+            ind = index
+            break
+          end
+        end
+        result.delete_at(ind) if ind
+      end
+      return result
+    end
+    
+    def get_all_documents_names()
+      names =  @db_interface.get_all_hash_fields(@doc_key)
+      ind = nil
+      names.each_with_index do |name, index|
+        if name == Transformer::KeyBuilder::ITERATOR_KEY
+          ind = index
+          break
+        end
+      end
+      names.delete_at(ind) if ind
+      return names
+    end
+    
+    def delete_document(name)
+      #We have to delete <info, <emapping, <amapping, <content, and field in envId:collId:documents
+      doc_id = get_document_id(name)
+      raise Transformer::MappingException, "Document with such a name doesn't exist." unless doc_id
+      @builder = Transformer::KeyBuilder.new(@env_id, @coll_id, doc_id)
+      del_keys = [@builder.content_key, @builder.info, @builder.elem_mapping_key, @builder.attr_mapping_key]
+      @db_interface.transaction do
+        @db_interface.delete_keys del_keys
+        @db_interface.delete_from_hash(@doc_key, name)
+      end
     end
     
     def rename_document(document, name)
+      #Verify that new name isn't already in database
+      result = @db_interface.hash_value_exist?(@doc_key, name)
+      raise Transformer::MappingException, "Document with such a name already exist." if result
       
+      #Delete old document
+      old_id = get_document_id(old_name)
+      result = @db_interface.transaction do
+        @db_interface.delete_from_hash(@doc_key, old_name)
+        @db_interface.add_to_hash_ne(@doc_key, name, old_id)
+      end
+      
+      raise Transformer::MappingException, "Cannot delete old document's name, rename aborted." if result[0] != 1
+      raise Transformer::MappingException, "Renaming failed." if result[1] != 1
+      true
     end
     
-    def rename_file(file_name)
+    def rename_file(old_name, name)
+      #Verify that new name isn't already in database
+      result = @db_interface.hash_value_exist?(@doc_key, name)
+      raise Transformer::MappingException, "Document with such a name already exist." if result
+      result = @db_interface.hash_value_exist?(@doc_key, old_name)
+      raise Transformer::MappingException, "Cannot rename, document #{old_name} doesn't exist." unless result
       
+      #Delete old enevironment
+      old_id = get_document_id(old_name)
+      result = @db_interface.transaction do
+        @db_interface.delete_from_hash(@doc_key, old_name)
+        @db_interface.add_to_hash_ne(@doc_key, name, old_id)
+      end
+      
+      #Note: result may obtain some old return values from redis, we have to lookup at the end of result
+      raise Transformer::MappingException, "Cannot delete old document's name, rename aborted." if result[-1] != 1
+      raise Transformer::MappingException, "Renaming failed." if result[-2] != 1
+      true
     end
     
     def update_document(file_name, document)
@@ -135,29 +199,8 @@ module Transformer
     
     #Verifies if a document with a given name exist. Database and collection should be specified before using 
     #this method.
-    def document_exist?(file_name)
-      all_files = @db_interface.find_value(@doc_key)
-      
-      #debug purposes
-      puts "All files in this collection:"
-      if all_files != nil 
-        all_files.each do |key, value|
-          puts "file #{key}, id: #{value}"
-        end
-      end
-      #debug purposes
-      
-      file_id = nil
-      if all_files != nil 
-        all_files.each do |key, value|
-          if(key == file_name)
-            file_id = value
-            break
-          end
-        end
-      end
-      
-      return file_id
+    def document_exist?(name)
+      return @db_interface.hash_value_exist?(@doc_key, name)
     end
     
   end

@@ -60,7 +60,14 @@ module XML
         }
         str += "#{Node.get_tab_s(tabcount)}</#{node.name}>\n"
       elsif(node.instance_of? TextContent)
-        str += "#{Node.get_tab_s(tabcount)}#{node.text_content}\n"
+        case node.type
+          when XML::TextContent::PLAIN
+            str += "#{Node.get_tab_s(tabcount)}#{node.text_content}\n"
+          when XML::TextContent::COMMENT
+            str += "#{Node.get_tab_s(tabcount)}<!-- #{node.text_content} -->\n"
+          when XML::TextContent::CDATA
+            str += "#{Node.get_tab_s(tabcount)}<![CDATA[#{node.text_content}]]>\n"
+        end
       end
       return str
     end
@@ -77,7 +84,14 @@ module XML
         }
         str += "</#{node.name}>"
       elsif(node.instance_of? TextContent)
-        str += "#{node.text_content}"
+        case node.type
+          when XML::TextContent::PLAIN
+            str += "#{node.text_content}"
+          when XML::TextContent::COMMENT
+            str += "<!-- #{node.text_content} -->"
+          when XML::TextContent::CDATA
+            str += "<![CDATA[#{node.text_content}]]>"
+        end
       end
       return str
     end

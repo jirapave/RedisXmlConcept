@@ -15,6 +15,11 @@ def time
   puts "Execution time: #{time} s"
 end
 
+db = BaseInterface::DBInterface.instance
+#Delete whole content of database
+keys = db.find_keys("*")
+db.delete_keys keys unless keys.empty?
+
 file_path = "./books-20000.xml"
 file_name = File.basename(file_path)
 env_manager = RedXmlApi::EnvironmentManager.new()
@@ -31,4 +36,18 @@ time do
   # retrieve document string, whole DOM is created, Node overrides to_s
   # puts document_service.find_file(file_name, 1, 1)
   document = coll.get_document(file_name)
+  puts document
 end
+
+#result = coll.delete_document?(file_name)
+#puts "SOUBOR SMAZAN? #{result}"
+#document = coll.get_document(file_name)
+#puts "Document po smazani: #{document}"
+#env.delete_all_collections
+#puts "Mela by jit vyrvorit kolekce:"
+#env.create_collection("new")
+#coll = env.get_collection("new")
+#coll.save_document(file_path)
+#document = coll.get_document(file_name)
+#puts document
+

@@ -12,6 +12,10 @@ class DBInit
   
   def self.init_database
     db = BaseInterface::DBInterface.instance
+    
+    #Delete whole content of database
+    keys = db.find_keys("*")
+    db.delete_keys keys unless keys.empty?
     #Create environment {"env" => 1}, collection {"coll" => 1} and file {"test.xml" => 1}
     #All will be prepared by hand, because usage of KeyBuilder and other classes would compromite
     #tests
@@ -50,10 +54,11 @@ class DBInit
     content_arr << "1:2>1<a" << "1\"WMN\"2\"cz" 
     content_arr << "1:2>1:4>1" << "2\"en"
     
-    db.commit_after do
-      db.add_to_hash(ENV_MAP_SIGN, ["env", "1"], true)
-      db.add_to_hash("1:#{COLL_MAP_SIGN}", ["coll", "2"], true)
-      db.add_to_hash("1:2:#{DOC_MAP_SIGN}", ["test.xml", "3"], true)
+    db.transaction do
+      db.delete_keys ENV_MAP_SIGN
+      db.add_to_hash(ENV_MAP_SIGN, ["<iterator>", "4", "env", "1", "esecond", "2", "ethird", "3", "efourth", "4"], true)
+      db.add_to_hash("1:#{COLL_MAP_SIGN}", ["<iterator>", "5", "coll", "2", "cthird", "3", "cfourth", "4", "cfifth", "5"], true)
+      db.add_to_hash("1:2:#{DOC_MAP_SIGN}", ["<iterator>", "3", "test.xml", "3"], true)
       db.add_to_hash(ELEM_MAP_KEY, elements, true)
       db.add_to_hash(ELEM_MAP_KEY, ["<iterator>", "5"], true)
       db.add_to_hash(ATTR_MAP_KEY, attributes, true)

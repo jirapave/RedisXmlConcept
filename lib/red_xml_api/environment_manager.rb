@@ -18,11 +18,21 @@ module RedXmlApi
     end
     
     def delete_environment(name)
-      
+      begin
+        @env_service.delete_environment(name)
+      rescue Exception => ex
+        ex.message
+        puts "Unknown error has occured."
+      end
     end
     
     def delete_all_environments
-      
+      begin
+        @env_service.delete_all_environments
+      rescue Exception => ex
+        ex.message
+        puts "Unknown error has occured."
+      end
     end
     
     def get_environment(name)
@@ -49,6 +59,10 @@ module RedXmlApi
       end
     end
     
+    def get_all_environments_names()
+      @env_service.get_all_environment_names
+    end
+    
     def rename_environment?(old_name, name)
       begin
         @env_service.rename_environment(old_name, name)
@@ -57,9 +71,6 @@ module RedXmlApi
         puts ex.message
         puts "Environment could't be renamed."
         return false
-      rescue Transformer::FatalError => ex
-        puts ex.message
-        puts "Unknown error occured renaming failed."
       end
     end
     
