@@ -17,9 +17,6 @@ module XQuery
       #solve parsed expression
       return @xquery_solver.get_results(expression)
       
-      # assume only xpath query for now
-      # @xpath.get_results(query)
-      
     end
     
     

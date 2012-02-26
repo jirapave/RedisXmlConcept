@@ -1,6 +1,7 @@
 require_relative "../lib/transformer/key_element_builder"
 require_relative "../lib/base_interface/db_interface"
 require_relative "../lib/transformer/document_service"
+require_relative "../lib/transformer/mapping_service"
 require_relative "../lib/xml/sax_document"
 require "rubygems"
 require "nokogiri"
@@ -15,11 +16,19 @@ def time
   puts "Execution time: #{time} s"
 end
 
+env_name = "test"
+coll_name = "new"
 file_path = "./books-20000.xml"
 file_name = File.basename(file_path)
 env_manager = RedXmlApi::EnvironmentManager.new()
-env = env_manager.create_environment("test")
-coll = env.create_collection("new")
+env = env_manager.create_environment(env_name)
+coll = env.create_collection(coll_name)
+
+#debug purposes
+env_id = Transformer::MappingService.map_env(env_name)
+puts "env id: #{env_id}"
+coll_id = Transformer::MappingService.map_coll(env_id, coll_name)
+puts "coll id: #{coll_id}"
 
 time do
   puts "Saving document..."

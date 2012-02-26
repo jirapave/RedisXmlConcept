@@ -1,5 +1,6 @@
 require_relative "../xquery/function_processor"
 require_relative "key_xpath_processor"
+require_relative "node_xpath_processor"
 require_relative "predicate_processor"
 require_relative "../../transformer/key_element_builder"
 
@@ -13,14 +14,14 @@ module XQuery
       @xpath_processor = nil
     end
     
-    def get_results(expression, flwor_context=nil)
+    def get_results(expression, variable_hash=Hash.new)
       
       @last_step = false
       result_array = []
       
       expression.parts.each_with_index { |step, index|
         if(index == 0)
-          result_array = first_step(step, flwor_context)
+          result_array = first_step(step, variable_hash)
         else
           result_array = next_step_keys(step, result_array)
         end
@@ -46,7 +47,7 @@ module XQuery
     
   private
     
-    def first_step(step, flwor_context)#:Array with KeyElementBuilder as elements
+    def first_step(step, variable_hash)#:Array with KeyElementBuilder as elements
       if(  step.subtype == Expression::FUNCTION \
         && step.name == "doc" \
         && step.parts.length == 1 \
@@ -59,11 +60,11 @@ module XQuery
         @xpath_processor = KeyXPathProcessor.new(key)
         
       elsif(step.subtype == Expression::VARIABLE)
-        result_array = flwor_context.variables[step.name] #Array of nodes
+        result_array = variable_hash[step.name] #Array of nodes
         if(result_array == nil)
           raise QueryStringError, "there is no variable \"#{step.name}\" defined"
         end
-        if(result_array.kind_of?(Array))
+        if(!result_array.kind_of?(Array))
           result_array = [ result_array ]
         end
         
@@ -77,12 +78,12 @@ module XQuery
     end
     
     
-    def next_step_keys(step, elem_elem)
+    def next_step_keys(step, elements)
       if(@last_step)
         raise QueryStringError, "additional step (after attribute, function, ... step) is not allowed"
       end
       
-      new_elem_elem = []
+      new_elements = []
       
       if(step.subtype == Expression::ELEMENT)
         elem_name = step.name
@@ -97,10 +98,10 @@ module XQuery
         
           case first_part.name
           when "#{Function::TEXT}"
-            elem_elem.each { |elem|
+            elements.each { |elem|
               text_content = @xpath_processor.get_text(elem, true)
               if(!text_content.empty?)
-                new_elem_elem << text_content
+                new_elements << text_content
               end
             }
             
@@ -108,22 +109,22 @@ module XQuery
             raise StandardError, "not yet implemented"
           end
           
-          return new_elem_elem
+          return new_elements
         end
         
         predicated_addition = Proc.new { |context_elem, position, max_position|
           if(predicate == nil || PredicateProcessor.evaluate(@xpath_processor, context_elem, position, max_position, predicate))
-            new_elem_elem << context_elem
+            new_elements << context_elem
           end
         }
         
         if(elem_name == nil || elem_name.empty?) #element name is empty - search whole document from this state
-          elem_elem.each { |key|
-            new_elem_elem.concat(@xpath_processor.get_descendant_elements(key)) 
+          elements.each { |key|
+            new_elements.concat(@xpath_processor.get_descendant_elements(key)) 
           }
           
         else #elem_name is * wildcard or valid name
-          elem_elem.each { |key|
+          elements.each { |key|
             children_elements = @xpath_processor.get_children_elements(key, elem_name)
             children_elements_count = children_elements.length
             children_elements.each_with_index { |key, index|
@@ -137,10 +138,10 @@ module XQuery
         attr_name = step.name
         
         #restriction according previous step children
-        elem_elem.each { |key|
-          value = @xpath_processor.get_attribute(key, attr_name)
+        elements.each { |elem|
+          value = @xpath_processor.get_attribute(elem, attr_name)
           if(value != nil)
-            new_elem_elem << value
+            new_elements << value
           end
         }
         
@@ -150,7 +151,7 @@ module XQuery
         
       end
       
-      return new_elem_elem
+      return new_elements
     end
     
     

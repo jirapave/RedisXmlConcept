@@ -19,13 +19,9 @@ module XQuery
       
       #init xml transformer
       @xml_transformer = Transformer::XMLTransformer.new(key_builder)
-      # @xml_transformer.database = key.db_name
-      # @xml_transformer.collection = key.col_name
-      # @xml_transformer.mapping = @mapping_hash
-      # @xml_transformer.content_hash = @content_hash_key
       
       #load root key - KeyElementBuilder object
-      @root_key = Transformer::KeyElementBuilder.create(key_builder, info_hash["root"], false)
+      @root_key = Transformer::KeyElementBuilder.new(key_builder, info_hash["root"])
       
     end
     
@@ -99,29 +95,30 @@ module XQuery
     end
     
     def get_attribute(key, attr_name)
-      attr_hash = @xml_transformer.get_attributes(key)
+      # attr_hash = @xml_transformer.get_attributes(key) #TODO resolve with Pavel
+      attr_hash = get_attribute_hash(key)
       return attr_hash[get_attr_index(attr_name)]
     end
     
     
   private
-    # def get_attribute_hash(key)
-      # attribute_hash = Hash.new
-      # list_str = @db.get_hash_value(@content_hash_key, key.attr)
-      # if(list_str == nil)
-        # return attribute_hash #empty hash
-      # end
-      # fields_only = []
-      # values_only = []
-      # list_str.split('"').each_with_index { |x, index|
-        # fields_only << x if(index%2 == 0)
-        # values_only << x if(index%2 != 0)
-      # }
-      # fields_only.each_with_index { |field, index|
-        # attribute_hash[field] = values_only[index]
-      # }
-      # return attribute_hash
-    # end
+    def get_attribute_hash(key)
+      attribute_hash = Hash.new
+      list_str = @db.get_hash_value(@content_hash_key, key.attr)
+      if(list_str == nil)
+        return attribute_hash #empty hash
+      end
+      fields_only = []
+      values_only = []
+      list_str.split('"').each_with_index { |x, index|
+        fields_only << x if(index%2 == 0)
+        values_only << x if(index%2 != 0)
+      }
+      fields_only.each_with_index { |field, index|
+        attribute_hash[field] = values_only[index]
+      }
+      return attribute_hash
+    end
   
     def get_children_plain(key)#String Array
       values = []

@@ -13,11 +13,11 @@ module XQuery
     end
     
     
-    def doc(path)#:Transformer::Key
+    def doc(file_name)#:Transformer::Key
       env_id = Transformer::MappingService.map_env(@environment)
       coll_id = Transformer::MappingService.map_coll(env_id, @collection)
       document_service = Transformer::DocumentService.new(env_id, coll_id)
-      file_id = document_service.document_exist?(path)
+      file_id = document_service.document_exist?(file_name)
       if(file_id == nil)
         raise QueryStringError, "file #{file_name} not found in database" 
       end

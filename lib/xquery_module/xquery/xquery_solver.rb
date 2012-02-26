@@ -21,8 +21,8 @@ module XQuery
       root_expression = expression
       
       #DEBUG TODO delete
-      # puts "-=WALK=-"
-      # root_expression.walkthrough
+      puts "-=WALK=-"
+      root_expression.walkthrough
       
       return solve_query(root_expression)
       

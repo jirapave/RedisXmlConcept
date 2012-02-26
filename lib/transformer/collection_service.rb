@@ -4,7 +4,8 @@ module Transformer
   class CollectionService
     def initialize(env_name)
       @env_name = env_name
-      @coll_key = Transformer::KeyBuilder.collections_key(@env_name)
+      env_id = MappingService.map_env(env_name) #TODO check - collection key was called by env_name and it didn't work
+      @coll_key = Transformer::KeyBuilder.collections_key(env_id)
       @db_interface = BaseInterface::DBInterface.instance
     end
     

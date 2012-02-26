@@ -1,10 +1,14 @@
 require_relative "../base_interface/db_interface"
+require_relative "../transformer/mapping_service"
 
 module RedXmlApi
   class Collection
     
     def initialize(env_name, coll_name)
-      @doc_service = Transformer::DocumentService.new(env_name, coll_name)
+      env_id = Transformer::MappingService.map_env(env_name)
+      coll_id = Transformer::MappingService.map_coll(env_id, coll_name)
+      @doc_service = Transformer::DocumentService.new(env_id, coll_id)
+      #TODO check - document service was called with env_name, coll_name and it didn't work
     end
     
     def save_document(file_name)
