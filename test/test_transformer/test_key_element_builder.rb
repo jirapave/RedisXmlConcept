@@ -192,6 +192,15 @@ class TestKeyElementBuilder < Test::Unit::TestCase
     assert_equal(true, Transformer::KeyElementBuilder.cdata?("1:3>65>t>11:4>5>d>2") == true)
   end
   
+  def test_element?()
+    assert_equal(true, Transformer::KeyElementBuilder.element?("1") == true)
+    assert_equal(true, Transformer::KeyElementBuilder.element?("1:2>1") == true)
+    assert_equal(true, Transformer::KeyElementBuilder.element?("1:56>4>d>4:99>100") == true)
+    assert_equal(true, Transformer::KeyElementBuilder.element?("1:3>4>d>99") == false)
+    assert_equal(true, Transformer::KeyElementBuilder.element?("1:3>65>t>11:4>5>d>2") == false)
+    assert_equal(true, Transformer::KeyElementBuilder.element?("1:3>65>t>99:4>12>t>2") == false)
+  end
+  
   def test_build_from_s()
     test_one = "1:2>7:5>1"
     test_two = "2:7>2:3>99>t>2"

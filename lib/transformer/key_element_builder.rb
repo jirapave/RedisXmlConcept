@@ -192,6 +192,15 @@ module Transformer
     def self.cdata?(key_str)
       self.text_type?(key_str, XML::TextContent::CDATA)
     end  
+    
+    def self.element?(key_str)
+      gt_split = self.last_dd_gt_split(key_str)
+      if(gt_split.length < 3 or gt_split == nil)
+        return true
+      else
+        return false
+      end
+    end
           
     def self.build_from_s(key_builder, key_str)#:KeyElementBuilder
       key_split = key_str.split(SEPARATOR)
