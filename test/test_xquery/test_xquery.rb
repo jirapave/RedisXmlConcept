@@ -31,7 +31,7 @@ module XQuery
     def setup
       @env_name = "env_test"
       @coll_name = "coll_test"
-      file_path = "catalog.xml"
+      file_path = "../../bin/catalog.xml"
       env_manager = RedXmlApi::EnvironmentManager.new()
       env = env_manager.create_environment(@env_name)
       if(env == nil)
