@@ -9,9 +9,13 @@ module XQuery
     
     def self.make_number(value)
       begin
-        Float(value)
+        return Integer(value)
       rescue
-        nil
+        begin
+          return Float(value)
+        rescue
+          return nil
+        end
       end
     end
     

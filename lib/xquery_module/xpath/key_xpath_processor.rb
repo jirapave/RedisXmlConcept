@@ -32,7 +32,7 @@ module XQuery
       text = ""
       key_array = get_children_plain(key)
       key_array.each { |key|
-        if(Transformer::KeyElementBuilder.text?(key))
+        if(Transformer::KeyElementBuilder.text?(key) || Transformer::KeyElementBuilder.cdata?(key))
           t = @db.get_hash_value(@content_hash_key, key)
           t = t.strip if(stripped)
           text << t
@@ -45,10 +45,10 @@ module XQuery
       content = ""
       key_array = get_children_plain(key)
       key_array.each { |key|
-        if(Transformer::KeyElementBuilder.text?(key))
-          content << @db.get_hash_value(@content_hash_key, key)
+        if(Transformer::KeyElementBuilder.element?(key))
+          content << get_node(Transformer::KeyElementBuilder.build_from_s(@key_builder, key)).to_stripped_s
         else
-          content << get_node(Transformer::KeyElementBuilder.build_from_s(key)).to_stripped_s
+          content << @db.get_hash_value(@content_hash_key, key)
         end          
       }
       return content
@@ -62,10 +62,10 @@ module XQuery
       end
       
       get_children_plain(key).each { |str_key|
-          if(!Transformer::KeyElementBuilder.text?(str_key))
+          if(Transformer::KeyElementBuilder.element?(str_key))
             new_key = Transformer::KeyElementBuilder.build_from_s(@key_builder, str_key)
             #check match_elem_name
-            if(match_elem_id == "*" || new_key.elem_name == match_elem_id)
+            if(match_elem_id == "*" || new_key.elem_id == match_elem_id)
               key_array << new_key
             end
           end

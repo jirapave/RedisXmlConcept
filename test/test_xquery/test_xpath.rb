@@ -39,9 +39,9 @@ module XQuery
       TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. > 563]",
         ["<number>784</number>"]),
       TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. <= 563]",
-        ["<number>557</number>", "<number>563</number>", "<number>443</number>"]),
+        ["<number>557<![CDATA[cdata cast<>]]></number>", "<number>563</number>", "<number>443</number>"]),
       TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. < 563]",
-        ["<number>557</number>", "<number>443</number>"]),
+        ["<number>557<![CDATA[cdata cast<>]]></number>", "<number>443</number>"]),
       TestCase.new("doc(\"catalog.xml\")/catalog/product[number = 443]/@dept",
         ["ACC"]), 
       TestCase.new("doc(\"catalog.xml\")/catalog/product[number =443]/@dept",
@@ -61,23 +61,23 @@ module XQuery
       TestCase.new("doc(\"catalog.xml\")//@dept",
         ["WMN", "ACC", "ACC", "MEN"]),
       TestCase.new("doc(\"catalog.xml\")//product[last()]",
-        ["<product dept=\"MEN\"><number>784</number><name language=\"en\">Cotton Dress Shirt</name><colorChoices>white gray</colorChoices><desc>Our<i>favorite</i>shirt!</desc></product>"]),
+        ["<product dept=\"MEN\"><number>784</number><name language=\"en\">Cotton Dress Shirt</name><colorChoices>white gray</colorChoices><desc>Our<i>favorite</i>shirt!<!-- Second commentary --></desc></product>"]),
       TestCase.new("doc(\"catalog.xml\")//product[position() >= 4]",
-        ["<product dept=\"MEN\"><number>784</number><name language=\"en\">Cotton Dress Shirt</name><colorChoices>white gray</colorChoices><desc>Our<i>favorite</i>shirt!</desc></product>"]),
+        ["<product dept=\"MEN\"><number>784</number><name language=\"en\">Cotton Dress Shirt</name><colorChoices>white gray</colorChoices><desc>Our<i>favorite</i>shirt!<!-- Second commentary --></desc></product>"]),
       TestCase.new("doc(\"catalog.xml\")//product[position() > 3]",
-        ["<product dept=\"MEN\"><number>784</number><name language=\"en\">Cotton Dress Shirt</name><colorChoices>white gray</colorChoices><desc>Our<i>favorite</i>shirt!</desc></product>"]),
+        ["<product dept=\"MEN\"><number>784</number><name language=\"en\">Cotton Dress Shirt</name><colorChoices>white gray</colorChoices><desc>Our<i>favorite</i>shirt!<!-- Second commentary --></desc></product>"]),
       TestCase.new("doc(\"catalog.xml\")//product[3 < position()]",
-        ["<product dept=\"MEN\"><number>784</number><name language=\"en\">Cotton Dress Shirt</name><colorChoices>white gray</colorChoices><desc>Our<i>favorite</i>shirt!</desc></product>"]),
+        ["<product dept=\"MEN\"><number>784</number><name language=\"en\">Cotton Dress Shirt</name><colorChoices>white gray</colorChoices><desc>Our<i>favorite</i>shirt!<!-- Second commentary --></desc></product>"]),
       TestCase.new("doc(\"catalog.xml\")//product[last()]/name/text()",
         ["Cotton Dress Shirt"]),
       TestCase.new("doc(\"catalog.xml\")/catalog/product[name = \"Fleece Pullover\"]/number/text()",
-        ["557"]),
+        ["557cdata cast<>"]),
     ]
     
     def setup
       @env_name = "env_test"
       @coll_name = "coll_test"
-      file_path = "catalog.xml"
+      file_path = "../../bin/catalog.xml"
       env_manager = RedXmlApi::EnvironmentManager.new()
       env = env_manager.create_environment(@env_name)
       if(env == nil)

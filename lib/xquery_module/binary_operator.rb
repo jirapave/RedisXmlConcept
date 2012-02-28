@@ -76,6 +76,8 @@ module XQuery
       
       operator = which_operator(operator)
       
+      puts "BINARY OPERATOR: #{param1.inspect} #{operator.pattern} #{param2.inspect}"
+      
       if(operator == nil)
         raise StandardError, "operator is nil"
       end
@@ -157,8 +159,16 @@ module XQuery
         if(no2 != nil)
           param1 = no1
           param2 = no2
+        else
+          param1 = param1.to_s
+          param2 = param2.to_s
         end
+      else
+        param1 = param1.to_s
+        param2 = param2.to_s
       end
+      
+      puts "#{param1} ... #{param2}"
       
       case operator
       when GLOBAL_EQ
