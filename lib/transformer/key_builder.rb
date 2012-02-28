@@ -1,81 +1,80 @@
+require_relative "key_element_builder"
+require_relative "mapping_service"
+
 module Transformer
-  #Deprecated, currently not used, see Key class
   class KeyBuilder
-    private_class_method :new
-    class << self
-      def attributes_key(key)
-        return "#{key}<attributes"
-      end
-
-      def attributes_order_key(key)
-        if(key =~ /<attributes$/)
-          return "#{key}<order"
-        end
-        return "#{key}<attributes<order"
-      end
-
-      def collection(key, name)
-        return "#{key}::#{name}" #TODO nepamatuju se uz, co to melo vracet
-      end
-      
-      #Iterator for each collection, used to determine id
-      def iterator_key(key)
-        all_double_double_dots = (0 .. key.length - 1).find_all { |i| key[i,2] == "::" }
-        if(all_double_double_dots.length > 1)
-          return "#{key.slice(0, all_double_double_dots[1])}<id_iterator"
-        end
-        return "#{key}<id_iterator"
-      end
-
-      def database(name) #TODO tady taky nevim
-        return name
-      end
-
-      def count_key(key)
-        return "#{key}<count"
-      end
-
-      def document_info(key)
-        all_double_double_dots = (0 .. key.length - 1).find_all { |i| key[i,2] == "::" }
-        if(all_double_double_dots.length > 2)
-          return "#{key.slice(0, all_double_double_dots[2])}<info"
-        end
-        return "#{key}<info"
-      end
-      
-      def document_key(key, id)
-        #TODO
-        result = key + "::#{id}"
-        return result
-      end
-
-      def element_key(key, element_name, order)
-        return "#{key}::#{element_name}>#{order}"
-      end
-      
-      def next_element_key(key)
-        index = key.rindex(">")
-        number = key.slice(index+1).to_i + 1;
-        return "#{key.slice(0, index)}>#{number}"
-      end
-
-      def parent_key(key)
-        index = key.rindex("::")
-        return key.slice(0, index)        
-      end
-
-      def root_key(key)
-        index = key.index(">")
-        if(index < 0)
-          return key.slice(0, key.rindex("::"))
-        end
-        sub = key.slice(0, index)
-        return sub.slice(0, sub.rindex("::"))
-      end
-
-      def text_key(key, order)
-        return "#{key}>text>#{order}"
-      end
+    
+    SEPARATOR = ":"
+    ITERATOR_KEY = "<iterator>"
+    
+    attr_reader :environment_key, :collection_key, :document_key
+    
+    def initialize(env_id, coll_id, doc_id)
+        @env_id = env_id
+        @coll_id = coll_id
+        @doc_id = doc_id
+      @environment_key = @env_id
+      @collection_key = "#{@environment_key}#{SEPARATOR}#{@coll_id}"
+      @document_key = "#{@collection_key}#{SEPARATOR}#{@doc_id}"
     end
+    
+    def self.environments_key()#:String
+      "environments"
+    end
+    
+    def self.collections_key(env_id)#:String
+      "#{env_id}#{SEPARATOR}collections"
+    end
+    
+    def self.documents_key(env_id, coll_id)#:String
+      value = "#{env_id}#{SEPARATOR}#{coll_id}#{SEPARATOR}documents"
+      value
+    end
+    
+    def self.build_from_s(key_str)#:Key
+      key_split = key_str.split(SEPARATOR)
+      if(key_split.length < 3)
+        raise NotEnoughParametersError, #{key_str} cannot be parsed to Key. Simply said: not enough '#{SEPARATOR}' delimiters."
+      end
+      #There can be keys like "1:2:3<info"
+      split = key_split[2].split("<")
+      return new(key_split[0], key_split[1], split[0])
+    end
+      
+    #Deprecated
+    #Because of mapping, we need to know env, coll and doc ids... = we need KeyBuilder instance
+    #def self.root(doc_key, root_name)
+    #  KeyElementBuilder.create(doc_key, root_name)
+    #end
+    
+    def info()#:String
+      "#{@document_key}<info"
+    end
+    
+    def elem_mapping_key()#:String
+      "#{@document_key}<emapping"
+    end
+    
+    def attr_mapping_key()#:String
+      "#{@document_key}<amapping"
+    end
+    
+    def content_key()#:String
+      "#{@document_key}<content"
+    end
+
+    # root returns KeyElementBuilder, which require root element to initialize
+    # that there is possible to create element_keys and so on    
+    def root(root_id):KeyElementBuilder
+      KeyElementBuilder.new(self, "#{root_id}")
+    end
+    
+    def to_s()#:String
+      @document_key
+    end
+    
+    class NotEnoughParametersError < StandardError
+    end
+    
   end
 end

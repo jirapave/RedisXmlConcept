@@ -1,28 +1,26 @@
-require_relative "attr"
-
 module XML
   class Attributes
-    attr_accessor :attributes, :node
-    def initialize(node, attributes=false)
-      attributes ||= []
+    attr_accessor :attrs, :node
+    def initialize(node, attrs=false)
       key = ""
       value = ""
-      attributes ||= []
-      @attributes = {}
-      attributes.each do |attr|
-        #TODO according to Nokogiri...attributes can also have prefixes etc.
-        @attributes[attr.localname] = attr.value
-      end
-      
+      attrs ||= {}
+      @attrs = attrs
       @node = node
     end
     
     def get_attr(name)
-      
+      result = nil
+      @attrs.each do |key, value|
+        if key == name
+          result = value
+        end
+      end
+      return result
     end
     
     def length()
-      @attributes.length
+      @attrs.length
     end
   end
 end

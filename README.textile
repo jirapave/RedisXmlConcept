@@ -1,24 +1,50 @@
 h1. ABOUT
 
-p. This program represents a proof of concept for RedXML project. It consist of database interface
-for Redis, XML transformer for saving/loading xml parts to database and DOM elements.
+p. RedXml library is a project focusing on creating a basis for new XML native database. It is based on "Redis":http://redis.io/
+key-value database as it's underlying storage. RedXml uses own mapping of XML files into Redis and creates new
+abstraction layer to easily work with those documents. Currently proprietary API is supported (XML:DB API in the
+future) to work with environments, collections and documents. XPath/XQuery languages are beying implemented as a
+main way to query stored XML files.
+
+*Important:* Project is still under development
 
 h1. INSTALLATION
 
-p. To use this project correctly, it is needed to download and start Redis instance. Redis doesn't have official
-binaries for Windows, but we have found pretty stable and verified binaries here:
+p. To use this project correctly, it is needed to download and start Redis database instance. It is strongly
+recommended to use official redis binaries:
+"Redis download page":http://redis.io/download
+Redis doesn't have official binaries for Windows, but we have found pretty stable and verified binaries here:
 "redis windows binaries":https://github.com/dmajkic/redis/downloads
-We have tested newest version 2.4.2, otherwise when used on UNIX distributions, version from official site can be used.
-For nokogiri it is needed to install gem nokogiri on windows, it should be enough to just:
-gem install nokogiri
-But it does not work yet correctly, for detailed info:
-"Installation guide":http://nokogiri.org/tutorials/installing_nokogiri.html
+Use them only if speed is not an issue or to just test the library, you should avoid them in real-life application.
+(Storing and retrieve times can be 20x times slower).
+Another prerequisite is Nokogiri library, you can do that by using "gem install nokogiri" command, for detailed info:
+"Nokogiri installation guide":http://nokogiri.org/tutorials/installing_nokogiri.html
 
-h1. OTHER
+h1. PROPOSED FUNCIONALITY
 
-p. Project uses ruby client for Redis called redis-rb which can be found in lib folder, you can find details
-about it here:
-"Redis ruby client":http://redis-rb.keyvalue.org/v2.2.0/
-All callings are based on official documentation of Redis, looks really promising. The list of commands can
-be seen here:
-"Redis commands":http://redis.io/commands
+h2. Short-term
+
+* Completion of proprietary API for managing XML documents
+* Support for optimistic locking on document-level
+* Implementation of XPath/XQuery language with XQuery Update Facility (subset - most useful queries)
+
+h2. Mid-term
+
+* Implementation of XML:DB API
+
+h2. Long-term
+
+* Transactions
+* Indexing
+
+h1. USED LIBRARIES
+
+p. Project uses some libraries, which are part of this library or you have to install them by hand (see installation)
+* "Redis-rb":https://github.com/ezmobius/redis-rb - Client for Redis database
+* "Nokogiri":http://nokogiri.org/ - Library for working with XML files
+
+h1. AUTHORS
+
+* *Ing. Pavel Strnad* - Leader of the project, author of the basic idea
+* *Bc. Pavel Jíra* - Programming core functions (mapping, database interface, API)
+* *Bc. Martin Kostolný* - Programming XPath/XQuery

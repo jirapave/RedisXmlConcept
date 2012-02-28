@@ -1,4 +1,4 @@
-require_relative "../lib/base_interface/db_interface"
+require_relative "../../lib/base_interface/db_interface"
 require "test/unit"
 
 class TestDBInterface < Test::Unit::TestCase

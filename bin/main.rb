@@ -1,12 +1,13 @@
 require_relative "../lib/transformer/key_element_builder"
 require_relative "../lib/base_interface/db_interface"
-require_relative "../lib/transformer/key_builder"
 require_relative "../lib/transformer/document_service"
+require_relative "../lib/transformer/mapping_service"
 require_relative "../lib/xml/sax_document"
 require "rubygems"
 require "nokogiri"
 
-
+#require all *.rb files in certain directory
+Dir["../lib/red_xml_api/*.rb"].each {|file| require file }
 
 def time
   start = Time.now
@@ -15,20 +16,46 @@ def time
   puts "Execution time: #{time} s"
 end
 
-#db_interface is Singleton, redis is class variable
 db = BaseInterface::DBInterface.instance
+#Delete whole content of database
+keys = db.find_keys("*")
+db.delete_keys keys unless keys.empty?
 
-#====DOCUMENT SAVE AND RETRIEVE
-file_name = "auction20.xml"
-document_service = Transformer::DocumentService.new()
+env_name = "test"
+coll_name = "new"
+file_path = "./books-20000.xml"
+file_name = File.basename(file_path)
+env_manager = RedXmlApi::EnvironmentManager.new()
+env = env_manager.create_environment(env_name)
+coll = env.create_collection(coll_name)
+
+#debug purposes
+env_id = Transformer::MappingService.map_env(env_name)
+puts "env id: #{env_id}"
+coll_id = Transformer::MappingService.map_coll(env_id, coll_name)
+puts "coll id: #{coll_id}"
+
 time do
-#First argument is database name, second is collection
-  document_service.save_document(1,1,file_name)
+  puts "Saving document..."
+  coll.save_document(file_path)
 end
 
 time do
-  puts "retrieving document from database..."
+  puts "Retrieving document from database..."
   # retrieve document string, whole DOM is created, Node overrides to_s
   # puts document_service.find_file(file_name, 1, 1)
-  document_service.find_file(file_name, 1, 1)
+  document = coll.get_document(file_name)
 end
+
+#result = coll.delete_document?(file_name)
+#puts "SOUBOR SMAZAN? #{result}"
+#document = coll.get_document(file_name)
+#puts "Document po smazani: #{document}"
+#env.delete_all_collections
+#puts "Mela by jit vyrvorit kolekce:"
+#env.create_collection("new")
+#coll = env.get_collection("new")
+#coll.save_document(file_path)
+#document = coll.get_document(file_name)
+#puts document
+
