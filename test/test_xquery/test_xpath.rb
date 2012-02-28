@@ -1,6 +1,7 @@
 require_relative "../../lib/red_xml_api/environment_manager"
 require_relative "../../lib/xquery_module/xquery/xquery_controller"
 require_relative "../../lib/xml/node"
+require_relative "xquery_test_helper"
 require "rubygems"
 require "nokogiri"
 require "test/unit"
@@ -74,32 +75,15 @@ module XQuery
         ["557cdata cast<>"]),
     ]
     
-    def setup
-      @env_name = "env_test"
-      @coll_name = "coll_test"
-      file_path = "../../bin/catalog.xml"
-      env_manager = RedXmlApi::EnvironmentManager.new()
-      env = env_manager.create_environment(@env_name)
-      if(env == nil)
-        env = RedXmlApi::Environment.new(@env_name)
-      end
-      coll = env.create_collection(@coll_name)
-      if(coll == nil)
-        coll = RedXmlApi::Collection.new(@env_name, @coll_name)
-      end
-      begin
-        coll.save_document(file_path)
-      rescue Transformer::MappingException
-        puts "ok, document exists"
-      end
-    end
-    
     
     def test_xpath
       
-      xquery_controller = XQuery::XQueryController.new(@env_name, @coll_name)
+      XQueryTestHelper.create_test_file
+      
+      xquery_controller = XQuery::XQueryController.new(XQueryTestHelper::ENV_NAME, XQueryTestHelper::COLL_NAME)
       
       TEST_CASES.each_with_index { |test_case, index|
+        puts "QUERY: #{test_case.query}"
         new_results = xquery_controller.get_results(test_case.query)
         right_results = test_case.results
         
@@ -116,6 +100,8 @@ module XQuery
         puts "test #{index+1}/#{TEST_CASES.length} ok"
         
       }
+      
+      XQueryTestHelper.cleanup_test_file
       
     end
     

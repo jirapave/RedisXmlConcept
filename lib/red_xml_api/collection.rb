@@ -19,7 +19,7 @@ module RedXmlApi
         return true
       rescue Transformer::MappingException => ex
         puts "#{ex.message}"
-        puts "Document #{fil_name} doesn't exist, delete operation failed."
+        puts "Document #{file_name} doesn't exist, delete operation failed."
         return false
       rescue Exception => e
         puts "#{e.message}"
