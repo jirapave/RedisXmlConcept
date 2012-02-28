@@ -169,7 +169,7 @@ module Transformer
             type_char = "d"
           else
             return false
-        end
+      end
       gt_split = self.last_dd_gt_split(key_str)
       if(gt_split == nil)
         return false
@@ -192,6 +192,26 @@ module Transformer
     def self.cdata?(key_str)
       self.text_type?(key_str, XML::TextContent::CDATA)
     end  
+    
+    def self.text_type(key_str)
+      gt_split = self.last_dd_gt_split(key_str)
+      if(gt_split == nil)
+        return false
+      end
+      if(gt_split.length < 3)
+        return false
+      end
+      case gt_split[-2]
+          when "t"
+            return XML::TextContent::PLAIN
+          when "c"
+            return XML::TextContent::COMMENT
+          when "d"
+            return XML::TextContent::CDATA
+          else
+            return false
+        end
+    end
     
     def self.element?(key_str)
       gt_split = self.last_dd_gt_split(key_str)

@@ -45,7 +45,6 @@ time do
   # retrieve document string, whole DOM is created, Node overrides to_s
   # puts document_service.find_file(file_name, 1, 1)
   document = coll.get_document(file_name)
-  puts document
 end
 
 #result = coll.delete_document?(file_name)

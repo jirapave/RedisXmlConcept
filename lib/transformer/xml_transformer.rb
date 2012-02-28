@@ -74,12 +74,9 @@ module Transformer
         if part_keys # if this element is not empty (like <element />)
           part_keys.each do |key_str|
             text_content = @db_interface.get_hash_value(@key_builder.content_key, key_str)
-            if(Transformer::KeyElementBuilder.text?(key_str))
-              elem.descendants << XML::TextContent.new(text_content, Transformer::KeyElementBuilder.text_order(key_str), XML::TextContent::PLAIN)
-            elsif(Transformer::KeyElementBuilder.comment?(key_str))
-              elem.descendants << XML::TextContent.new(text_content, Transformer::KeyElementBuilder.text_order(key_str), XML::TextContent::COMMENT)
-            elsif(Transformer::KeyElementBuilder.cdata?(key_str))
-              elem.descendants << XML::TextContent.new(text_content, Transformer::KeyElementBuilder.text_order(key_str), XML::TextContent::CDATA)
+            type = Transformer::KeyElementBuilder.text_type(key_str)
+            if type
+              elem.descendants << XML::TextContent.new(text_content, Transformer::KeyElementBuilder.text_order(key_str), type)
             else
               #Element
               child = find_node(Transformer::KeyElementBuilder.build_from_s(@key_builder, key_str))

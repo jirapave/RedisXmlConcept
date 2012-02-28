@@ -1,6 +1,7 @@
 require_relative "../db_init"
 require_relative "../../lib/transformer/key_builder"
 require_relative "../../lib/transformer/key_element_builder"
+require_relative "../../lib/xml/text_content"
 require "test/unit"
 
 class TestKeyElementBuilder < Test::Unit::TestCase
@@ -199,6 +200,15 @@ class TestKeyElementBuilder < Test::Unit::TestCase
     assert_equal(true, Transformer::KeyElementBuilder.element?("1:3>4>d>99") == false)
     assert_equal(true, Transformer::KeyElementBuilder.element?("1:3>65>t>11:4>5>d>2") == false)
     assert_equal(true, Transformer::KeyElementBuilder.element?("1:3>65>t>99:4>12>t>2") == false)
+  end
+  
+  def test_text_type()
+    assert_equal(true, Transformer::KeyElementBuilder.text_type("1") == false)
+    assert_equal(true, Transformer::KeyElementBuilder.text_type("1:2>1") == false)
+    assert_equal(true, Transformer::KeyElementBuilder.text_type("1:56>4>d>4:99>100") == false)
+    assert_equal(true, Transformer::KeyElementBuilder.text_type("1:3>4>d>99") == XML::TextContent::CDATA)
+    assert_equal(true, Transformer::KeyElementBuilder.text_type("1:3>65>t>11:4>5>c>2") == XML::TextContent::COMMENT)
+    assert_equal(true, Transformer::KeyElementBuilder.text_type("1:3>65>t>99:4>12>t>2") == XML::TextContent::PLAIN)
   end
   
   def test_build_from_s()
