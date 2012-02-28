@@ -6,11 +6,16 @@ require_relative "../xml/text_content"
 require_relative "../xml/element"
 
 module Transformer
-  #Prefixes of databases and collection didn't affect transformer, each Node know it's
-  #key, e.g. collection and database
+  # This class is used as a simple abstract layer to work with documents (document is based on KeyBuilder given
+  # as an init parameter). It supports saving and retrieving nodes recursively.
   class XMLTransformer
+    
+    # Separator of attributes, those are saved in one string with separator as delimiter
     ATTR_SEPARATOR = "\""
     
+    # Creates new instance of XmlTransformer to work with document.
+    # ==== Parameters
+    # * +key_builder+ - KeyBuilder which is used to determine the document with which we are working
     def initialize(key_builder)
       @db_interface = BaseInterface::DBInterface.instance
       @key_builder = key_builder
@@ -18,19 +23,15 @@ module Transformer
       @attr_mapping = {}
     end
     
-    #Finds a node under the given key and build it's structure recursively.
-    #Parameters:
-    #key - Transformer::Key
+    # Finds a node under the given key and build it's structure recursively. When called on root, whole
+    # document is retrieved. 
+    # ==== Parameters
+    # * +key+ - KeyBuilder if we want whole document, KeyElementBuilder when we want certain node
+    # ==== Return value
+    # XML::Document if KeyBuilder was used, otherwise XML::Element, False if node wasn't found
     def find_node(key):Node
       load_mappings() if @elem_mapping.empty?
       if(key.instance_of? Transformer::KeyBuilder)
-        # temp = @db_interface.find_value(key.content_key)
-        # puts "mapping====="
-        # puts "#{mapping.inspect}"
-        # puts "=================="
-        # puts "#{temp.inspect}"
-        # puts "=================="
-        #return false
         
         info_hash = @db_interface.find_value(key.info)
         
@@ -88,20 +89,20 @@ module Transformer
         end
         
         return elem
+      else
+        return false    
       end
     end
     
-    #There should be own error class if the key is not a node
+    # Currently not implemented
     def remove_node(node)
       
     end
     
-    #Saves a given node in a database, node knows it's database key under which it should be saved.
-    #Node contains only databse key of it's child elements so we can avoid memory requirements when
-    #parsing document.
-    #Parameters:
-    #node - XML::Node
-    #main_hash - key to hash table, where all information about node will be saved
+    # Saves a given node in a database, node knows it's database key under which it should be saved. Node
+    # is saved recursively, so if we pass root element, whole document will be saved.
+    # ==== Parameters
+    # * +node+ - XML::Node
     def save_node(node)
       main_hash = @key_builder.content_key
       key = node.database_key
@@ -134,10 +135,17 @@ module Transformer
       save_attributes(node)
     end
     
+    # Currently not implemented
     def update_node(node)
       
     end
     
+    # Saves attributes of a given node in a database, remember that node itself know database key
+    # under which it should be saved.
+    # ==== Parameters
+    # * +node+ - XML::Node
+    # ==== Return value
+    # True if attributes were saved, False if there wasn't any attributes to save
     def save_attributes(node)
       attr_arr = []
       iter = 0
@@ -154,6 +162,11 @@ module Transformer
       return false
     end
     
+    # Get all attributes of the element specified by KeyElementBuilder.
+    # ==== Parameters
+    # * +key_elem_builder+ - KeyElementBuilder
+    # ==== Return value
+    # Hash where field is name of the attribute and value is obviously value.
     def get_attributes(key_elem_builder)
       attrs = @db_interface.get_hash_value(@key_builder.content_key, key_elem_builder.attr)
         if attrs != nil
@@ -174,7 +187,7 @@ module Transformer
     end
     
     private 
-    def get_elem_name(id)
+    def get_elem_name(id)# :nodoc:
       mapping.each do |key, value|
         if (id == value)
           return key
@@ -183,7 +196,7 @@ module Transformer
       return id
     end
     
-    def load_mappings
+    def load_mappings# :nodoc:
       @elem_mapping = @db_interface.find_value(@key_builder.elem_mapping_key)
       @attr_mapping = @db_interface.find_value(@key_builder.attr_mapping_key)
 

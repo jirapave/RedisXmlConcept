@@ -23,7 +23,7 @@ db.delete_keys keys unless keys.empty?
 
 env_name = "test"
 coll_name = "new"
-file_path = "./books-20000.xml"
+file_path = "./catalog.xml"
 file_name = File.basename(file_path)
 env_manager = RedXmlApi::EnvironmentManager.new()
 env = env_manager.create_environment(env_name)
@@ -45,6 +45,7 @@ time do
   # retrieve document string, whole DOM is created, Node overrides to_s
   # puts document_service.find_file(file_name, 1, 1)
   document = coll.get_document(file_name)
+  puts document
 end
 
 #result = coll.delete_document?(file_name)
