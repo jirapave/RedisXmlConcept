@@ -81,7 +81,7 @@ module Transformer
       puts "Parsing in progress..."
       
       #TODO check functionality
-      @db_interface.commit_after do
+      @db_interface.transaction do
         parser.parse(File.open(file_name, 'rb'))
       end
       
