@@ -33,12 +33,10 @@ module Transformer
           field_values << "version" << value[0] if value[0] != nil
           field_values << "encoding" << value[1] if value[1] != nil
           field_values << "standalone" << value[2] if value[2] != nil
-          puts "Saving document info..."
           @db_interface.add_to_hash(key, field_values, false)
       elsif value.instance_of? String
         #Root element name
         key = @builder.document_info(@base_key)
-        puts "Saving string values...document info, root_name: #{value}"
         info = ["root", "#{@base_key}::#{value}"]
         @db_interface.add_to_hash(key, info, false)
       else
@@ -50,14 +48,13 @@ module Transformer
     #Method will save a given file to the given database under the given collection if it doensn't
     #already exist. SAX parser is used to parse an XML file.
     def save_document(database=-1,collection=-1, file_name)
+      puts "CUTTING service proceeding..."
       @xml_transformer.collection = collection
       @xml_transformer.database = database
       @doc_name = file_name
       @database = database
       @collection = collection
-      puts "Does document exist?"
       return false if document_exist?(file_name)
-      puts "No, proceeding with saving..."
       #Read about KeyBuilder in class description, new idea about how to change it to be more effective, this
       #is horrible
       key = @builder.database(@database)
@@ -84,8 +81,6 @@ module Transformer
       @db_interface.transaction do
         parser.parse(File.open(file_name, 'rb'))
       end
-      
-      puts "Done parsing"
       puts "Document saved"
     end
     
@@ -106,15 +101,6 @@ module Transformer
     def find_file(file_name, database=-1, collection=-1)#:XML::Document
       col_key = Transformer::Key.collection_key(database, collection)
       all_files = @db_interface.find_value(col_key)
-      
-      #debug purposes
-      puts "All files in this collection:"
-      if all_files != nil 
-        all_files.each do |key, value|
-          puts "file #{key}, id: #{value}"
-        end
-      end
-      #debug purposes
       
       file_id = nil
       if all_files != nil 
@@ -160,13 +146,6 @@ module Transformer
     def document_exist?(file_name)
       key = @builder.database(@database)
       key = @builder.collection(key, @collection)
-      all_files = @db_interface.find_value(key)
-      puts "All files in this collection:"
-      if all_files != nil 
-      all_files.each do |key, value|
-        puts "file: #{key}, id: #{value}"
-      end
-      end
       return true if @db_interface.hash_value_exist?(key, file_name)
       return false
     end

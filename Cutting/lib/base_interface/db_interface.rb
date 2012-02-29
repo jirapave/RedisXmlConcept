@@ -2,7 +2,7 @@ require "singleton"
 require "yaml"
 require_relative "command"
 
-redis_dir = "#{File.dirname(__FILE__)}/../../lib/"
+redis_dir = "#{File.dirname(__FILE__)}/../../../lib/"
 unless $:.include?(redis_dir) || $:.include?(File.expand_path(redis_dir))
 $:.unshift(File.expand_path(redis_dir))
 end
@@ -214,7 +214,7 @@ module BaseInterface
     #["key1", "string1", "key2", "string2"]
     def save_string_entries(*key_string, overwrite)
       if @transaction
-        params = [key_string, overwrite]
+        params = [*key_string, overwrite]
         @commands << BaseInterface::Command.new(__method__, params)
         return
       else
