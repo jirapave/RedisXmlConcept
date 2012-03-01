@@ -214,7 +214,7 @@ module BaseInterface
     #["key1", "string1", "key2", "string2"]
     def save_string_entries(*key_string, overwrite)
       if @transaction
-        params = [key_string, overwrite]
+        params = [*key_string, overwrite]
         @commands << BaseInterface::Command.new(__method__, params)
         return
       else

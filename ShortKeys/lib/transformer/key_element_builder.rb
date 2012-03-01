@@ -8,7 +8,7 @@ module Transformer
     SEPARATOR = ":"
     ITERATOR_KEY = "<iterator>"
     
-    attr_reader :root_key
+    attr_reader :root_key, :root_id
     
     MIN_ORDER = 1
 
@@ -33,6 +33,10 @@ module Transformer
 
     def attr()#:String
       "#{self.to_s}<a"
+    end
+    
+    def self.attr(key)#:String
+      "#{key}<a"
     end
     
     def text(order)#:String
@@ -166,11 +170,9 @@ module Transformer
     def self.text_type?(key_str, type)
       type_char = ""
       case type
-          when XML::TextContent::PLAIN
-            type_char = "t"
-          when XML::TextContent::COMMENT
+          when 2
             type_char = "c"
-          when XML::TextContent::CDATA
+          when 3
             type_char = "d"
           else
             return false
@@ -187,15 +189,22 @@ module Transformer
     
     public
     def self.text?(key_str)
-      self.text_type?(key_str, XML::TextContent::PLAIN)
+      gt_split = self.last_dd_gt_split(key_str)
+      if(gt_split == nil)
+        return false
+      end
+      if(gt_split.length < 3)
+        return false
+      end
+      return gt_split[-2] == "t"
     end
     
     def self.comment?(key_str)
-      self.text_type?(key_str, XML::TextContent::COMMENT)
+      self.text_type?(key_str, 2)
     end
     
     def self.cdata?(key_str)
-      self.text_type?(key_str, XML::TextContent::CDATA)
+      self.text_type?(key_str, 3)
     end  
     
     def self.text_type(key_str)

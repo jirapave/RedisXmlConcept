@@ -84,7 +84,6 @@ module XML
         attr_id = rename_attr(attr.localname)
         attributes["#{attr_id}"] = attr.value
       end
-      puts "Nacteny atributy: #{attributes.inspect}"
       @current_tag.attributes = XML::Attributes.new(name, attributes)
       @root_element = false
     end
@@ -132,17 +131,15 @@ module XML
     end
 
     def comment(text)
-      save_text_node(text, XML::TextContent::COMMENT)
     end
 
     #Method is called when a chunk of text occurs, each calling means one text part, for example:
     #<aaa>aaa<bbb>bbb</bbb>ccc</aaa>, for aaa element it gets called twice for "aaa" and "ccc"
     def characters(text)
-      save_text_node(text, XML::TextContent::PLAIN)
+      save_text_node(text)
     end
     
     def cdata_block(string)
-      save_text_node(string, XML::TextContent::CDATA)
     end
     
     def error(string)
@@ -170,7 +167,7 @@ module XML
       return @attr_mapping[name]
     end
     
-    def save_text_node(text, type)
+    def save_text_node(text)
       text = text.sub('\n', '').strip
       if(text.empty?)
         return
@@ -187,18 +184,8 @@ module XML
         end
       end
       
-      text_tag = XML::TextContent.new(text, order, type)
-      case type
-        when XML::TextContent::PLAIN
-          text_tag.database_key = key.text(order)
-        when XML::TextContent::COMMENT
-          text_tag.database_key = key.comment(order)
-        when XML::TextContent::CDATA
-          text_tag.database_key = key.cdata(order)
-        else
-          puts "This should never happend, text_type doesn't correspond: #{type}"
-          text_tag.database_key = key.text(order)
-      end
+      text_tag = XML::TextContent.new(text, order)
+      text_tag.database_key = key.text(order)
       # @current_tag.descendants << text_tag
       @current_tag.add_text(text_tag)
     end

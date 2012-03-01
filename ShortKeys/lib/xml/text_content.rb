@@ -2,16 +2,11 @@ require_relative "node"
 
 module XML
   class TextContent < XML::Node
-    attr_accessor :text_content, :order, :type
+    attr_accessor :text_content, :order
     
-    PLAIN = 1
-    COMMENT = 2
-    CDATA = 3
-    
-    def initialize(text_content=false, order, type)
+    def initialize(text_content=false, order)
       @text_content = text_content
       @order = order
-      @type = type
     end
   end
 end

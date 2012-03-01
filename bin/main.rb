@@ -3,7 +3,7 @@ SHORTKEYS = 2
 CUTTING = 3
 HASH = 4
 
-type = SHORTKEYS
+type = NAIVE
 
 case type
   when NAIVE
@@ -54,7 +54,7 @@ db.delete_keys keys unless keys.empty?
 #====DOCUMENT SAVE AND RETRIEVE
 db_name = "dbName"
 coll_name = "collName"
-file_name = "books2.xml"
+file_name = "books-5 000.xml"
 document_service = Transformer::DocumentService.new()
 time do
 #First argument is database name, second is collection
