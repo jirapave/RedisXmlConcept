@@ -52,16 +52,18 @@ keys = db.find_keys("*")
 db.delete_keys keys unless keys.empty?
 
 #====DOCUMENT SAVE AND RETRIEVE
+db_name = "dbName"
+coll_name = "collName"
 file_name = "books2.xml"
 document_service = Transformer::DocumentService.new()
 time do
 #First argument is database name, second is collection
-  document_service.save_document(1,1,file_name)
+  document_service.save_document(db_name,coll_name,file_name)
 end
 
 time do
   puts "retrieving document from database..."
   # retrieve document string, whole DOM is created, Node overrides to_s
-  #puts document_service.find_file(file_name, 1, 1)
-  document_service.find_file(file_name, 1, 1)
+  puts document_service.find_file(file_name, db_name, coll_name)
+  #document_service.find_file(file_name, 1, 1)
 end

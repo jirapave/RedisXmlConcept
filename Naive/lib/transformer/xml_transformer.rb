@@ -148,13 +148,6 @@ module Transformer
         @db_interface.save_string_entries(*text_content, true)
       end
       
-      #save text count
-      if(!text_content.empty?)
-        text_count_key = Transformer::KeyElementBuilder.build_from_s(text_content[0]).text_count
-        text_count_value = (text_content.length/2).to_s
-        @db_interface.save_string_entries(text_count_key, text_count_value, true)
-      end
-      
       #And at last we have to save attributes and their order
       attributes = []
       #Ruby's hash order is ok since 1.9, but we don't know if Redis is ok too..so for now, order:

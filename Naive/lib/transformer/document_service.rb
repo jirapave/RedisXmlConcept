@@ -59,12 +59,8 @@ module Transformer
       #is horrible
       key = @builder.database(@database)
       key = @builder.collection(key, @collection)
-      iter_key = @builder.iterator_key(key)
-      #We will need this key as a base for others
-      id_value = "id-1"
-      id_value = @db_interface.increment_string(iter_key)
-      @base_key = @builder.document_key(key, id_value)
-      info = [@doc_name, id_value]
+      @base_key = @builder.document_key(key, file_name)
+      info = [@doc_name, file_name]
       puts "Saving document: #{info.inspect}"
       @db_interface.add_to_hash(key, info, false)
       

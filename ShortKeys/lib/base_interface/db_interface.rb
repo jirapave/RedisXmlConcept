@@ -2,7 +2,7 @@ require "singleton"
 require "yaml"
 require_relative "command"
 
-redis_dir = "#{File.dirname(__FILE__)}/../../../lib/"
+redis_dir = "#{File.dirname(__FILE__)}/../../lib/"
 unless $:.include?(redis_dir) || $:.include?(File.expand_path(redis_dir))
 $:.unshift(File.expand_path(redis_dir))
 end
@@ -214,7 +214,7 @@ module BaseInterface
     #["key1", "string1", "key2", "string2"]
     def save_string_entries(*key_string, overwrite)
       if @transaction
-        params = [*key_string, overwrite]
+        params = [key_string, overwrite]
         @commands << BaseInterface::Command.new(__method__, params)
         return
       else
@@ -234,23 +234,6 @@ module BaseInterface
         return
       else
           @redis.del *keys
-      end
-    end
-    
-    #Saves multiple string values under the multiple keys specified in a hash parameter, example:
-    #["key1" => "string1", "key2" => "string2"]
-    #so basically the same function as save_string_entries with another type of parameter
-    def save_entries(key_value_hash, overwrite)
-      #return
-      key_value_list = []
-      key_value_hash.each do |key, value|
-        key_value_list << key
-        key_value_list << value
-      end
-      if(overwrite)
-      @redis.mset(*key_value_list)
-      else
-      @redis.msetnx(*key_value_list)
       end
     end
     
