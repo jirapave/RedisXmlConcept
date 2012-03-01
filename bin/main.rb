@@ -2,8 +2,9 @@ NAIVE = 1
 SHORTKEYS = 2
 CUTTING = 3
 HASH = 4
+OLDHASH = 5
 
-type = CUTTING
+type = OLDHASH
 
 case type
   when NAIVE
@@ -36,6 +37,14 @@ case type
     require_relative "../Hash/lib/transformer/key_builder"
     require_relative "../Hash/lib/transformer/document_service"
     require_relative "../Hash/lib/xml/sax_document"
+    db_name = "1"
+    coll_name = "1"
+  when OLDHASH
+    require_relative "../OldHash/lib/transformer/key_element_builder"
+    require_relative "../OldHash/lib/base_interface/db_interface"
+    require_relative "../OldHash/lib/transformer/key"
+    require_relative "../OldHash/lib/transformer/document_service"
+    require_relative "../OldHash/lib/xml/sax_document"
     db_name = "1"
     coll_name = "1"
 end
