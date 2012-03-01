@@ -28,12 +28,16 @@ case type
     require_relative "../Cutting/lib/transformer/key_builder"
     require_relative "../Cutting/lib/transformer/document_service"
     require_relative "../Cutting/lib/xml/sax_document"
+    db_name = "1"
+    coll_name = "1"
   when HASH
     require_relative "../Hash/lib/transformer/key_element_builder"
     require_relative "../Hash/lib/base_interface/db_interface"
     require_relative "../Hash/lib/transformer/key_builder"
     require_relative "../Hash/lib/transformer/document_service"
     require_relative "../Hash/lib/xml/sax_document"
+    db_name = "1"
+    coll_name = "1"
 end
 
 
@@ -56,7 +60,7 @@ keys = db.find_keys("*")
 db.delete_keys keys unless keys.empty?
 
 #====DOCUMENT SAVE AND RETRIEVE
-file_name = "books-5 000.xml"
+file_name = "books-10 000.xml"
 document_service = Transformer::DocumentService.new()
 time do
 #First argument is database name, second is collection
