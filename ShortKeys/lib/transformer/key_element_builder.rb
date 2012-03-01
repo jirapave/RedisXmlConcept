@@ -13,7 +13,12 @@ module Transformer
     MIN_ORDER = 1
 
     def initialize(key_builder, root_id)
-      @root_key = "#{root_id}"
+      @env_id = key_builder.env_id
+      @coll_id = key_builder.coll_id
+      @doc_id = key_builder.doc_id
+      @base_key = "#{@env_id}:#{@coll_id}:#{@doc_id}"
+      @root_id = root_id
+      @root_key = "#{@base_key}:#{@root_id}"
       @elem_str = ""
     end
     
@@ -118,7 +123,7 @@ module Transformer
     
     def elem_id()#:String
       if(@elem_str.empty?)
-        return @root_key
+        return @root_id
       else
         dd_split = @elem_str.split(SEPARATOR)
         return dd_split[dd_split.length-1].split('>')[0]
@@ -244,6 +249,10 @@ module Transformer
       end
       
       return instance
+    end
+    
+    def element_key(key, element_name, order)
+        return "#{key}:#{element_name}>#{order}"
     end
     
     def key_str()

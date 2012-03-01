@@ -84,7 +84,7 @@ module XML
         attr_id = rename_attr(attr.localname)
         attributes["#{attr_id}"] = attr.value
       end
-      
+      puts "Nacteny atributy: #{attributes.inspect}"
       @current_tag.attributes = XML::Attributes.new(name, attributes)
       @root_element = false
     end
@@ -99,24 +99,24 @@ module XML
       #TODO testing needed here, @nesting_count could be periodically deleted, is it needed? Memory leaks here?
       
       @current_tag.order = order
-      
+      @builder = @mapping_service.key_builder 
       #Now we will generate key for this element
-      key = ""
+      key = @builder.base_key
       #puts "base_key: #{key}"
       @path.each do |path|
         info = path.split('>')
         if(info.length < 2)
-          key = "#{info[0]}"
+          key = "#{key}:#{info[0]}"
         else
-          key = Transformer::KeyElementBuilder.build_from_s(@mapping_service.key_builder, key.to_s).elem(info[0], info[1])
+          key = @builder.element_key(key, info[0], info[1])
         end
       end
       
       # all these ifs are for saving root element without order number!
-      if(key == "")
-        key = "#{name}"
+      if(key == @builder.base_key)
+        key = "#{key}:#{name}"
       else
-        key = Transformer::KeyElementBuilder.build_from_s(@mapping_service.key_builder, key.to_s).elem(name, order)
+        key = @builder.element_key(key, name, order)
       end
       
       @current_tag.database_key = key

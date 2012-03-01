@@ -41,6 +41,7 @@ module Transformer
         doc.standalone = info_hash["standalone"]
         
         root_key = info_hash["root"]
+        puts "root_key je: #{root_key}"
         root_key_builder = Transformer::KeyElementBuilder.build_from_s(@key_builder, root_key)
         doc.root_element = find_node(root_key_builder)
         doc.root_element.name = doc.root_element.name
@@ -60,6 +61,7 @@ module Transformer
         
         #add attributes
         attrs_hash = get_attributes(key)
+        puts "attr hash je: #{attrs_hash}"
         elem.attributes = XML::Attributes.new(elem_name, attrs_hash)
         #add descendants
         desc_keys = @db_interface.get_hash_value(@key_builder.content_key, key.to_s)
@@ -74,6 +76,7 @@ module Transformer
         if part_keys # if this element is not empty (like <element />)
           part_keys.each do |key_str|
             text_content = @db_interface.get_hash_value(@key_builder.content_key, key_str)
+            key_str = key_str.split(":")[3..-1].join(":")
             type = Transformer::KeyElementBuilder.text_type(key_str)
             if type
               elem.descendants << XML::TextContent.new(text_content, Transformer::KeyElementBuilder.text_order(key_str), type)
@@ -122,6 +125,7 @@ module Transformer
           end
         end
       end
+      descendant_keys = descendant_keys[0..-2]
       @db_interface.add_to_hash(main_hash, [key, descendant_keys], false)
       
       
@@ -141,12 +145,14 @@ module Transformer
     def save_attributes(node)
       attr_arr = []
       iter = 0
+      key_str = node.database_key.split(":")[3..-1].join(":")
       node.attributes.attrs.each do |key, value|
         attr_arr << key << value
         iter +=  1
       end
       attributes = attr_arr.join("#{ATTR_SEPARATOR}" )
-      attr_key = Transformer::KeyElementBuilder.build_from_s(@key_builder, node.database_key).attr
+      attr_key = Transformer::KeyElementBuilder.build_from_s(@key_builder, key_str).attr
+      puts "Ukladam atributy pod klicem: #{attr_key}"
       if !attributes.empty?
         @db_interface.add_to_hash(@key_builder.content_key, [attr_key, attributes], true) 
         return true
@@ -155,6 +161,7 @@ module Transformer
     end
     
     def get_attributes(key_elem_builder)
+      puts "Ziskavam atriuty pod klicem: #{key_elem_builder.attr}"
       attrs = @db_interface.get_hash_value(@key_builder.content_key, key_elem_builder.attr)
         if attrs != nil
           attrs_hash = {}

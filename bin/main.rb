@@ -3,7 +3,7 @@ SHORTKEYS = 2
 CUTTING = 3
 HASH = 4
 
-type = NAIVE
+type = SHORTKEYS
 
 case type
   when NAIVE

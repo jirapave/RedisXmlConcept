@@ -58,20 +58,10 @@ module Transformer
         #add attributes in the right order
         attrs_hash = @db_interface.find_value(key.attr)
         if(attrs_hash)
-          attr_order = @db_interface.find_value(key.attr_order)
           
-          #array with sorted attributes
-          attr_order_a = []
-          
-          #sort them into the array
-          attr_order.each { |key, value|
-            attr_order_a[value.to_i] = key
-          }
-          
-          #add sorted attributes to Node.attributes
-          attr_order_a.each { |hash_key|
-            elem.attributes << XML::Attr.new(hash_key, elem, attrs_hash[hash_key]) 
-          }
+          attrs_hash.each do |field, value|
+            elem.attributes << XML::Attr.new(field, elem, value) 
+          end
         end
         
         #add descendants
@@ -125,24 +115,6 @@ module Transformer
       end
       @db_interface.add_to_list(key, descendant_keys)
       
-      #saving descendant counts
-      child_hash = Hash.new
-      child_keys.each do |child|
-        child_count_key = Transformer::KeyElementBuilder.build_from_s(child).count
-        child_count = child_hash[child_count_key]
-        if(child_count)
-          child_count = child_count.to_i + 1
-          child_hash[child_count_key] = child_count
-        else
-          child_hash[child_count_key] = 1
-        end
-      end
-      #DEBUG
-      if(!child_hash.empty?)
-        @db_interface.save_entries(child_hash, true)
-      end
-      
-      
       #Than we will save information about text nodes
       if(!text_content.empty?)
         @db_interface.save_string_entries(*text_content, true)
@@ -150,19 +122,13 @@ module Transformer
       
       #And at last we have to save attributes and their order
       attributes = []
-      #Ruby's hash order is ok since 1.9, but we don't know if Redis is ok too..so for now, order:
-      attributes_order = []
       iter = 0
       node.attributes.attributes.each do |key, value|
         attributes << key << value
-        attributes_order << key << iter
         iter +=  1
       end
       attr_key = @builder.attributes_key(key)
       @db_interface.add_to_hash(attr_key, attributes, true) if !attributes.empty?
-      
-      attr_order_key = @builder.attributes_order_key(key)
-      @db_interface.add_to_hash(attr_order_key, attributes_order, true) if !attributes.empty?
     end
     
     def update_node(node)

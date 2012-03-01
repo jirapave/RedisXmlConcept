@@ -60,11 +60,9 @@ module Transformer
         puts "Nejedna se o soubor"
         return false
       end
-      
-      @doc_key = Transformer::KeyBuilder.documents_key(env_id, coll_id)
       @env_id = env_id
       @coll_id = coll_id
-      
+      @doc_key = Transformer::KeyBuilder.documents_key(@env_id, @coll_id)
       file_name = File.basename(file)
       puts "Does document exist?"
       doc_id = @db_interface.increment_hash(@doc_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
@@ -98,17 +96,13 @@ module Transformer
     
     #Finds a document under the specified database and collection, returns XML::Document with whole DOM loaded.
     def find_file(file_name, db_name, coll_name)#:XML::Document
-      @doc_key = Transformer::KeyBuilder.documents_key(db_name, coll_name)
-      @env_id = db_name
-      @coll_id = coll_name
-      
       file_id = get_document_id(file_name)
       
       if(file_id == nil)
         raise Transformer::MappingException, "Document with name #{file_name} not found."
         return nil
       end
-      @builder = Transformer::KeyBuilder.new(@env_id, @coll_id, file_id)
+      @builder = Transformer::KeyBuilder.new(db_name, coll_name, file_id)
       @xml_transformer = Transformer::XMLTransformer.new(@builder)
       return @xml_transformer.find_node(@builder)
     end

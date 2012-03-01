@@ -7,12 +7,13 @@ module Transformer
     SEPARATOR = ":"
     ITERATOR_KEY = "<iterator>"
     
-    attr_reader :environment_key, :collection_key, :document_key
+    attr_reader :environment_key, :collection_key, :document_key, :env_id, :coll_id, :doc_id, :base_key
     
     def initialize(env_id, coll_id, doc_id)
-        @env_id = env_id
-        @coll_id = coll_id
-        @doc_id = doc_id
+      @env_id = env_id
+      @coll_id = coll_id
+      @doc_id = doc_id
+      @base_key = "#{@env_id}:#{@coll_id}:#{@doc_id}"
       @environment_key = @env_id
       @collection_key = "#{@environment_key}#{SEPARATOR}#{@coll_id}"
       @document_key = "#{@collection_key}#{SEPARATOR}#{@doc_id}"
@@ -67,6 +68,10 @@ module Transformer
     # that there is possible to create element_keys and so on    
     def root(root_id):KeyElementBuilder
       KeyElementBuilder.new(self, "#{root_id}")
+    end
+    
+    def element_key(key, element_name, order)
+        return "#{key}:#{element_name}>#{order}"
     end
     
     def to_s()#:String
