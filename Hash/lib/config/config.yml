@@ -1,4 +1,0 @@
-#Default values are host:localhost, port:6379, unix_socket_path:false
-host: localhost
-port: 6379
-unix_socket_path: false #When path is set, host and port are ignored, unix socket (in a given path) is used instead

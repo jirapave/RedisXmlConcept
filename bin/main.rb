@@ -3,7 +3,7 @@ SHORTKEYS = 2
 CUTTING = 3
 HASH = 4
 
-type = NAIVE
+type = SHORTKEYS
 
 case type
   when NAIVE
@@ -12,12 +12,16 @@ case type
     require_relative "../Naive/lib/transformer/key_builder"
     require_relative "../Naive/lib/transformer/document_service"
     require_relative "../Naive/lib/xml/sax_document"
+    db_name = "dbName"
+    coll_name = "collName"
   when SHORTKEYS
     require_relative "../ShortKeys/lib/transformer/key_element_builder"
     require_relative "../ShortKeys/lib/base_interface/db_interface"
     require_relative "../ShortKeys/lib/transformer/key_builder"
     require_relative "../ShortKeys/lib/transformer/document_service"
     require_relative "../ShortKeys/lib/xml/sax_document"
+    db_name = "1"
+    coll_name = "1"
   when CUTTING
     require_relative "../Cutting/lib/transformer/key_element_builder"
     require_relative "../Cutting/lib/base_interface/db_interface"
@@ -52,8 +56,6 @@ keys = db.find_keys("*")
 db.delete_keys keys unless keys.empty?
 
 #====DOCUMENT SAVE AND RETRIEVE
-db_name = "dbName"
-coll_name = "collName"
 file_name = "books-5 000.xml"
 document_service = Transformer::DocumentService.new()
 time do
