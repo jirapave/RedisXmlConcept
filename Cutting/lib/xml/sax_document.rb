@@ -1,10 +1,8 @@
 require_relative "../xml/node"
 require_relative "../xml/element"
-require_relative "../xml/attr"
 require_relative "../xml/attributes"
 require_relative "../xml/text_content"
 require_relative "../transformer/key_builder"
-require_relative "../transformer/key"
 require "rubygems"
 require "nokogiri"
 require "observer"
@@ -18,11 +16,10 @@ module XML
   #This class is part of Observer pattern as an Observable. It's observer is document_service.
   class SaxDocument < Nokogiri::XML::SAX::Document
     include Observable 
-    def initialize(service, base_key)
+    def initialize(service, mapping)
+      @mapping_service = mapping
       #Service will be responsible for handling saving, we will notify it when we have complete tag loaded
       add_observer service 
-      @base_key = base_key
-      @builder = Transformer::KeyBuilder
       #Incomplete nodes are held in stack until end_tag arrives for them
       @stack = []
       @current_tag = nil
@@ -31,10 +28,19 @@ module XML
       #Like path but with nesting and order of elements
       @nesting_count = {}
       @root_element = true
+      #Element names mapping to id
+      @elem_mapping = {}
+      #Attribute names mapping to id
+      @attr_mapping = {}
     end
     
     def start_document()
       puts "SAX starting"
+    end
+    
+    def end_document()
+      changed
+        notify_observers @elem_mapping
     end
     
     def xmldecl(version, encoding, standalone)
@@ -45,6 +51,7 @@ module XML
     end
     
     def start_element_namespace(name, attrs = [], prefix = nil, uri = nil, ns = [])
+      name = rename_elem(name)
       @stack.push(@current_tag) if @current_tag != nil
       count = 0
       
@@ -71,11 +78,18 @@ module XML
       #path contains name of tags preceding this tag in nesting, for example aaa>bbb start_tag(ccc)
       parent = @path[@path.length-2] if @path.length > 1
       @current_tag = XML::Element.new(name, "", prefix, parent)
-      @current_tag.attributes = XML::Attributes.new(name, attrs)
+      
+      attributes = {}
+      attrs.each do |attr|
+        attr_id = rename_attr(attr.localname)
+        attributes["#{attr_id}"] = attr.value
+      end
+      @current_tag.attributes = XML::Attributes.new(name, attributes)
       @root_element = false
     end
     
     def end_element_namespace(name, prefix = nil, uri = nil)
+      name = rename_elem(name)
       @path.pop()
       order = 0;
       if @path.length != 0
@@ -84,22 +98,22 @@ module XML
       #TODO testing needed here, @nesting_count could be periodically deleted, is it needed? Memory leaks here?
       
       @current_tag.order = order
-      
+      @builder = @mapping_service.key_builder 
       #Now we will generate key for this element
-      key = @base_key
+      key = @builder.base_key
       #puts "base_key: #{key}"
       @path.each do |path|
         info = path.split('>')
         if(info.length < 2)
-          key = "#{key}::#{info[0]}"
+          key = "#{key}:#{info[0]}"
         else
           key = @builder.element_key(key, info[0], info[1])
         end
       end
       
       # all these ifs are for saving root element without order number!
-      if(key == @base_key)
-        key = "#{key}::#{name}"
+      if(key == @builder.base_key)
+        key = "#{key}:#{name}"
       else
         key = @builder.element_key(key, name, order)
       end
@@ -108,7 +122,6 @@ module XML
       
       changed
       # notify the observers, give them loaded node
-      @current_tag.nesting = @path.dup()
       #Add this element's key to the children of it's parent
       @stack[@stack.length-1].add_child(@current_tag.database_key) if !@stack.empty?
       notify_observers @current_tag
@@ -123,36 +136,58 @@ module XML
     #Method is called when a chunk of text occurs, each calling means one text part, for example:
     #<aaa>aaa<bbb>bbb</bbb>ccc</aaa>, for aaa element it gets called twice for "aaa" and "ccc"
     def characters(text)
+      save_text_node(text)
+    end
+    
+    def cdata_block(string)
+    end
+    
+    def error(string)
+      
+    end
+    
+    private
+    #Method will use elem_mapping hash and lookup name, if ti does exist, it returns hash value
+    #otherwise it creates new hash value with id based on size of hash
+    def rename_elem(name)
+      if (@elem_mapping[name] == nil)
+        elem_id = @mapping_service.create_elem_mapping(name)
+        puts "Mapping of element failed, this should not happend." unless elem_id
+        @elem_mapping[name] = elem_id
+      end
+      return @elem_mapping[name]
+    end
+    
+    def rename_attr(name)
+      if (@attr_mapping[name] == nil)
+        attr_id = @mapping_service.create_attr_mapping(name)
+        puts "Mapping of element failed, this should not happend." unless attr_id
+        @attr_mapping[name] = attr_id
+      end
+      return @attr_mapping[name]
+    end
+    
+    def save_text_node(text)
       text = text.sub('\n', '').strip
       if(text.empty?)
         return
       end
       order = @current_tag.text_nodes_count
-      key = Transformer::Key.build_from_s(@base_key)
+      key = ""
       #puts "base_key: #{key}"
       @path.each do |path|
         info = path.split('>')
         if(info.length < 2)
-          key = key.root(info[0])
+          key = @mapping_service.key_builder.root(info[0])
         else
           key.elem!(info[0], info[1].to_i)
         end
-        # key = @builder.element_key(key, info[0], info[1])
       end
       
-      # key = @builder.text_key(key, order)
-      text_tag = XML::TextContent.new(false, text, order)
+      text_tag = XML::TextContent.new(text, order)
       text_tag.database_key = key.text(order)
       # @current_tag.descendants << text_tag
       @current_tag.add_text(text_tag)
-    end
-    
-    def cdata_block(string)
-      
-    end
-    
-    def error(string)
-      
     end
   end
 end

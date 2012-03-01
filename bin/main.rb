@@ -3,7 +3,7 @@ SHORTKEYS = 2
 CUTTING = 3
 HASH = 4
 
-type = SHORTKEYS
+type = CUTTING
 
 case type
   when NAIVE
@@ -60,8 +60,12 @@ keys = db.find_keys("*")
 db.delete_keys keys unless keys.empty?
 
 #====DOCUMENT SAVE AND RETRIEVE
-file_name = "books-10 000.xml"
-document_service = Transformer::DocumentService.new()
+file_name = "books-20 000.xml"
+document_service = Transformer::DocumentService.new() if type != CUTTING
+#Configuring document_service when Cutting is used, second argument = numer of last characters cut to be used as a field, has
+#to be > 2, first argument = switch to use cutting by len or intelligent cutting based on elements when false
+document_service = Transformer::DocumentService.new(false, 4) if type == CUTTING
+
 time do
 #First argument is database name, second is collection
   document_service.save_document(db_name,coll_name,file_name)
@@ -70,6 +74,6 @@ end
 time do
   puts "retrieving document from database..."
   # retrieve document string, whole DOM is created, Node overrides to_s
-  puts document_service.find_file(file_name, db_name, coll_name)
+  document_service.find_file(file_name, db_name, coll_name)
   #document_service.find_file(file_name, 1, 1)
 end

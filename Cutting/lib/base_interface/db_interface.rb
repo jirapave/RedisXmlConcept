@@ -20,10 +20,14 @@ module BaseInterface
   #Class represents an interface between redis database and our application. It encapsulates redis commands.
   class DBInterface
     include Singleton
+    
+    attr_accessor :len, :orig_true
 
     @@COMMAND_LIMIT = 10000
 
     def initialize
+      @len = 4
+      @orig_true = false
       config = YAML.load_file("#{File.dirname(__FILE__)}/../config/config.yml")
       if !config["unix_socket_path"]
         @redis = Redis.new(:host => config["host"], :port => config["port"])
@@ -219,11 +223,57 @@ module BaseInterface
         return
       else
         if(overwrite)
-          @redis.mset(*key_string)
+          #@redis.mset(*key_string)
+          key_string.each_slice(2) do |val|
+            hash_set(val[0], val[1])
+          end
         else
           @redis.msetnx(*key_string)
         end
       end
+    end
+    
+    def hash_get_key_field(key)
+      len = key.split(":")[0..-2].join(":").length
+      s = key[len..-1]
+      key = key[0..(len-1)]
+      result = {}
+      if s[1].length > 2
+        result = {:key => key+""+s[1][0..-3], :field => s}
+      else
+        result = {:key => key, :field => s}
+      end
+      return result
+    end
+    
+    def hash_get_key_field_orig(key)
+      len = @len
+      s = []
+      s[0] = key[0..-(len+1)]
+      s[1] = key[-len..-1]
+      if s[1].length > 2
+        {:key => s[0]+":"+s[1][0..-3], :field => s[1][-2..-1]}
+      else
+        {:key => s[0]+":", :field => s[1]}
+      end
+    end
+    
+    def hash_set(key,value)
+      if @orig_true
+        kf = hash_get_key_field_orig(key)
+      else
+        kf = hash_get_key_field(key)
+      end
+      @redis.hset(kf[:key],kf[:field],value)
+    end
+
+    def hash_get(key)
+      if @orig_true
+        kf = hash_get_key_field_orig(key)
+      else
+        kf = hash_get_key_field(key)
+      end
+      @redis.hget(kf[:key],kf[:field])
     end
 
     #Deletes all values from database under the keys given as an array
@@ -237,28 +287,15 @@ module BaseInterface
       end
     end
     
-    #Saves multiple string values under the multiple keys specified in a hash parameter, example:
-    #["key1" => "string1", "key2" => "string2"]
-    #so basically the same function as save_string_entries with another type of parameter
-    def save_entries(key_value_hash, overwrite)
-      #return
-      key_value_list = []
-      key_value_hash.each do |key, value|
-        key_value_list << key
-        key_value_list << value
-      end
-      if(overwrite)
-      @redis.mset(*key_value_list)
-      else
-      @redis.msetnx(*key_value_list)
-      end
-    end
-    
     alias :delete_keys :delete_entries
 
     #Determines if there is any value under the given key in a database
     def entry_exist?(key)
       @redis.exists key
+    end
+    
+    def special_find(key)
+      return hash_get(key)
     end
 
     #Returns all valus saved under the given key. Returned value can be hash, array or string.
@@ -270,7 +307,11 @@ module BaseInterface
         return @redis.lrange key, 0, length-1 if length > 0
         return nil
       end
-      return @redis.get key if type == "string"
+      if type == "string"
+        return hash_get(key)
+        #return @redis.get key
+      end
+      #return @redis.get key if type == "string"
       #We don't use set or sorted set, so return nil
       return nil
     end

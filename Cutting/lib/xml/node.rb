@@ -1,21 +1,23 @@
+require_relative "attributes"
+
 module XML
   class Node
     
     TAB_LENGTH = 4
     
-    attr_accessor :attributes, :nesting, :descendants, :name, :namespace, :parent, :order, :database_key
-    def initialize(name, nesting, namespace, parent)
+    attr_accessor :attributes, :descendants, :name, :namespace, :parent, :order, :database_key
+    def initialize(name, key, namespace, parent)
       #TODO Attributes are not array, they have their own class
-      @attributes = []
+      @attributes = XML::Attributes.new(name, {})
       #Changed for now, node will not know about it's database key, it will know however it's nesting
       #so we can create database_key from it after
-      @nesting = nesting
+      #@nesting = nesting
       @descendants = []
       @name = name
       @namespace = namespace
       @parent = parent
       @order = 0
-      @database_key = ""
+      @database_key = key
     end
     
     def element_node?()
@@ -37,13 +39,16 @@ module XML
       
     end
     
-    def to_s():String
+    def to_s()
       Node.get_node_s(self)
     end
     
+    def to_stripped_s()
+      Node.get_node_strip(self)
+    end
     
     # recursively called get_node_s to retrieve proper node string
-    def self.get_node_s(node, tabcount=0, last_text_content=false):String
+    def self.get_node_s(node, tabcount=0, last_text_content=false)#:String
       str = ""
       if(node.instance_of? Document)
         str += "#{node.metadata}\n"
@@ -60,6 +65,24 @@ module XML
       return str
     end
     
+    def self.get_node_strip(node, last_text_content=false)#:String
+      str = ""
+      if(node.instance_of? Document)
+        str += "#{node.metadata}"
+        str += Node.get_node_strip(node.root_element)
+      elsif(node.instance_of? Element)
+        str += "<#{node.name}#{get_attrs(node)}>"
+        node.descendants.each { |descendant|
+          str += Node.get_node_strip(descendant)
+        }
+        str += "</#{node.name}>"
+      elsif(node.instance_of? TextContent)
+        str += "#{node.text_content}"
+      end
+      return str
+    end
+    
+  private
     def self.get_tab_s(tabcount):String
       s = ""
       (tabcount*TAB_LENGTH).times { s += " " }
@@ -68,9 +91,9 @@ module XML
     
     def self.get_attrs(node):String
       s = ""
-      node.attributes.each { |attr|
-        s += " #{attr.field}=\"#{attr.value}\""
-      }
+      node.attributes.attrs.each do |key, value|
+        s += " #{key}=\"#{value}\""
+      end
       return s
     end
   end

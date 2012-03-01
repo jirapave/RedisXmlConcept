@@ -1,5 +1,4 @@
 require_relative "../base_interface/db_interface"
-require_relative "key"
 require_relative "key_element_builder"
 require_relative "../xml/node"
 require_relative "../xml/document"
@@ -10,23 +9,21 @@ module Transformer
   #Prefixes of databases and collection didn't affect transformer, each Node know it's
   #key, e.g. collection and database
   class XMLTransformer
-    attr_accessor :database, :collection
-    def initialize(database=-1, collection=-1)
-      db = BaseInterface::DBInterface.instance
-      @db_interface = db
-      @builder = Transformer::KeyBuilder
-      #Deprecated, we don't need them any more
-      #TODO refactoring needed
-      @database = database
-      @collection = collection
+    ATTR_SEPARATOR = "\""
+    
+    def initialize(key_builder)
+      @db_interface = BaseInterface::DBInterface.instance
+      @key_builder = key_builder
+      @elem_mapping = {}
+      @attr_mapping = {}
     end
     
     #Finds a node under the given key and build it's structure recursively.
     #Parameters:
     #key - Transformer::Key
     def find_node(key):Node
-      
-      if(key.instance_of? Transformer::Key)
+      load_mappings() if @elem_mapping.empty?
+      if(key.instance_of? Transformer::KeyBuilder)
         
         info_hash = @db_interface.find_value(key.info)
         
@@ -37,14 +34,15 @@ module Transformer
         doc.standalone = info_hash["standalone"]
         
         root_key = info_hash["root"]
-        root_key_builder = Transformer::KeyElementBuilder.build_from_s(root_key)
+        puts "Root key je: #{root_key}"
+        root_key_builder = Transformer::KeyElementBuilder.build_from_s(@key_builder, root_key)
+        puts "root klic: #{root_key_builder}"
         doc.root_element = find_node(root_key_builder)
-        
+        doc.root_element.name = doc.root_element.name
         return doc
         
       elsif(key.instance_of? Transformer::KeyElementBuilder)
-
-        elem_name = key.elem_name
+        elem_name = @elem_mapping[key.elem_id]
         ns_split = elem_name.split(':')
         namespace = false
         if(ns_split.length > 1)
@@ -55,42 +53,35 @@ module Transformer
         #create element (without parent so far)
         elem = XML::Element.new(elem_name, key.to_s, namespace, nil)
         
-        #add attributes in the right order
-        attrs_hash = @db_interface.find_value(key.attr)
-        if(attrs_hash)
-          attr_order = @db_interface.find_value(key.attr_order)
-          
-          #array with sorted attributes
-          attr_order_a = []
-          
-          #sort them into the array
-          attr_order.each { |key, value|
-            attr_order_a[value.to_i] = key
-          }
-          
-          #add sorted attributes to Node.attributes
-          attr_order_a.each { |hash_key|
-            elem.attributes << XML::Attr.new(hash_key, elem, attrs_hash[hash_key]) 
-          }
-        end
+        #add attributes
+        attrs_hash = get_attributes(key, elem_name)
         
+        elem.attributes = XML::Attributes.new(elem_name, attrs_hash) if attrs_hash
         #add descendants
-        part_keys = @db_interface.find_value(key.to_s)
+        #add descendants
+        desc_keys = @db_interface.special_find(key.to_s)
+        part_keys = []
+        if desc_keys != nil
+          desc_keys.split('|').each do |key|
+            #Last one may be empty, we are adding those as << name << "|", so the last one is empty
+            part_keys << key if key != ""
+          end
+        end
         
         if part_keys # if this element is not empty (like <element />)
           part_keys.each do |key_str|
             if(Transformer::KeyElementBuilder.text?(key_str))
-              text_content = @db_interface.find_value(key_str)
-              elem.descendants << XML::TextContent.new(false, text_content, Transformer::KeyElementBuilder.text_order(key_str))
+              text_content = @db_interface.special_find(key_str)
+              elem.descendants << XML::TextContent.new(text_content, Transformer::KeyElementBuilder.text_order(key_str))
             else
               #Element
-              child = find_node(Transformer::KeyElementBuilder.build_from_s(key_str))
+              key_str = key_str.split(":")[3..-1].join(":")
+              child = find_node(Transformer::KeyElementBuilder.build_from_s(@key_builder, key_str))
               child.parent = elem
               elem.descendants << child
             end
           end
         end
-        
         return elem
       end
     end
@@ -105,25 +96,27 @@ module Transformer
     #parsing document.
     #Parameters:
     #node - XML::Node
+    #main_hash - key to hash table, where all information about node will be saved
     def save_node(node)
       key = node.database_key
-      descendant_keys = []
-      child_keys = []
+      descendant_keys = ""
+      child_keys = ""
       text_content = []
       node.descendants.each do |desc|
         if desc.instance_of? String
-          descendant_keys << desc
-          child_keys << desc
+          descendant_keys << desc << "|"
+          child_keys << desc << "|"
         else
           #Non-element
-          descendant_keys << desc.database_key
+            descendant_keys << desc.database_key << "|"
           if desc.text_node?
+            #text_node is plain text, commnt and cdata, sax_parser is creating keys for them, we don't bother here
             text_content << desc.database_key 
             text_content << desc.text_content
           end
         end
       end
-      @db_interface.add_to_list(key, descendant_keys)
+      @db_interface.save_string_entries(key, descendant_keys, true)
       
       #Than we will save information about text nodes
       if(!text_content.empty?)
@@ -131,24 +124,76 @@ module Transformer
       end
       
       #And at last we have to save attributes and their order
-      attributes = []
-      #Ruby's hash order is ok since 1.9, but we don't know if Redis is ok too..so for now, order:
-      attributes_order = []
-      iter = 0
-      node.attributes.attributes.each do |key, value|
-        attributes << key << value
-        attributes_order << key << iter
-        iter +=  1
-      end
-      attr_key = @builder.attributes_key(key)
-      @db_interface.add_to_hash(attr_key, attributes, true) if !attributes.empty?
-      
-      attr_order_key = @builder.attributes_order_key(key)
-      @db_interface.add_to_hash(attr_order_key, attributes_order, true) if !attributes.empty?
+      save_attributes(node)
     end
     
     def update_node(node)
       
     end
+    
+    def save_attributes(node)
+      #And at last we have to save attributes and their order
+      attr_arr = []
+      iter = 0
+      node.attributes.attrs.each do |key, value|
+        attr_arr << key << value
+        iter +=  1
+      end
+      attributes = attr_arr.join("#{ATTR_SEPARATOR}" )
+      attr_key = Transformer::KeyElementBuilder.build_from_s(@key_builder, node.database_key).attr
+      if !attributes.empty?
+        @db_interface.save_string_entries(attr_key, attributes, true) 
+        return true
+      end
+      return false
+    end
+    
+    def get_attributes(key_elem_builder, elem_name)
+      #add attributes in the right order
+        attrs = @db_interface.special_find(Transformer::KeyElementBuilder.attr("#{key_elem_builder}"))
+        if attrs != nil
+          attrs_hash = {}
+          fields_only = []
+          values_only = []
+          attrs.split(ATTR_SEPARATOR).each_with_index do |x, index|
+            fields_only << x if index%2 == 0
+            values_only << x if index%2 != 0
+          end
+          #Now we have fields and values apart
+          fields_only.each_with_index do |field, index|
+            attr_name = @attr_mapping[field]
+            attrs_hash[attr_name] = values_only[index]
+          end
+        end
+        return attrs_hash
+    end
+    
+    private 
+    def get_elem_name(id)
+      mapping.each do |key, value|
+        if (id == value)
+          return key
+        end
+      end
+      return id
+    end
+    
+    def load_mappings
+      @elem_mapping = @db_interface.find_value(@key_builder.elem_mapping_key)
+      @attr_mapping = @db_interface.find_value(@key_builder.attr_mapping_key)
+
+      #Now we will reverse them so we can get O(1) complexity of finding name
+      temp = {}
+      @elem_mapping.each do |key, value|
+        temp["#{value}"] = key
+      end
+      @elem_mapping = temp
+      temp = {}
+      @attr_mapping.each do |key, value|
+        temp["#{value}"] = key
+      end
+      @attr_mapping = temp
+    end
+    
   end
 end
