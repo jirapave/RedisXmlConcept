@@ -4,7 +4,8 @@ CUTTING = 3
 HASH = 4
 OLDHASH = 5 # not needed anymore, bug in HASH found, retrive time fixed
 
-type = NAIVE
+#Switch to use different types of mapping
+type = CUTTING
 
 case type
   when NAIVE
@@ -69,14 +70,17 @@ keys = db.find_keys("*")
 db.delete_keys keys unless keys.empty?
 
 #====DOCUMENT SAVE AND RETRIEVE
-#file_name = "books2.xml"
-file_name = "size>1-4>coeff>0-0-1.xml"
+
+#Choose your file
+file_name = "books2.xml"
+#file_name = "size>1-4>coeff>0-0-1.xml"
 #file_name = "size>14-5>coeff>0-1.xml"
 #file_name = "size>29-3>coeff>0-2.xml"
 #file_name = "books-425 000.xml"
 document_service = Transformer::DocumentService.new() if type != CUTTING
 #Configuring document_service when Cutting is used, second argument = numer of last characters cut to be used as a field, has
 #to be > 2, first argument = switch to use cutting by len or intelligent cutting based on elements when false
+#Testing was conducted with false parameter = much better results
 document_service = Transformer::DocumentService.new(false, 4) if type == CUTTING
 
 time do
