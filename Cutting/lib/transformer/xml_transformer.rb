@@ -34,9 +34,7 @@ module Transformer
         doc.standalone = info_hash["standalone"]
         
         root_key = info_hash["root"]
-        puts "Root key je: #{root_key}"
         root_key_builder = Transformer::KeyElementBuilder.build_from_s(@key_builder, root_key)
-        puts "root klic: #{root_key_builder}"
         doc.root_element = find_node(root_key_builder)
         doc.root_element.name = doc.root_element.name
         return doc
