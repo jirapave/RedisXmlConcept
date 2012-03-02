@@ -74,8 +74,8 @@ module Transformer
         
         if part_keys # if this element is not empty (like <element />)
           part_keys.each do |key_str|
-            text_content = @db_interface.get_hash_value(@key_builder.content_key, key_str)
             if Transformer::KeyElementBuilder.text?(key_str)
+              text_content = @db_interface.get_hash_value(@key_builder.content_key, key_str)
               elem.descendants << XML::TextContent.new(text_content, Transformer::KeyElementBuilder.text_order(key_str))
             else
               #Element

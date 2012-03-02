@@ -140,7 +140,7 @@ module Transformer
         iter +=  1
       end
       attributes = attr_arr.join("#{ATTR_SEPARATOR}" )
-      attr_key = Transformer::KeyElementBuilder.build_from_s(@key_builder, node.database_key).attr
+      attr_key = Transformer::KeyElementBuilder.attr("#{node.database_key}")
       if !attributes.empty?
         @db_interface.save_string_entries(attr_key, attributes, true) 
         return true

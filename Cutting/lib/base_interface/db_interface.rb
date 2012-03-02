@@ -225,6 +225,7 @@ module BaseInterface
         if(overwrite)
           #@redis.mset(*key_string)
           key_string.each_slice(2) do |val|
+            #puts "SAVE_STRING: klic je: #{val[0]}, hodnot: #{val[1]}"
             hash_set(val[0], val[1])
           end
         else
@@ -264,6 +265,7 @@ module BaseInterface
       else
         kf = hash_get_key_field(key)
       end
+      #puts "Ukladam do hashe: key: #{kf[:key]}, field: #{kf[:field]}, value: #{value}"
       @redis.hset(kf[:key],kf[:field],value)
     end
 
