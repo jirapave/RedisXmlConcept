@@ -17,6 +17,10 @@ class TestKeyBuilder < Test::Unit::TestCase
     assert_equal(true, Transformer::KeyBuilder.collections_key("1") == "1:collections")
   end
   
+  def test_child_colletions_key()
+    assert_equal(true, Transformer::KeyBuilder.child_collections_key("1", "2") == "1:2:collections")
+  end
+  
   def test_documents_key()
     assert_equal(true, Transformer::KeyBuilder.documents_key("1", "2") == "1:2:documents")
   end

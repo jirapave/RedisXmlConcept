@@ -3,9 +3,11 @@ require_relative "../red_xml_api/collection"
 
 module Transformer
   class CollectionService
-    def initialize(env_id)
+    def initialize(env_id, coll_id = false)
       @env_id = env_id
-      @coll_key = Transformer::KeyBuilder.collections_key(@env_id)
+      @coll_id = coll_id
+      @coll_key = Transformer::KeyBuilder.collections_key(@env_id) unless coll_id
+      @coll_key = Transformer::KeyBuilder.child_collections_key(@env_id, @coll_id) if coll_id
       @db_interface = BaseInterface::DBInterface.instance
     end
     

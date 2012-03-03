@@ -63,6 +63,17 @@ module Transformer
       value
     end
     
+    # Creates String with the key pointing to hash with all collections under given environment&gt;collection
+    # ==== Parameters
+    # * +env_id+ - String (or something which responds to to_s like Integer) with the environment id
+    # * +coll_id+ - String (or something which responds to to_s like Integer) with the collection id
+    # ==== Return value
+    # String of the key
+    def self.child_collections_key(env_id, coll_id)
+      value = "#{env_id}#{SEPARATOR}#{coll_id}#{SEPARATOR}collections"
+      value
+    end
+    
     # Creates new instance of KeyBuilder from the given string.
     # ==== Parameters
     # * +key_str+ - String of the valid key
