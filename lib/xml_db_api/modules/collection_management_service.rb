@@ -66,37 +66,39 @@ require_relative "../base/service"
 # */
 
 module XMLDBApi
-  class CollectionManagementService < XMLDBApi::Base::Service
-    # /**
-    # * Creates a new <code>Collection</code> in the database. The default
-    # * configuration of the database is determined by the implementer. The
-    # * new <code>Collection</code> will be created relative to the <code>
-    # * Collection</code> from which the <code>CollectionManagementService</code>
-    # * was retrieved.
-    # *
-    # * @param name The name of the collection to create.
-    # * @return The created <code>Collection</code> instance.
-    # * @exception XMLDBException with expected error codes.<br />
-    # *  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
-    # *  specific errors that occur.<br />
-    # */
-    def create_collection(name)
-      raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
-    end
+  module Modules
+    class CollectionManagementService < XMLDBApi::Base::Service
+      # /**
+      # * Creates a new <code>Collection</code> in the database. The default
+      # * configuration of the database is determined by the implementer. The
+      # * new <code>Collection</code> will be created relative to the <code>
+      # * Collection</code> from which the <code>CollectionManagementService</code>
+      # * was retrieved.
+      # *
+      # * @param name The name of the collection to create.
+      # * @return The created <code>Collection</code> instance.
+      # * @exception XMLDBException with expected error codes.<br />
+      # *  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
+      # *  specific errors that occur.<br />
+      # */
+      def create_collection(name)
+        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+      end
 
-    # /**
-    # * Removes a named <code>Collection</code> from the system. The
-    # * name for the <code>Collection</code> to remove is relative to the <code>
-    # * Collection</code> from which the <code>CollectionManagementService</code>
-    # * was retrieved.
-    # *
-    # * @param name The name of the collection to remove.
-    # * @exception XMLDBException with expected error codes.<br />
-    # *  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
-    # *  specific errors that occur.<br />
-    # */
-    def remove_collection(name)
-      raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+      # /**
+      # * Removes a named <code>Collection</code> from the system. The
+      # * name for the <code>Collection</code> to remove is relative to the <code>
+      # * Collection</code> from which the <code>CollectionManagementService</code>
+      # * was retrieved.
+      # *
+      # * @param name The name of the collection to remove.
+      # * @exception XMLDBException with expected error codes.<br />
+      # *  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
+      # *  specific errors that occur.<br />
+      # */
+      def remove_collection(name)
+        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+      end
     end
   end
 end

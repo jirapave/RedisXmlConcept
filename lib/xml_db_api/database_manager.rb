@@ -60,88 +60,86 @@
 # syntax and semantics of its use.
 
 module XMLDBApi
-  module Modules
-    class DatabaseManager
-      URI_PREFIX = "xmldb:"
-      def get_databases()
-      end
+  class DatabaseManager
+    URI_PREFIX = "xmldb:"
+    def self.get_databases()
+    end
 
-      def register_database(database)
-        # if ((database.getName() == null) || (database.getName().equals(""))) {
-        # throw new XMLDBException(ErrorCodes.INVALID_DATABASE);
-        # }
-        #
-        # databases.put(database.getName(), database);
-        #
+    def self.register_database(database)
+      # if ((database.getName() == null) || (database.getName().equals(""))) {
+      # throw new XMLDBException(ErrorCodes.INVALID_DATABASE);
+      # }
+      #
+      # databases.put(database.getName(), database);
+      #
 
-      end
+    end
 
-      def deregister_database(database)
+    def self.deregister_database(database)
 
-      end
+    end
 
-      def get_collection(uri)
+    def self.get_collection(uri)
 
-      end
+    end
 
-      def get_collection(uri, username, password)
-        #      Database db = getDatabase(uri);
+    def self.get_collection(uri, username, password)
+      #      Database db = getDatabase(uri);
 
-        #      uri = stripURIPrefix(uri);
+      #      uri = stripURIPrefix(uri);
 
-        #      return (org.xmldb.api.base.Collection) db.getCollection(uri, username,
-        #         password);
-      end
+      #      return (org.xmldb.api.base.Collection) db.getCollection(uri, username,
+      #         password);
+    end
 
-      def get_conformance_level(uri)
+    def self.get_conformance_level(uri)
 
-      end
+    end
 
-      def get_property(name)
+    def self.get_property(name)
 
-      end
+    end
 
-      def set_property (name, value)
+    def self.set_property (name, value)
 
-      end
+    end
 
-      def get_database(uri)
-        # if (!uri.startsWith(URI_PREFIX)) {
-        # throw new XMLDBException(ErrorCodes.INVALID_URI);
-        # }
-        #
-        # int end = uri.indexOf(":", URI_PREFIX.length());
-        # if (end == -1) {
-        # throw new XMLDBException(ErrorCodes.INVALID_URI);
-        # }
-        #
-        # String databaseName = uri.substring(URI_PREFIX.length(), end);
-        #
-        # Database db = (Database) databases.get(databaseName);
-        # if (db == null) {
-        # throw new XMLDBException(ErrorCodes.NO_SUCH_DATABASE);
-        # }
-        #
-        # return db;
-      end
+    def self.get_database(uri)
+      # if (!uri.startsWith(URI_PREFIX)) {
+      # throw new XMLDBException(ErrorCodes.INVALID_URI);
+      # }
+      #
+      # int end = uri.indexOf(":", URI_PREFIX.length());
+      # if (end == -1) {
+      # throw new XMLDBException(ErrorCodes.INVALID_URI);
+      # }
+      #
+      # String databaseName = uri.substring(URI_PREFIX.length(), end);
+      #
+      # Database db = (Database) databases.get(databaseName);
+      # if (db == null) {
+      # throw new XMLDBException(ErrorCodes.NO_SUCH_DATABASE);
+      # }
+      #
+      # return db;
+    end
 
-      # /**
-      # * Removes the URI_PREFIX from the front of the URI. This is so the database
-      # * can focus on handling its own URIs.
-      # *
-      # * @param uri The full URI to strip.
-      # * @return The database specific portion of the URI.
-      # */
-      private
+    # /**
+    # * Removes the URI_PREFIX from the front of the URI. This is so the database
+    # * can focus on handling its own URIs.
+    # *
+    # * @param uri The full URI to strip.
+    # * @return The database specific portion of the URI.
+    # */
+    private
 
-      def strip_URI_prefix(uri)
-        # if (!uri.startsWith(URI_PREFIX)) {
-        # throw new XMLDBException(ErrorCodes.INVALID_URI);
-        # }
-        #
-        # String dbURI = uri.substring(URI_PREFIX.length(), uri.length());
-        # return dbURI;
-      end
+    def strip_URI_prefix(uri)
+      # if (!uri.startsWith(URI_PREFIX)) {
+      # throw new XMLDBException(ErrorCodes.INVALID_URI);
+      # }
+      #
+      # String dbURI = uri.substring(URI_PREFIX.length(), uri.length());
+      # return dbURI;
     end
   end
 end

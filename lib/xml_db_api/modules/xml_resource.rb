@@ -68,86 +68,88 @@ require_relative "../base/resource"
 # * as text so these methods work on <code>String</code> content.
 # */
 module XMLDBApi
-  class XMLResource < XMLDBApi::Base::Resource
+  module Modules
+    class XMLResource < XMLDBApi::Base::Resource
 
-    RESOURCE_TYPE = "XMLResource"
-    # /**
-    # * Returns the unique id for the parent document to this <code>Resource</code>
-    # * or null if the <code>Resource</code> does not have a parent document.
-    # * <code>getDocumentId()</code> is typically used with <code>Resource</code>
-    # * instances retrieved using a query. It enables accessing the parent
-    # * document of the <code>Resource</code> even if the <code>Resource</code> is
-    # * a child node of the document. If the <code>Resource</code> was not
-    # * obtained through a query then <code>getId()</code> and
-    # * <code>getDocumentId()</code> will return the same id.
-    # *
-    # * @return the id for the parent document of this <code>Resource</code> or
-    # *  null if there is no parent document for this <code>Resource</code>.
-    # * @exception XMLDBException with expected error codes.<br />
-    # *  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
-    # *  specific errors that occur.<br />
-    # */
-    def get_document_id()
-      raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
-    end
+      RESOURCE_TYPE = "XMLResource"
+      # /**
+      # * Returns the unique id for the parent document to this <code>Resource</code>
+      # * or null if the <code>Resource</code> does not have a parent document.
+      # * <code>getDocumentId()</code> is typically used with <code>Resource</code>
+      # * instances retrieved using a query. It enables accessing the parent
+      # * document of the <code>Resource</code> even if the <code>Resource</code> is
+      # * a child node of the document. If the <code>Resource</code> was not
+      # * obtained through a query then <code>getId()</code> and
+      # * <code>getDocumentId()</code> will return the same id.
+      # *
+      # * @return the id for the parent document of this <code>Resource</code> or
+      # *  null if there is no parent document for this <code>Resource</code>.
+      # * @exception XMLDBException with expected error codes.<br />
+      # *  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
+      # *  specific errors that occur.<br />
+      # */
+      def get_document_id()
+        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+      end
 
-    # /**
-    # * Returns the content of the <code>Resource</code> as a DOM Node.
-    # *
-    # * @return The XML content as a DOM <code>Node</code>
-    # * @exception XMLDBException with expected error codes.<br />
-    # *  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
-    # *  specific errors that occur.<br />
-    # */
-    def get_content_as_dom()
-      raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
-    end
+      # /**
+      # * Returns the content of the <code>Resource</code> as a DOM Node.
+      # *
+      # * @return The XML content as a DOM <code>Node</code>
+      # * @exception XMLDBException with expected error codes.<br />
+      # *  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
+      # *  specific errors that occur.<br />
+      # */
+      def get_content_as_dom()
+        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+      end
 
-    # /**
-    # * Sets the content of the <code>Resource</code> using a DOM Node as the
-    # * source.
-    # *
-    # * @param content The new content value
-    # * @exception XMLDBException with expected error codes.<br />
-    # *  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
-    # *  specific errors that occur.<br />
-    # *  <code>ErrorCodes.INVALID_RESOURCE</code> if the content value provided is
-    # *  null.<br />
-    # *  <code>ErrorCodes.WRONG_CONTENT_TYPE</code> if the content provided in not
-    # *  a valid DOM <code>Node</code>.
-    # */
-    def set_content_as_dom(content)
-      raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
-    end
+      # /**
+      # * Sets the content of the <code>Resource</code> using a DOM Node as the
+      # * source.
+      # *
+      # * @param content The new content value
+      # * @exception XMLDBException with expected error codes.<br />
+      # *  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
+      # *  specific errors that occur.<br />
+      # *  <code>ErrorCodes.INVALID_RESOURCE</code> if the content value provided is
+      # *  null.<br />
+      # *  <code>ErrorCodes.WRONG_CONTENT_TYPE</code> if the content provided in not
+      # *  a valid DOM <code>Node</code>.
+      # */
+      def set_content_as_dom(content)
+        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+      end
 
-    # /**
-    # * Allows you to use a <code>ContentHandler</code> to parse the XML data from
-    # * the database for use in an application.
-    # *
-    # * @param handler the SAX <code>ContentHandler</code> to use to handle the
-    # *  <code>Resource</code> content.
-    # * @exception XMLDBException with expected error codes.<br />
-    # *  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
-    # *  specific errors that occur.<br />
-    # *  <code>ErrorCodes.INVALID_RESOURCE</code> if the
-    # *  <code>ContentHandler</code> provided is null.<br />
-    # */
-    def get_content_as_sax(handler)
-      raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
-    end
+      # /**
+      # * Allows you to use a <code>ContentHandler</code> to parse the XML data from
+      # * the database for use in an application.
+      # *
+      # * @param handler the SAX <code>ContentHandler</code> to use to handle the
+      # *  <code>Resource</code> content.
+      # * @exception XMLDBException with expected error codes.<br />
+      # *  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
+      # *  specific errors that occur.<br />
+      # *  <code>ErrorCodes.INVALID_RESOURCE</code> if the
+      # *  <code>ContentHandler</code> provided is null.<br />
+      # */
+      def get_content_as_sax(handler)
+        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+      end
 
-    # /**
-    # * Sets the content of the <code>Resource</code> using a SAX
-    # * <code>ContentHandler</code>.
-    # *
-    # * @return a SAX <code>ContentHandler</code> that can be used to add content
-    # *  into the <code>Resource</code>.
-    # * @exception XMLDBException with expected error codes.<br />
-    # *  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
-    # *  specific errors that occur.<br />
-    # */
-    def set_content_as_sax()
-      raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+      # /**
+      # * Sets the content of the <code>Resource</code> using a SAX
+      # * <code>ContentHandler</code>.
+      # *
+      # * @return a SAX <code>ContentHandler</code> that can be used to add content
+      # *  into the <code>Resource</code>.
+      # * @exception XMLDBException with expected error codes.<br />
+      # *  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
+      # *  specific errors that occur.<br />
+      # */
+      def set_content_as_sax()
+        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+      end
     end
   end
 end
