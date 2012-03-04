@@ -52,7 +52,9 @@
 # * individuals on behalf of the XML:DB Initiative. For more information
 # * on the XML:DB Initiative, please see <http://www.xmldb.org/>.
 # */
-#
+
+require_relative "error_codes"
+
 # /**
 # * XMLDBException is thrown for all errors in the XML:DB API. It contains two
 # * error codes one an XML:DB error code as defined in ErrorCodes and one vendor
@@ -66,20 +68,16 @@ module XMLDBApi
   module Base
     class XMLDBException < StandardError
       def initialize()
-        @errorCode = ErrorCodes.UNKNOWN_ERROR
+        @errorCode = XMLDApi::Base::ErrorCodes.UNKNOWN_ERROR
         @vendorErrorCode = 0
       end
 
       def initialize(errorCode)
-        initialize(errorCode, 0, "")
+        new(errorCode, 0, "")
       end
 
       def initialize(errorCode, message)
-        initialize(errorCode, 0, message);
-      end
-
-      def initialize(errorCode, vendorErrorCode)
-        initialize(errorCode, vendorErrorCode, "")
+        new(errorCode, 0, message);
       end
 
       def initialize(errorCode, vendorErrorCode, message)

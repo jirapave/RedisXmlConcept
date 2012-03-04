@@ -36,6 +36,8 @@ module BaseInterface
       
       #If we are in the middle of transaction or not
       @transaction = false
+      #If we are using pipelining or not
+      @pipelined = false
     end
 
     #WORKING WITH HASHES
@@ -46,7 +48,7 @@ module BaseInterface
 
     #Saves a given array in a database as a hash under a given key, example: ["key", "value"] >> {"key" => "value"}
     def add_to_hash(key, hash, overwrite)
-      if @transaction
+      if @transaction or @pipelined
         params = [key, hash, overwrite]
         @commands << BaseInterface::Command.new(__method__, params)
         return
@@ -73,7 +75,7 @@ module BaseInterface
     #the commands are processed at the end, but mapping_service cannot wait and has to map name immediately
     #but still during transaction so it will be still atomic.
     def add_to_hash_ne(key, field, value, mapping_service = false)
-      if @transaction and !mapping_service
+      if (@transaction or @pipelined) and !mapping_service
         params = [key, field, value]
         @commands << BaseInterface::Command.new(__method__, params)
         return
@@ -88,7 +90,7 @@ module BaseInterface
     #the commands are processed at the end, but mapping_service cannot wait and has to map name immediately
     #but still during transaction so it will be still atomic.
     def increment_hash(key, field, number, mapping_service = false)
-      if @transaction and !mapping_service
+      if (@transaction or @pipelined) and !mapping_service
         params = [key, field, number]
         @commands << BaseInterface::Command.new(__method__, params)
         return
@@ -100,7 +102,7 @@ module BaseInterface
     
     #Delete certain fields from hash, returns number of deleted fields
     def delete_from_hash(key, hash_fields)
-      if @transaction
+      if @transaction or @pipelined
         params = [key, hash_fields]
         @commands << BaseInterface::Command.new(__method__, params)
         return
@@ -129,7 +131,7 @@ module BaseInterface
 
     #Adds values from a given array to a list located in a database under the given key
     def add_to_list(key, values)
-      if @transaction
+      if @transaction or @pipelined
         params = [key, values]
         @commands << BaseInterface::Command.new(__method__, params)
         return
@@ -144,7 +146,7 @@ module BaseInterface
     #Deletes all occurences of values specified in an array paraeter from a list under the given key.
     def delete_from_list(key, *values)
       #LREM list -2 "hello" will remove the last two occurrences of "hello" in the list stored at list. =0 means all
-      if @transaction
+      if @transaction or @pipelined
         params = [key, values]
         @commands << BaseInterface::Command.new(__method__, params)
         return
@@ -161,7 +163,7 @@ module BaseInterface
 
     #Increments value under the given key in a database and returns that value
     def increment_string(key)
-      if @transaction
+      if @transaction or @pipelined
         params = [key]
         @commands << BaseInterface::Command.new(__method__, params)
         return
@@ -173,7 +175,7 @@ module BaseInterface
     
     #Decrements value under the given key in a database and returns that value
     def decrement_string(key)
-      if @transaction
+      if @transaction or @pipelined
         params = [key]
         @commands << BaseInterface::Command.new(__method__, params)
         return
@@ -192,7 +194,7 @@ module BaseInterface
     #["key1" => "string1", "key2" => "string2"]
     #so basically the same function as save_string_entries with another type of parameter
     def save_hash_entries(key_value_hash, overwrite)
-      if @transaction
+      if @transaction or @pipelined
         params = [key_value_hash, overwrite]
         @commands << BaseInterface::Command.new(__method__, params)
         return
@@ -213,7 +215,7 @@ module BaseInterface
     #Saves multiple string values under the multiple keys specified in an array parameter, example:
     #["key1", "string1", "key2", "string2"]
     def save_string_entries(*key_string, overwrite)
-      if @transaction
+      if @transaction or @pipelined
         params = [key_string, overwrite]
         @commands << BaseInterface::Command.new(__method__, params)
         return
@@ -228,7 +230,7 @@ module BaseInterface
 
     #Deletes all values from database under the keys given as an array
     def delete_entries(keys)
-      if @transaction
+      if @transaction or @pipelined
         params = [keys]
         @commands << BaseInterface::Command.new(__method__, params)
         return
@@ -268,6 +270,7 @@ module BaseInterface
     def commit
       @redis.multi do
         @transaction = false
+        @pipelined = false
         @commands.each do |command|
           send command.method_name, *command.params
         end
@@ -285,10 +288,15 @@ module BaseInterface
     #stays in an unstable state (shalf of keys written, rest none)
     def transaction
       @transaction = true
-      puts "Transaction begins"
       yield
       result = commit
-      puts "Transaction ends"
+      return result
+    end
+    
+    def pipelined
+      @pipelined = true
+      yield
+      result = commit
       return result
     end
     

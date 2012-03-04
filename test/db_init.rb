@@ -57,8 +57,13 @@ class DBInit
     db.transaction do
       db.delete_keys ENV_MAP_SIGN
       db.add_to_hash(ENV_MAP_SIGN, ["<iterator>", "4", "env", "1", "esecond", "2", "ethird", "3", "efourth", "4"], true)
-      db.add_to_hash("1:#{COLL_MAP_SIGN}", ["<iterator>", "5", "coll", "2", "cthird", "3", "cfourth", "4", "cfifth", "5"], true)
+      db.add_to_hash("1:#{COLL_MAP_SIGN}", ["<iterator>", "6", "coll", "2", "cthird", "3", "cfourth", "4", "cfifth", "5"], true)
       db.add_to_hash("1:2:#{DOC_MAP_SIGN}", ["<iterator>", "3", "test.xml", "3"], true)
+      db.add_to_hash("1:2:#{COLL_MAP_SIGN}", ["<name>", "coll", "child", "6"], true)
+      db.add_to_hash("1:3:#{COLL_MAP_SIGN}", ["<name>", "cthird"], true)
+      db.add_to_hash("1:4:#{COLL_MAP_SIGN}", ["<name>", "cfourth"], true)
+      db.add_to_hash("1:5:#{COLL_MAP_SIGN}", ["<name>", "cfifth"], true)
+      db.add_to_hash("1:6:#{COLL_MAP_SIGN}", ["<name>", "child", "<parent_id>", "2"], true)
       db.add_to_hash(ELEM_MAP_KEY, elements, true)
       db.add_to_hash(ELEM_MAP_KEY, ["<iterator>", "5"], true)
       db.add_to_hash(ATTR_MAP_KEY, attributes, true)

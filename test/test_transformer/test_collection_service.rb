@@ -11,10 +11,17 @@ class TestCollectionService < Test::Unit::TestCase
     @coll_service = Transformer::CollectionService.new("1")
   end
   
+  def test_get_current_collection_id()
+    @coll_service = Transformer::CollectionService.new("1", "a3c")
+    assert_equal(true, @coll_service.get_current_collection_id == "a3c")
+  end
+  
   def test_create_collection()
-    @coll_service.create_collection("newest")
+    newest = @coll_service.create_collection("newest")
+    newest_id = "1"
     assert_nothing_raised do
-      id = @coll_service.get_collection_id("newest") #Raise error if no id is retrieved
+      newest_id = @coll_service.get_collection_id("newest") #Raise error if no id is retrieved
+      puts "nwest id je: #{newest_id}"
     end
     assert_equal(true, @coll_service.collection_exist?("newest") == true)
     @coll_service.create_collection("another")
@@ -27,6 +34,10 @@ class TestCollectionService < Test::Unit::TestCase
       id = @coll_service.get_collection_id("a26^dsa1*") #Raise error if no id is retrieved
     end
     assert_equal(true, @coll_service.collection_exist?("a26^dsa1*") == true)
+    newest = RedXmlApi::Collection.new("1", newest_id)
+    newest.create_collection("child_new")
+    @coll_service = Transformer::CollectionService.new("1", newest_id)
+    assert_equal(true, @coll_service.collection_exist?("child_new") == true)
   end
   
   def test_delete_collection()
@@ -45,6 +56,13 @@ class TestCollectionService < Test::Unit::TestCase
     docs = @db_interface.find_value(doc_key)
     assert_equal(true, docs.length == 1) #0 documents in collection + <iterator>
     assert_equal(true, docs.include?("<iterator>") == true)
+    id = @coll_service.create_collection("laila")
+    col = RedXmlApi::Collection.new("1", id)
+    col.create_collection("tracy")
+    @coll_service.delete_collection("laila")
+    assert_equal(true, @coll_service.collection_exist?("laila") == false)
+    @coll_service = Transformer::CollectionService.new("1", id)
+    assert_equal(true, @coll_service.collection_exist?("tracy") == false)
   end
   
   def test_delete_all_collections()
@@ -123,6 +141,27 @@ class TestCollectionService < Test::Unit::TestCase
     assert_raise Transformer::MappingException do
      @coll_service.rename_collection("DoesntExist", "SomeName")
     end
+  end
+  
+  def test_get_parent_id()
+    @coll_service = Transformer::CollectionService.new("1", "6")
+    id = @coll_service.get_parent_id
+    assert_equal(true, id == "2")
+  end
+  
+  def test_get_parent_name()
+    @coll_service = Transformer::CollectionService.new("1", "6")
+    name = @coll_service.get_parent_name
+    assert_equal(true, name == "coll")
+  end
+  
+  def test_get_collection_name()
+    @coll_service = Transformer::CollectionService.new("1", "6")
+    name = @coll_service.get_collection_name
+    assert_equal(true, name == "child")
+    @coll_service = Transformer::CollectionService.new("1", "3")
+    name = @coll_service.get_collection_name
+    assert_equal(true, name == "cthird")
   end
   
   def test_collection_exist?()

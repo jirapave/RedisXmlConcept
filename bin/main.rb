@@ -23,11 +23,18 @@ db.delete_keys keys unless keys.empty?
 
 env_name = "test"
 coll_name = "new"
-file_path = "./catalog.xml"
+file_path = "./books-100000.xml"
 file_name = File.basename(file_path)
 env_manager = RedXmlApi::EnvironmentManager.new()
 env = env_manager.create_environment(env_name)
 coll = env.create_collection(coll_name)
+aaa = coll.create_collection("aaa")
+bbb = coll.create_collection("bbb")
+ccc = aaa.create_collection("ccc")
+puts "new=#{coll.get_id},aaa=#{aaa.get_id}, bbb=#{bbb.get_id}, ccc=#{ccc.get_id}"
+puts "PRED: aaa ma: #{aaa.get_all_collections_names}"
+coll.delete_collection("aaa")
+puts "PRED: aaa ma: #{aaa.get_all_collections_names}"
 
 #debug purposes
 env_id = Transformer::MappingService.map_env(env_name)
@@ -45,7 +52,7 @@ time do
   # retrieve document string, whole DOM is created, Node overrides to_s
   # puts document_service.find_file(file_name, 1, 1)
   document = coll.get_document(file_name)
-  puts document
+  #puts document
 end
 
 #result = coll.delete_document?(file_name)

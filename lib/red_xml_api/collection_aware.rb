@@ -51,9 +51,17 @@ module RedXmlApi
         puts ex.message
       end
     end
+    
+    def get_id()
+      @coll_service.get_current_collection_id
+    end
 
     def get_all_collections_names()
       @coll_service.get_all_collections_names
+    end
+    
+    def get_all_collections_ids()
+      @coll_service.get_all_collections_ids
     end
 
     def rename_collection(old_name, name)

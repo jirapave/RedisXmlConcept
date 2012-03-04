@@ -2,6 +2,7 @@ require_relative "xml_transformer"
 require_relative "../xml/document"
 require_relative "../xml/sax_document"
 require_relative "../base_interface/db_interface"
+require_relative "../transformer/key_builder"
 require_relative "exceptions"
 require "nokogiri"
 require "observer"
@@ -117,30 +118,19 @@ module Transformer
       #Remember there is a field <iterator> which we have to exclude
       iter_id = @db_interface.get_hash_value(@doc_key, Transformer::KeyBuilder::ITERATOR_KEY)
       #We have to exclude first occurence of iter_id
-      result = @db_interface.get_all_hash_values(@doc_key)
-      if iter_id
-        ind = nil
-        result.each_with_index do |id, index|
-          if id == iter_id
-            ind = index
-            break
-          end
-        end
-        result.delete_at(ind) if ind
+      fields_val = @db_interface.get_all_hash_values(@doc_key)
+      result = []
+      fields_val.each do |field, value|
+        result << value unless ignore_field?(field)
       end
       return result
     end
     
     def get_all_documents_names()
       names =  @db_interface.get_all_hash_fields(@doc_key)
+      names ||= []
       ind = nil
-      names.each_with_index do |name, index|
-        if name == Transformer::KeyBuilder::ITERATOR_KEY
-          ind = index
-          break
-        end
-      end
-      names.delete_at(ind) if ind
+      names.reject! { |name| ignore_field?(name) }
       return names
     end
     
@@ -201,6 +191,12 @@ module Transformer
     #this method.
     def document_exist?(name)
       return @db_interface.hash_value_exist?(@doc_key, name)
+    end
+    
+    private
+    def ignore_field?(field_name)
+      return true if field_name[0] == Transformer::KeyBuilder::HASH_SPECIAL_SEPARATOR
+      return false
     end
     
   end

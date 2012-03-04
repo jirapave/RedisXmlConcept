@@ -53,7 +53,11 @@
 # * on the XML:DB Initiative, please see <http://www.xmldb.org/>.
 # */
 # import org.xmldb.api.base.*;
-#
+
+require_relative "red_database"
+require_relative "base/xmldb_exception"
+require_relative "base/error_codes"
+
 # DatabaseManager is the entry point for the API and enables you to get the initial Collection references
 # necessary to do anything useful with the API. DatabaseManager is intended to be provided as a concrete
 # implementation in a particular programming language. Individual language mappings should define the exact
@@ -62,84 +66,98 @@
 module XMLDBApi
   class DatabaseManager
     URI_PREFIX = "xmldb:"
+    @@databases = [XMLDBApi::RedDatabase.new("default")]
+    @@properties = {}
+    
     def self.get_databases()
+      @@databases
     end
 
     def self.register_database(database)
-      # if ((database.getName() == null) || (database.getName().equals(""))) {
-      # throw new XMLDBException(ErrorCodes.INVALID_DATABASE);
-      # }
-      #
-      # databases.put(database.getName(), database);
-      #
-
+      if database.get_name == nil or database.get_name == ""
+        raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::INVALID_DATABASE), "Cannot register database, name is not valid, name: #{database.get_name}"
+      end
+      
+      @@databases.each do |db|
+        if db.get_name == database.get_name
+          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::INVALID_DATABASE), "Cannot register database, database with this name already exist, name: #{database.get_name}"
+        end
+      end
+      
+      @@databases << database
+      
     end
 
     def self.deregister_database(database)
-
+      @@databases.each_with_index do |db, index|
+        if db.get_name == database.get_name
+          @@databases.delete_at(index)
+          break
+        end
+      end
     end
 
     def self.get_collection(uri)
-
+      database = get_database(uri)
+      parsed_uri = self.strip_URI(uri)
+      return database.get_collection(parsed_uri["coll_path"])
     end
 
-    def self.get_collection(uri, username, password)
-      #      Database db = getDatabase(uri);
-
-      #      uri = stripURIPrefix(uri);
-
-      #      return (org.xmldb.api.base.Collection) db.getCollection(uri, username,
-      #         password);
+    def self.get_collection(uri, username = false, password = false)
+      database = get_database(uri)
+      parsed_uri = self.strip_URI(uri)
+      return database.get_collection(parsed_uri["coll_path"])
     end
 
     def self.get_conformance_level(uri)
-
+      database = get_database(uri)
+      return database.get_conformance_level
     end
 
     def self.get_property(name)
-
+      return @@properties[name]
     end
 
     def self.set_property (name, value)
-
+      @@properties[name] = value
     end
 
     def self.get_database(uri)
-      # if (!uri.startsWith(URI_PREFIX)) {
-      # throw new XMLDBException(ErrorCodes.INVALID_URI);
-      # }
-      #
-      # int end = uri.indexOf(":", URI_PREFIX.length());
-      # if (end == -1) {
-      # throw new XMLDBException(ErrorCodes.INVALID_URI);
-      # }
-      #
-      # String databaseName = uri.substring(URI_PREFIX.length(), end);
-      #
-      # Database db = (Database) databases.get(databaseName);
-      # if (db == null) {
-      # throw new XMLDBException(ErrorCodes.NO_SUCH_DATABASE);
-      # }
-      #
-      # return db;
+      parsed_uri = self.strip_URI
+      db_name = parsed_uri["db_name"]
+      database = find_db(db_name)
+      raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::NO_SUCH_DATABASE), "Database for the given URI is not registered" unless database
+      return database
     end
-
-    # /**
-    # * Removes the URI_PREFIX from the front of the URI. This is so the database
-    # * can focus on handling its own URIs.
-    # *
-    # * @param uri The full URI to strip.
-    # * @return The database specific portion of the URI.
-    # */
-    private
-
-    def strip_URI_prefix(uri)
-      # if (!uri.startsWith(URI_PREFIX)) {
-      # throw new XMLDBException(ErrorCodes.INVALID_URI);
-      # }
-      #
-      # String dbURI = uri.substring(URI_PREFIX.length(), uri.length());
-      # return dbURI;
+    
+    def self.strip_URI(uri)
+      result = {}
+      parts = uri.split("//")
+      if parts[0].length != 2 or parts[0].split(":")[0] != URI_PREFIX
+        raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::INVALID_URI), "URI is not valid, no xmldb: prefix found"
+      end
+      result["prefix"] = parts[0]
+      result["db_name"] = parts[1]
+      
+      path = parts[1]
+      if path.split(":").length == 2
+        #Cut host:port/path/to/collection to path/to/collection 
+        path = path.split("/")[1..-1].join("/")
+      end
+      
+      result["coll_path"] = path
+      result
+    end
+    
+    def find_db(name)
+      result = nil
+      @@databases.each_with_index do |db, index|
+        if db.get_name == name
+          result = db
+          break
+        end
+      end
+      result
     end
   end
 end

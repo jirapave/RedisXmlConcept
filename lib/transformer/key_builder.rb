@@ -11,8 +11,16 @@ module Transformer
     # Separator of levels (Environment, Collection, Document) in the key
     SEPARATOR = ":"
     
-    # Key of iterator, which is used to create new ids
+    # Determines the character which is used a first char to determine special hash field which should be
+    # ignored like <iterator> or <parent>
+    HASH_SPECIAL_SEPARATOR = "<"
+    
+    # Field of the iterator, which is used to create new ids
     ITERATOR_KEY = "<iterator>"
+    # Field with the id of the parent of the certain collection
+    PARENT_ID_KEY = "<parent_id>"
+    # Field with the name of the parent of the certain collection
+    NAME_KEY = "<name>"
     
     # Holds a key to hash of all environments
     attr_reader :environment_key

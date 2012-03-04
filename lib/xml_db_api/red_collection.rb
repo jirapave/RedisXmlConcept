@@ -1,16 +1,29 @@
 require_relative "base/collection"
+require_relative "../transformer/collection_service"
+require_relative "../transformer/document_service"
 
 module XMLDBApi
   class RedCollection < XMLDBApi::Base::Collection
+    
+    def initialize(db_id, coll_id, coll_name)
+      @coll_name = coll_name
+      @coll_id = coll_id
+      @db_id = db_id
+      @coll_service = Transformer::CollectionService.new(@db_id, @coll_id)
+      @doc_service = Transformer::DocumentService.new(@db_id, @coll_id)
+      @services = []
+      @properties = {}
+      @closed = false
+    end
     
       # Returns the name associated with the Collection instance.
       # ==== Return value
       # String representing the name of the collection
       def get_name()
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        return @coll_name
       end
 
-      # Provides a Array of all services known to the collection. If no services
+      # Provides an Array of all services known to the collection. If no services
       # are known an empty Array is returned.
       # ==== Return value
       # An array of registered Service implementations.
@@ -19,11 +32,14 @@ module XMLDBApi
       # ErrorCodes.COLLECTION_CLOSED if the close
       # method has been called on the RedCollection
       def get_services()
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        unless is_open?
+          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+        end
+        return @services
       end
 
       # Returns a Service instance for the requested service name and version. If
-      # o Service exists for those parameters a nil value is returned.
+      # 0 Service exists for those parameters a nil value is returned.
       # ==== Parameters
       # * +name+ - Name of the service to be retrieved
       # * +version+ - Version of the service to be retrieved
@@ -34,7 +50,14 @@ module XMLDBApi
       # ErrorCodes.COLLECTION_CLOSED if the close
       # method has been called on the RedCollection
       def get_service(name, version)
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        unless is_open?
+          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+        end
+        result = nil
+        @services.each do |service|
+          result = service if service.get_name == name and service.get_version == version
+        end
+        return result
       end
 
       # Returns the parent collection for this collection or nil if no parent
@@ -46,7 +69,14 @@ module XMLDBApi
       # ErrorCodes.COLLECTION_CLOSED if the close
       # method has been called on the RedCollection
       def get_parent_collection
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        unless is_open?
+          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+        end
+        
+        parent_id = @coll_service.get_parent_id
+        parent_name = @coll_service.get_parent_name
+        return nil if parent_id == nil or parent_name == nil
+        return XMLDBApi::RedCollection.new(@db_id, parent_id, parent_name)
       end
 
       # Returns the number of child collections under this
@@ -58,7 +88,13 @@ module XMLDBApi
       # ErrorCodes.COLLECTION_CLOSED if the close
       # method has been called on the RedCollection
       def get_child_collection_count()
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        unless is_open?
+          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+        end
+        
+        result = @coll_service.get_all_collections_names
+        return result.length if result
+        return 0
       end
 
       # Returns a list of collection names naming all child collections
@@ -71,7 +107,11 @@ module XMLDBApi
       # ErrorCodes.COLLECTION_CLOSED if the close
       # method has been called on the RedCollection
       def list_child_collections()
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        unless is_open?
+          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+        end
+        
+        return @coll_service.get_all_collections_names
       end
 
       # Returns XMLDBApi::RedCollection instance for the requested child collection
@@ -79,13 +119,22 @@ module XMLDBApi
       # ==== Parameters
       # * +name+ - Name of the child collection to retrieve
       # ==== Return value
-      # The requested child collection or null if it couldn't be found.
+      # The requested child collection or nil if it couldn't be found.
       # ==== Raises
       # XMLDBApi::Base::XMLDBException with expected error codes.
       # ErrorCodes.COLLECTION_CLOSED if the close
       # method has been called on the RedCollection
       def get_child_collection(name)
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        unless is_open?
+          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+        end
+        
+        begin
+          id = @coll_service.get_collection_id(name)
+          return XMLDBApi::RedCollection.new(@db_id, id, name)
+        rescue Transformer::MappingException => ex
+          return nil
+        end
       end
 
       # Returns the number of resources currently stored in this collection or 0
@@ -97,7 +146,12 @@ module XMLDBApi
       # ErrorCodes.COLLECTION_CLOSED if the close
       # method has been called on the RedCollection
       def get_resource_count()
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        unless is_open?
+          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+        end
+        
+        count = @doc_service.get_all_documents_names.length
+        return count
       end
 
       # Returns a list of the ids for all resources stored in the collection.
@@ -108,7 +162,12 @@ module XMLDBApi
       # ErrorCodes.COLLECTION_CLOSED if the close
       # method has been called on the RedCollection
       def list_resources()
+        unless is_open?
+          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+        end
+        
         raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        return @doc_service.get_all_documents_names
       end
       
       # Creates a new empty Resource with the provided id.
@@ -145,6 +204,17 @@ module XMLDBApi
       # method has been called on the RedCollection
       def removeResource(res)
         raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        unless is_open?
+          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+        end
+        
+        name = res.get_id
+        raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::INVALID_RESOURCE), "Resource #{id} is not valid, id does not exist" unless id 
+        begin
+          @doc_service.delete_document(name)
+        rescue Transformer::MappingException => ex
+          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::NO_SUCH_RESOURCE), "Resource #{id} cannot be found" 
+        end
       end
 
       # Stores the provided RedXMLResource into the database. If the resource does not
@@ -193,7 +263,7 @@ module XMLDBApi
       # ==== Return value
       # True if the RedCollection is open, false otherwise.
       def is_open?()
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        return !@closed
       end
       
       # Releases all resources consumed by the Collection.
@@ -201,7 +271,7 @@ module XMLDBApi
       # a RedCollection is complete. It is not safe to use a\
       # RedCollection after the close method has been called.
       def close()
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        @closed = true
       end
       
       # Returns the value of the property identified by name parameter
@@ -210,7 +280,7 @@ module XMLDBApi
       # ==== Return value
       # The property value or null if no property exists.
       def get_property(name)
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        return @properties[name]
       end
 
       # Sets the property name to have the value provided in value
@@ -218,7 +288,7 @@ module XMLDBApi
       # * +name+ - The name of the property to set
       # * +value+ - The value to set for the property
       def set_property(name, value)
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        @properties[name] = value
       end
   end
 end

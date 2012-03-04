@@ -59,7 +59,7 @@ module XMLDBApi
       
       # Returns the RedCollection instance that this resource is
       # associated with. All resources must exist within the context of a
-      # Redcollection.
+      # RedCollection.
       # ==== Return value
       # The RedCollection asociated with the resource
       def get_parent_collection()

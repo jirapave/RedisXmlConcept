@@ -10,6 +10,8 @@ module RedXmlApi
     include RedXmlApi::CollectionAware
     
     def initialize(env_id, coll_id)
+      @env_id = env_id
+      @coll_id = coll_id
       @doc_service = Transformer::DocumentService.new(env_id, coll_id)
       @coll_service = Transformer::CollectionService.new(env_id, coll_id)
     end
