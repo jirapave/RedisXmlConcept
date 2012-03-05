@@ -4,6 +4,7 @@ class DBInit
   ENV_MAP_SIGN = "environments"
   COLL_MAP_SIGN = "collections"
   DOC_MAP_SIGN = "documents"
+  INFO_SIGN = "<info"
   
   ELEM_MAP_KEY = "1:2:3<emapping"
   ATTR_MAP_KEY = "1:2:3<amapping"
@@ -56,14 +57,17 @@ class DBInit
     
     db.transaction do
       db.delete_keys ENV_MAP_SIGN
-      db.add_to_hash(ENV_MAP_SIGN, ["<iterator>", "4", "env", "1", "esecond", "2", "ethird", "3", "efourth", "4"], true)
-      db.add_to_hash("1:#{COLL_MAP_SIGN}", ["<iterator>", "6", "coll", "2", "cthird", "3", "cfourth", "4", "cfifth", "5"], true)
-      db.add_to_hash("1:2:#{DOC_MAP_SIGN}", ["<iterator>", "3", "test.xml", "3"], true)
-      db.add_to_hash("1:2:#{COLL_MAP_SIGN}", ["<name>", "coll", "child", "6"], true)
-      db.add_to_hash("1:3:#{COLL_MAP_SIGN}", ["<name>", "cthird"], true)
-      db.add_to_hash("1:4:#{COLL_MAP_SIGN}", ["<name>", "cfourth"], true)
-      db.add_to_hash("1:5:#{COLL_MAP_SIGN}", ["<name>", "cfifth"], true)
-      db.add_to_hash("1:6:#{COLL_MAP_SIGN}", ["<name>", "child", "<parent_id>", "2"], true)
+      db.add_to_hash("info", ["<iterator>", "4"], true)
+      db.add_to_hash(ENV_MAP_SIGN, ["env", "1", "esecond", "2", "ethird", "3", "efourth", "4"], true)
+      db.add_to_hash("1<info", ["<iterator>", "9"], true) 
+      db.add_to_hash("1:#{COLL_MAP_SIGN}", ["coll", "2", "cthird", "3", "cfourth", "4", "cfifth", "5"], true)
+      db.add_to_hash("1:2:#{DOC_MAP_SIGN}", ["test.xml", "3"], true)
+      db.add_to_hash("1:2:#{COLL_MAP_SIGN}", ["child", "6"], true)
+      db.add_to_hash("1:2#{INFO_SIGN}", ["<name>", "coll"], true)
+      db.add_to_hash("1:3#{INFO_SIGN}", ["<name>", "cthird"], true)
+      db.add_to_hash("1:4#{INFO_SIGN}", ["<name>", "cfourth"], true)
+      db.add_to_hash("1:5#{INFO_SIGN}", ["<name>", "cfifth"], true)
+      db.add_to_hash("1:6#{INFO_SIGN}", ["<name>", "child", "<parent_id>", "2"], true)
       db.add_to_hash(ELEM_MAP_KEY, elements, true)
       db.add_to_hash(ELEM_MAP_KEY, ["<iterator>", "5"], true)
       db.add_to_hash(ATTR_MAP_KEY, attributes, true)

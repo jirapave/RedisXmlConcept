@@ -49,13 +49,12 @@ class TestCollectionService < Test::Unit::TestCase
     assert_equal(true, @coll_service.collection_exist?("cfourth") == false)
     doc_key = Transformer::KeyBuilder.documents_key("1", "2") #env > coll where document is
     docs = @db_interface.find_value(doc_key)
-    assert_equal(true, docs.length == 2) #1 document in collection + <iterator> field!!!
+    assert_equal(true, docs.length == 1)
     assert_equal(true, @coll_service.collection_exist?("coll") == true)
     @coll_service.delete_collection("coll")
     assert_equal(true, @coll_service.collection_exist?("coll") == false)
     docs = @db_interface.find_value(doc_key)
-    assert_equal(true, docs.length == 1) #0 documents in collection + <iterator>
-    assert_equal(true, docs.include?("<iterator>") == true)
+    assert_equal(true, docs == nil)
     id = @coll_service.create_collection("laila")
     col = RedXmlApi::Collection.new("1", id)
     col.create_collection("tracy")
@@ -71,15 +70,14 @@ class TestCollectionService < Test::Unit::TestCase
     doc_key = Transformer::KeyBuilder.documents_key("1", "2")
     #We don' use CollectionService here, so we have to count <iterator> by hand
     docs = @db_interface.find_value(doc_key)
-    assert_equal(true, docs.length == 2) #1 document in collection + iterator
+    assert_equal(true, docs.length == 1) 
     @coll_service.delete_all_collections
     coll = @coll_service.get_all_collections_ids
     assert_equal(true, coll.length == 0) #There are no collections
     docs = @db_interface.find_value(doc_key)
     #If this assertion fails, error is in CollectionService, because environment_manager
     #will call delete_all_collections for each environment
-    assert_equal(true, docs.length == 1) #No documents in collection + <iterator>
-    assert_equal(true, docs.include?("<iterator>") == true)
+    assert_equal(true, docs == nil) #No documents in collection + <iterator>
   end
   
   def test_get_collection_id()

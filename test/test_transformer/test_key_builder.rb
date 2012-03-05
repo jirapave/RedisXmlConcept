@@ -40,9 +40,25 @@ class TestKeyBuilder < Test::Unit::TestCase
     @key_builder = Transformer::KeyBuilder.new("1", "2", "3")
   end
   
+  def test_collection_info()
+    @key_builder = Transformer::KeyBuilder.new("1", "2", "3")
+    assert_equal(true, @key_builder.collection_info == "1:2<info")
+    assert_equal(true, Transformer::KeyBuilder.collection_info("a3c", "555") == "a3c:555<info")
+  end
+  
+  def test_environment_info()
+    @key_builder = Transformer::KeyBuilder.new("1", "2", "3")
+    assert_equal(true, @key_builder.environment_info == "1<info")
+    assert_equal(true, Transformer::KeyBuilder.environment_info("a3c") == "a3c<info")
+  end
+  
   def test_info()
     puts "KeyBuilder info je: #{@key_builder.info}"
     assert_equal(true, @key_builder.info == "1:2:3<info")
+  end
+  
+  def test_env_iterator_key
+    assert_equal(true, Transformer::KeyBuilder.env_iterator_key == "info")
   end
   
   def test_elem_mapping_key()

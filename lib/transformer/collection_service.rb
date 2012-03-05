@@ -7,9 +7,9 @@ module Transformer
       @env_id = env_id
       @coll_id = coll_id
       @coll_name = coll_name
-      @coll_key = Transformer::KeyBuilder.collections_key(@env_id)
+      @env_info = Transformer::KeyBuilder.environment_info(@env_id)
       @certain_coll_key = Transformer::KeyBuilder.child_collections_key(@env_id, @coll_id) if @coll_id
-      @certain_coll_key = @coll_key unless @coll_id
+      @certain_coll_key = Transformer::KeyBuilder.collections_key(@env_id) unless @coll_id
       #@coll_key = Transformer::KeyBuilder.child_collections_key(@env_id, @coll_id) if coll_id
       @db_interface = BaseInterface::DBInterface.instance
     end
@@ -19,16 +19,16 @@ module Transformer
     end
 
     def create_collection(name)
-      coll_id = @db_interface.increment_hash(@coll_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
+      coll_id = @db_interface.increment_hash(@env_info, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
       result = @db_interface.add_to_hash_ne(@certain_coll_key, name, coll_id)
       raise Transformer::MappingException, "Collection with such a name already exist." unless result
       #Now we have to save parent id to hash if we are creating nested collection
-      created_coll_key = Transformer::KeyBuilder.child_collections_key(@env_id, coll_id)
+      created_coll_info_key = Transformer::KeyBuilder.collection_info(@env_id, coll_id)
       #Child collection now know id of it's parent
       info = [Transformer::KeyBuilder::NAME_KEY, name]
       #Create <parent_id> only if it has any parent, environment is not a parent
       info << Transformer::KeyBuilder::PARENT_ID_KEY << @coll_id if @coll_id
-      @db_interface.add_to_hash(created_coll_key, info, true)
+      @db_interface.add_to_hash(created_coll_info_key, info, true)
       coll_id
     end
 
@@ -39,6 +39,9 @@ module Transformer
       collection.delete_all_documents
       collection.delete_all_collections
       @db_interface.delete_from_hash @certain_coll_key, name
+      #We have to delete all keys of collection, e.g. <info, <documents, <collections
+      del_keys = [Transformer::KeyBuilder.collection_info(@env_id, coll_id), Transformer::KeyBuilder.documents_key(@env_id, coll_id), Transformer::KeyBuilder.child_collections_key(@env_id, coll_id)]
+      @db_interface.delete_keys del_keys
     end
 
     def delete_all_collections()
@@ -55,22 +58,15 @@ module Transformer
     end
 
     def get_all_collections_ids()
-      #Remember there are fields begininf with "<" which has to be excluded
-      iter_id = @db_interface.get_hash_value(@certain_coll_key, Transformer::KeyBuilder::ITERATOR_KEY)
-      fields_val = @db_interface.find_value(@certain_coll_key)
-      result = []
-      fields_val.each do |field, value|
-        result << value unless ignore_field?(field)
-      end
-      return result
+      ids =  @db_interface.get_all_hash_values(@certain_coll_key)
+      ids ||= []
+      return ids
     end
 
     def get_all_collections_names()
       #Remember there are fields begininf with "<" which has to be excluded
       names =  @db_interface.get_all_hash_fields(@certain_coll_key)
       names ||= []
-      ind = nil
-      names.reject! { |name| ignore_field?(name) }
       return names
     end
     
@@ -78,7 +74,8 @@ module Transformer
     def get_parent_id()
       result = nil
       if @coll_id #if coll_id is false, than collection_service is used by environment so no parent
-        result = @db_interface.get_hash_value(@certain_coll_key, Transformer::KeyBuilder::PARENT_ID_KEY)
+        info = Transformer::KeyBuilder.collection_info(@env_id, @coll_id)
+        result = @db_interface.get_hash_value(info, Transformer::KeyBuilder::PARENT_ID_KEY)
       end
       return result
     end
@@ -96,7 +93,8 @@ module Transformer
     def get_collection_name()
       result = nil
       if @coll_id #if coll_id is false, than collection_service is used by environment
-        result = @db_interface.get_hash_value(@certain_coll_key, Transformer::KeyBuilder::NAME_KEY)
+        info = Transformer::KeyBuilder.collection_info(@env_id, @coll_id)
+        result = @db_interface.get_hash_value(info, Transformer::KeyBuilder::NAME_KEY)
       end
       return result
     end
@@ -124,13 +122,6 @@ module Transformer
 
     def collection_exist?(name)
       return @db_interface.hash_value_exist?(@certain_coll_key, name)
-    end
-
-    private
-
-    def ignore_field?(field_name)
-      return true if field_name[0] == Transformer::KeyBuilder::HASH_SPECIAL_SEPARATOR
-      return false
     end
   end
 end

@@ -11,10 +11,6 @@ module Transformer
     # Separator of levels (Environment, Collection, Document) in the key
     SEPARATOR = ":"
     
-    # Determines the character which is used a first char to determine special hash field which should be
-    # ignored like <iterator> or <parent>
-    HASH_SPECIAL_SEPARATOR = "<"
-    
     # Field of the iterator, which is used to create new ids
     ITERATOR_KEY = "<iterator>"
     # Field with the id of the parent of the certain collection
@@ -104,6 +100,26 @@ module Transformer
     # String of the key
     def info()
       "#{@document_key}<info"
+    end
+    
+    def self.collection_info(env_id, coll_id)
+      "#{env_id}#{SEPARATOR}#{coll_id}<info"
+    end
+    
+    def collection_info()
+      "#{@env_id}#{SEPARATOR}#{@coll_id}<info"
+    end
+    
+    def self.environment_info(env_id)
+      "#{env_id}<info"
+    end
+    
+    def environment_info()
+      "#{@env_id}<info"
+    end
+    
+    def self.env_iterator_key()
+      "info"
     end
     
     # Creates String with the key pointing to hash with mapping of elements into ids

@@ -49,13 +49,12 @@ class TestEnvironmentService < Test::Unit::TestCase
     assert_equal(true, @env_service.environment_exist?("ethird") == false)
     coll_key = Transformer::KeyBuilder.collections_key("1")
     colls = @db_interface.find_value(coll_key)
-    assert_equal(true, colls.length == 5) #4 collections in environment + <iterator> field!!!
+    assert_equal(true, colls.length == 4) #4 collections in environment
     assert_equal(true, @env_service.environment_exist?("env") == true)
     @env_service.delete_environment("env")
     assert_equal(true, @env_service.environment_exist?("env") == false)
     colls = @db_interface.find_value(coll_key)
-    assert_equal(true, colls.length == 1) #0 collections in environment + <iterator>
-    assert_equal(true, colls.include?("<iterator>") == true)
+    assert_equal(true, colls == nil)
   end
   
   def test_delete_all_environments()
@@ -66,7 +65,7 @@ class TestEnvironmentService < Test::Unit::TestCase
     #We don' use CollectionService here, so we have to count <iterator> by hand
     colls = @db_interface.find_value(coll_key)
     #See comment in test_delete_environment
-    assert_equal(true, colls.length == 5) #4 collections in environment + iterator
+    assert_equal(true, colls.length == 4) 
     
     @env_service.delete_all_environments
     
@@ -75,8 +74,7 @@ class TestEnvironmentService < Test::Unit::TestCase
     colls = @db_interface.find_value(coll_key)
     #If this assertion fails, error is in CollectionService, because environment_manager
     #will call delete_all_collections for each environment
-    assert_equal(true, colls.length == 1) #No collections in environment + <iterator>
-    assert_equal(true, colls.include?("<iterator>") == true)
+    assert_equal(true, colls == nil)
   end
   
   def test_get_environment_id()

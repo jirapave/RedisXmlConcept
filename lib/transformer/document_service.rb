@@ -18,6 +18,7 @@ module Transformer
       @xml_transformer = nil
       @db_interface = BaseInterface::DBInterface.instance
       @doc_key = Transformer::KeyBuilder.documents_key(env_id, coll_id)
+      @env_info = Transformer::KeyBuilder.environment_info(env_id)
       @env_id = env_id
       @coll_id = coll_id
       @builder = nil
@@ -67,7 +68,7 @@ module Transformer
       
       file_name = File.basename(file)
       puts "Does document exist?"
-      doc_id = @db_interface.increment_hash(@doc_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
+      doc_id = @db_interface.increment_hash(@env_info, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
       result = @db_interface.add_to_hash_ne(@doc_key, file_name, doc_id)
       raise MappingException, "Document with such a name already exist." unless result
       
@@ -115,22 +116,14 @@ module Transformer
     end
     
     def get_all_documents_ids()
-      #Remember there is a field <iterator> which we have to exclude
-      iter_id = @db_interface.get_hash_value(@doc_key, Transformer::KeyBuilder::ITERATOR_KEY)
-      #We have to exclude first occurence of iter_id
-      fields_val = @db_interface.get_all_hash_values(@doc_key)
-      result = []
-      fields_val.each do |field, value|
-        result << value unless ignore_field?(field)
-      end
-      return result
+      ids = @db_interface.get_all_hash_values(@doc_key)
+      ids ||= []
+      return ids
     end
     
     def get_all_documents_names()
       names =  @db_interface.get_all_hash_fields(@doc_key)
       names ||= []
-      ind = nil
-      names.reject! { |name| ignore_field?(name) }
       return names
     end
     
