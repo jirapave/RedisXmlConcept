@@ -1,6 +1,8 @@
 require_relative "base/database"
 require_relative "../transformer/environment_service"
 require_relative "../transformer/collection_service"
+require_relative "red_collection"
+require_relative "red_collection_management_service"
 
 module XMLDBApi
   class RedDatabase < XMLDBApi::Base::Database
@@ -50,7 +52,7 @@ module XMLDBApi
             coll_name = name
             coll_service = Transformer::CollectionService.new(@db_id, coll_id)
           rescue Transformer::MappingException => ex
-            raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::INVALID_URI), "URI is not valid, wrong path, collection #{name} does not exist"
+            raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::INVALID_URI), "URI is not valid, wrong path, collection #{name} does not exist"
           end
         end
         
@@ -96,6 +98,13 @@ module XMLDBApi
       # * +value+ - The value to set for the property
       def set_property(name, value)
         @properties[name] = value
+      end
+      
+      # Returns the RedCollectionManagementService instance
+      # ==== Return value
+      # RedCollectionManagementService instance
+      def get_collection_management_service()
+        return XMLDBApi::RedCollectionManagementService.new(@db_id)
       end
   end
 end

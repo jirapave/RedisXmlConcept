@@ -67,23 +67,13 @@ require_relative "error_codes"
 module XMLDBApi
   module Base
     class XMLDBException < StandardError
-      def initialize()
-        @errorCode = XMLDApi::Base::ErrorCodes.UNKNOWN_ERROR
+      def initialize(errorCode = nil, message = nil, vendorErrorCode = nil)
+        @errorCode = XMLDBApi::Base::ErrorCodes::UNKNOWN_ERROR
         @vendorErrorCode = 0
-      end
-
-      def initialize(errorCode)
-        new(errorCode, 0, "")
-      end
-
-      def initialize(errorCode, message)
-        new(errorCode, 0, message);
-      end
-
-      def initialize(errorCode, vendorErrorCode, message)
-        self.message = message
-        @errorCode = errorCode
-        @vendorErrorCode = vendorErrorCode
+        @message = "Unknown error has occured"
+        self.message = message if message
+        @errorCode = errorCode if errorCode
+        @vendorErrorCode = vendorErrorCode if vendorErrorCode
       end
     end
   end

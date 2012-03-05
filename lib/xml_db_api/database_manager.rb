@@ -65,7 +65,7 @@ require_relative "base/error_codes"
 
 module XMLDBApi
   class DatabaseManager
-    URI_PREFIX = "xmldb:"
+    URI_PREFIX = "xmldb"
     @@databases = [XMLDBApi::RedDatabase.new("default")]
     @@properties = {}
     
@@ -75,12 +75,12 @@ module XMLDBApi
 
     def self.register_database(database)
       if database.get_name == nil or database.get_name == ""
-        raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::INVALID_DATABASE), "Cannot register database, name is not valid, name: #{database.get_name}"
+        raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::INVALID_DATABASE), "Cannot register database, name is not valid, name: #{database.get_name}"
       end
       
       @@databases.each do |db|
         if db.get_name == database.get_name
-          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::INVALID_DATABASE), "Cannot register database, database with this name already exist, name: #{database.get_name}"
+          raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::INVALID_DATABASE), "Cannot register database, database with this name already exist, name: #{database.get_name}"
         end
       end
       
@@ -123,21 +123,23 @@ module XMLDBApi
     end
 
     def self.get_database(uri)
-      parsed_uri = self.strip_URI
+      parsed_uri = self.strip_URI uri
       db_name = parsed_uri["db_name"]
-      database = find_db(db_name)
-      raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::NO_SUCH_DATABASE), "Database for the given URI is not registered" unless database
+      database = self.find_db(db_name)
+      raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::NO_SUCH_DATABASE), "Database for the given URI is not registered" unless database
       return database
     end
     
     def self.strip_URI(uri)
       result = {}
       parts = uri.split("//")
-      if parts[0].length != 2 or parts[0].split(":")[0] != URI_PREFIX
-        raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::INVALID_URI), "URI is not valid, no xmldb: prefix found"
+      first_half = parts[0].split(":")
+      # != 2 because aaa:bbb: generates ["aaa", "bbb"]
+      if first_half.length != 2 or first_half[0] != URI_PREFIX
+        raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::INVALID_URI), "URI is not valid, no xmldb: prefix found"
       end
-      result["prefix"] = parts[0]
-      result["db_name"] = parts[1]
+      result["prefix"] = first_half[0]
+      result["db_name"] = first_half[1]
       
       path = parts[1]
       if path.split(":").length == 2
@@ -149,7 +151,7 @@ module XMLDBApi
       result
     end
     
-    def find_db(name)
+    def self.find_db(name)
       result = nil
       @@databases.each_with_index do |db, index|
         if db.get_name == name

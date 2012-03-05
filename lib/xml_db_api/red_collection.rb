@@ -1,9 +1,19 @@
 require_relative "base/collection"
+require_relative "red_collection_management_service"
 require_relative "../transformer/collection_service"
 require_relative "../transformer/document_service"
 
 module XMLDBApi
   class RedCollection < XMLDBApi::Base::Collection
+    
+    # CollectionService getter to be used by RedCollectionManagementService
+    attr_reader :coll_service
+    # Getter fot he id of the database where the collection is located
+    attr_reader :db_id
+    # Getter fot he id of the collection
+    attr_reader :coll_id
+    # Geter fot the name of the collection
+    attr_reader  :coll_name
     
     def initialize(db_id, coll_id, coll_name)
       @coll_name = coll_name
@@ -14,6 +24,10 @@ module XMLDBApi
       @services = []
       @properties = {}
       @closed = false
+      
+      service = XMLDBApi::RedCollectionManagementService.new(@db_id)
+      service.set_collection(self)
+      @services << service
     end
     
       # Returns the name associated with the Collection instance.
@@ -33,7 +47,7 @@ module XMLDBApi
       # method has been called on the RedCollection
       def get_services()
         unless is_open?
-          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+          raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
         end
         return @services
       end
@@ -51,7 +65,7 @@ module XMLDBApi
       # method has been called on the RedCollection
       def get_service(name, version)
         unless is_open?
-          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+          raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
         end
         result = nil
         @services.each do |service|
@@ -70,7 +84,7 @@ module XMLDBApi
       # method has been called on the RedCollection
       def get_parent_collection
         unless is_open?
-          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+          raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
         end
         
         parent_id = @coll_service.get_parent_id
@@ -89,7 +103,7 @@ module XMLDBApi
       # method has been called on the RedCollection
       def get_child_collection_count()
         unless is_open?
-          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+          raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
         end
         
         result = @coll_service.get_all_collections_names
@@ -108,7 +122,7 @@ module XMLDBApi
       # method has been called on the RedCollection
       def list_child_collections()
         unless is_open?
-          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+          raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
         end
         
         return @coll_service.get_all_collections_names
@@ -126,7 +140,7 @@ module XMLDBApi
       # method has been called on the RedCollection
       def get_child_collection(name)
         unless is_open?
-          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+          raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
         end
         
         begin
@@ -147,7 +161,7 @@ module XMLDBApi
       # method has been called on the RedCollection
       def get_resource_count()
         unless is_open?
-          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+          raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
         end
         
         count = @doc_service.get_all_documents_names.length
@@ -163,7 +177,7 @@ module XMLDBApi
       # method has been called on the RedCollection
       def list_resources()
         unless is_open?
-          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+          raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
         end
         
         raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
@@ -203,17 +217,16 @@ module XMLDBApi
       # ErrorCodes.COLLECTION_CLOSED if the close
       # method has been called on the RedCollection
       def removeResource(res)
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
         unless is_open?
-          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
+          raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
         end
         
         name = res.get_id
-        raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::INVALID_RESOURCE), "Resource #{id} is not valid, id does not exist" unless id 
+        raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::INVALID_RESOURCE), "Resource #{id} is not valid, id does not exist" unless id 
         begin
           @doc_service.delete_document(name)
         rescue Transformer::MappingException => ex
-          raise XMLDBException.new(XMLDBApi::Base::ErrorCodes::NO_SUCH_RESOURCE), "Resource #{id} cannot be found" 
+          raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::NO_SUCH_RESOURCE), "Resource #{id} cannot be found" 
         end
       end
 

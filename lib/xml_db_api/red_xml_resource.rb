@@ -1,7 +1,11 @@
 require_relative "modules/xml_resource"
 
 module XMLDBApi
-  class RedCollection < XMLDBApi::Modules::XMLResource
+  class RedXmlResource < XMLDBApi::Modules::XMLResource
+    
+    def initialize
+      
+    end
 
       # Returns the unique id for the parent document to this Resource
       # or null if the Resource does not have a parent document.

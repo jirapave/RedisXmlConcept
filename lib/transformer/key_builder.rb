@@ -95,29 +95,45 @@ module Transformer
       return new(key_split[0], key_split[1], split[0])
     end
     
-    # Creates String with the key pointing to hash with inforation about document
+    # Creates String with the key pointing to hash with information about document
     # ==== Return value
     # String of the key
     def info()
       "#{@document_key}<info"
     end
     
+    # Creates String with the key pointing to hash with information about certain collection based on parameters
+    # ==== Return value
+    # String of the key
     def self.collection_info(env_id, coll_id)
       "#{env_id}#{SEPARATOR}#{coll_id}<info"
     end
     
+    # Creates String with the key pointing to hash with information about certain collection (basedon init parameters)
+    # ==== Return value
+    # String of the key
     def collection_info()
       "#{@env_id}#{SEPARATOR}#{@coll_id}<info"
     end
     
+    # Creates String with the key pointing to hash with information about environment based on env_id
+    # ==== Return value
+    # String of the key
     def self.environment_info(env_id)
       "#{env_id}<info"
     end
     
+    # Creates String with the key pointing to hash with information about environment based on init parameters
+    # ==== Return value
+    # String of the key
     def environment_info()
       "#{@env_id}<info"
     end
     
+    # Creates String with the key pointing to hash which contains iterator field (environment ids are
+    # generated from it)
+    # ==== Return value
+    # String of the key
     def self.env_iterator_key()
       "info"
     end

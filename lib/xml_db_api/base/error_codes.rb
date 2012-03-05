@@ -113,6 +113,9 @@ module XMLDBApi
       # * instance that has been closed.
       # */
       COLLECTION_CLOSED = 202
+      # Set when collection couldn't be created because there already exist one
+      # with the same name
+      COLLECTION_ALREADY_EXIST = 203
 
       # /**
       # * Set if the requested <code>Resource</code> could not be located.
