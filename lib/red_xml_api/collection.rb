@@ -24,10 +24,6 @@ module RedXmlApi
       begin
         @doc_service.delete_document(file_name)
         return true
-      rescue Transformer::MappingException => ex
-        puts "#{ex.message}"
-        puts "Document #{file_name} doesn't exist, delete operation failed."
-        return false
       rescue Exception => e
         puts "#{e.message}"
         puts "Unknow error has occured, document #{file_name} was not deleted"

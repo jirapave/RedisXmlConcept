@@ -10,9 +10,9 @@ class Notifier
 end
 
 module Transformer
-  #Class represents a service used to work with whole XML files. It can saves them to the database, verify
-  #their existence in a database and also retrives them.
-  #This class is part of Observer pattern as Notifier, it get's notified by XML::SaxDocument class.
+  # Class represents a service used to work with whole XML files. It can saves them to the database, verify
+  # their existence in a database and also retrives them.
+  # This class is part of Observer pattern as Notifier, it get's notified by XML::SaxDocument class.
   class DocumentService < Notifier
     def initialize(env_id, coll_id)
       @xml_transformer = nil
@@ -130,7 +130,7 @@ module Transformer
     def delete_document(name)
       #We have to delete <info, <emapping, <amapping, <content, and field in envId:collId:documents
       doc_id = get_document_id(name)
-      raise Transformer::MappingException, "Document with such a name doesn't exist." unless doc_id
+      return unless doc_id
       @builder = Transformer::KeyBuilder.new(@env_id, @coll_id, doc_id)
       del_keys = [@builder.content_key, @builder.info, @builder.elem_mapping_key, @builder.attr_mapping_key]
       @db_interface.transaction do

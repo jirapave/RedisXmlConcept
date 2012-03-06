@@ -24,13 +24,13 @@ h1. PROPOSED FUNCIONALITY
 
 h2. Short-term
 
-* Completion of proprietary API for managing XML documents
-* Support for optimistic locking on document-level
+* Completion of proprietary API for managing XML documents (basic operations)
+* Implementation of XML:DB API
 * Implementation of XPath/XQuery language with XQuery Update Facility (subset - most useful queries)
 
 h2. Mid-term
 
-* Implementation of XML:DB API
+* Support for optimistic locking on document-level
 
 h2. Long-term
 
