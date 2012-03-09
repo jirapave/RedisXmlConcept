@@ -1,10 +1,11 @@
 require "singleton"
 require "yaml"
+
 require_relative "command"
 
 redis_dir = "#{File.dirname(__FILE__)}/../../lib/"
 unless $:.include?(redis_dir) || $:.include?(File.expand_path(redis_dir))
-$:.unshift(File.expand_path(redis_dir))
+  $:.unshift(File.expand_path(redis_dir))
 end
 
 #require "redis/connection/hiredis"
@@ -22,7 +23,6 @@ module BaseInterface
     include Singleton
 
     @@COMMAND_LIMIT = 10000
-
     def initialize
       config = YAML.load_file("#{File.dirname(__FILE__)}/../config/config.yml")
       if !config["unix_socket_path"]
@@ -30,10 +30,10 @@ module BaseInterface
       else
         @redis = Redis.new(:path => config["unix_socket_path"])
       end
-      
+
       #Array of commands for transactions and multi processing
       @commands = []
-      
+
       #If we are in the middle of transaction or not
       @transaction = false
       #If we are using pipelining or not
@@ -51,16 +51,16 @@ module BaseInterface
       if @transaction or @pipelined
         params = [key, hash, overwrite]
         @commands << BaseInterface::Command.new(__method__, params)
-        return
+      return
       else
         if overwrite
-          @redis.hmset key, *hash
+        @redis.hmset key, *hash
         else
           fields_only = []
           values_only = []
           (hash.length).times do |x|
-          fields_only << hash[x] if x%2 == 0
-          values_only << hash[x] if x%2 != 0
+            fields_only << hash[x] if x%2 == 0
+            values_only << hash[x] if x%2 != 0
           end
           #Now we have fields and values apart
           fields_only.each_with_index do |field, index|
@@ -69,7 +69,7 @@ module BaseInterface
         end
       end
     end
-    
+
     #Add value to hash field if the field does not exist yet, returns true or false
     #mapping_service is special parameter MappingService during transactions. During transaction all
     #the commands are processed at the end, but mapping_service cannot wait and has to map name immediately
@@ -78,12 +78,12 @@ module BaseInterface
       if (@transaction or @pipelined) and !mapping_service
         params = [key, field, value]
         @commands << BaseInterface::Command.new(__method__, params)
-        return
+      return
       else
-        @redis.hsetnx key, field, value
+      @redis.hsetnx key, field, value
       end
     end
-    
+
     #Increment given field of the hash by a given number. If the field doesn't exist, it is created
     #and incremented.
     #mapping_service is special parameter MappingService during transactions. During transaction all
@@ -93,40 +93,43 @@ module BaseInterface
       if (@transaction or @pipelined) and !mapping_service
         params = [key, field, number]
         @commands << BaseInterface::Command.new(__method__, params)
-        return
+      return
       else
         @redis.hincrby key, field, number
         get_hash_value(key, field)
       end
     end
-    
+
     #Delete certain fields from hash, returns number of deleted fields
     def delete_from_hash(key, hash_fields)
       if @transaction or @pipelined
         params = [key, hash_fields]
         @commands << BaseInterface::Command.new(__method__, params)
-        return
+      return
       else
-        @redis.hdel key, *hash_fields
+      @redis.hdel key, *hash_fields
       end
     end
-    
+
     def get_hash_value(key, field)
+      #Return value or nil
       @redis.hget key,field
     end
-    
+
     def get_all_hash_values(key)
+      #Returns array always
       @redis.hvals key
     end
-    
+
     def get_all_hash_fields(key)
+      #Returns array always
       @redis.hkeys key
     end
-    
+
     #Determines if the given field exist in a hash located under the given key
-    #Nontransactional = doesn't make sense to use thi method in transation
+    #Nontransactional = doesn't make sense to use this method in transaction
     def hash_value_exist?(key, field)
-        @redis.hexists key, field
+      @redis.hexists key, field
     end
 
     #Adds values from a given array to a list located in a database under the given key
@@ -134,22 +137,22 @@ module BaseInterface
       if @transaction or @pipelined
         params = [key, values]
         @commands << BaseInterface::Command.new(__method__, params)
-        return
+      return
       else
         values.each do |value|
-        @redis.rpush key, value #multiple values are not supported
-                                # although they should be (someone ought to be punished for that...)
+          @redis.rpush key, value #multiple values are not supported
+        # although they should be (someone ought to be punished for that...)
         end
       end
     end
-    
+
     #Deletes all occurences of values specified in an array paraeter from a list under the given key.
-    def delete_from_list(key, *values)
+    def delete_from_list(key, values)
       #LREM list -2 "hello" will remove the last two occurrences of "hello" in the list stored at list. =0 means all
       if @transaction or @pipelined
         params = [key, values]
         @commands << BaseInterface::Command.new(__method__, params)
-        return
+      return
       else
         values.each do |val|
           @redis.lrem key, 0, val #deletes all occurences of val
@@ -157,39 +160,35 @@ module BaseInterface
       end
     end
 
-    def close_connection()
-      #We probably don't need this
-    end
-
     #Increments value under the given key in a database and returns that value
     def increment_string(key)
       if @transaction or @pipelined
         params = [key]
         @commands << BaseInterface::Command.new(__method__, params)
-        return
+      return
       else
-        @redis.incr key
-        @redis.get key
+      @redis.incr key
+      @redis.get key
       end
     end
-    
+
     #Decrements value under the given key in a database and returns that value
     def decrement_string(key)
       if @transaction or @pipelined
         params = [key]
         @commands << BaseInterface::Command.new(__method__, params)
-        return
+      return
       else
-        @redis.decr key
-        @redis.get key
+      @redis.decr key
+      @redis.get key
       end
     end
-    
+
     #Find all keys satisfying given pattern
     def find_keys(pattern="*")
       @redis.keys pattern
     end
-    
+
     #Saves multiple string values under the multiple keys specified in a hash parameter, example:
     #["key1" => "string1", "key2" => "string2"]
     #so basically the same function as save_string_entries with another type of parameter
@@ -197,7 +196,7 @@ module BaseInterface
       if @transaction or @pipelined
         params = [key_value_hash, overwrite]
         @commands << BaseInterface::Command.new(__method__, params)
-        return
+      return
       else
         key_value_list = []
         key_value_hash.each do |key, value|
@@ -205,25 +204,25 @@ module BaseInterface
           key_value_list << value
         end
         if(overwrite)
-          @redis.mset(*key_value_list)
+        @redis.mset(*key_value_list)
         else
-          @redis.msetnx(*key_value_list)
+        @redis.msetnx(*key_value_list)
         end
       end
     end
-    
+
     #Saves multiple string values under the multiple keys specified in an array parameter, example:
     #["key1", "string1", "key2", "string2"]
     def save_string_entries(*key_string, overwrite)
       if @transaction or @pipelined
         params = [key_string, overwrite]
         @commands << BaseInterface::Command.new(__method__, params)
-        return
+      return
       else
         if(overwrite)
-          @redis.mset(*key_string)
+        @redis.mset(*key_string)
         else
-          @redis.msetnx(*key_string)
+        @redis.msetnx(*key_string)
         end
       end
     end
@@ -233,12 +232,12 @@ module BaseInterface
       if @transaction or @pipelined
         params = [keys]
         @commands << BaseInterface::Command.new(__method__, params)
-        return
+      return
       else
-          @redis.del *keys
+      @redis.del *keys
       end
     end
-    
+
     alias :delete_keys :delete_entries
 
     #Determines if there is any value under the given key in a database
@@ -259,14 +258,14 @@ module BaseInterface
       #We don't use set or sorted set, so return nil
       return nil
     end
-    
+
     def check_buffer
       if @commands > @@COMMAND_LIMIT
         puts "db_interface: buffer full"
         commit
       end
     end
-    
+
     def commit
       @redis.multi do
         @transaction = false
@@ -276,7 +275,7 @@ module BaseInterface
         end
       end
     end
-    
+
     #Method is used to mark transaction processing, all methods inside transactions are saved as Command
     #and commited at the end.
     #Note: Transaction are currently not fully operational, there is an exception in MappingService, current
@@ -292,14 +291,14 @@ module BaseInterface
       result = commit
       return result
     end
-    
+
     def pipelined
       @pipelined = true
       yield
       result = commit
       return result
     end
-    
+
     def print_commands()
       @commands.each do |command|
         puts "Metoda[#{command.method_name}], params[#{command.params.inspect}]"

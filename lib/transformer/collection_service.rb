@@ -29,9 +29,12 @@ module Transformer
 
     # Returns ID of the collection, which is using this instance of CollectionService
     # ==== Return value
-    # String with the ID of the colletion which uses this instance of CollectionService
-    def get_current_collection_id()
-      @coll_id
+    # String with the ID of the colletion which uses this instance of CollectionService or nil if
+    # this service is used by Environment
+    def get_collection_id()
+      result = nil
+      result = @coll_id if @coll_id
+      result
     end
 
     # Creates new collection with a given name in a database and returns it's ID
@@ -41,7 +44,7 @@ module Transformer
     # String with the ID of the created collection
     # ==== Raises
     # Transformer::MappingException - If collection with such a name already exist
-    def create_collection(name)
+    def create_child_collection(name)
       coll_id = @db_interface.increment_hash(@env_info, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
       result = @db_interface.add_to_hash_ne(@certain_coll_key, name, coll_id)
       raise Transformer::MappingException, "Collection with such a name already exist." unless result
@@ -59,18 +62,18 @@ module Transformer
     # does not exist method will return.
     # ==== Parameters
     # * +name+ - Name of the collection to be deleted
-    def delete_collection(name)
+    def delete_child_collection(name)
       #Delete collection = delete all documents in it and than delete field in envId:collections key
       coll_id = nil
       begin
-        coll_id = get_collection_id(name)
+        coll_id = get_child_collection_id(name)
       rescue Transformer::MappingException => ex
         ex.message
         return
       end
       collection = RedXmlApi::Collection.new(@env_id, coll_id)
       collection.delete_all_documents
-      collection.delete_all_collections
+      collection.delete_all_child_collections
       @db_interface.delete_from_hash @certain_coll_key, name
       #We have to delete all keys of collection, e.g. <info, <documents, <collections
       del_keys = [Transformer::KeyBuilder.collection_info(@env_id, coll_id), Transformer::KeyBuilder.documents_key(@env_id, coll_id), Transformer::KeyBuilder.child_collections_key(@env_id, coll_id)]
@@ -78,10 +81,10 @@ module Transformer
     end
 
     # Deletes all collections in a database.
-    def delete_all_collections()
-      all_names = get_all_collections_names()
+    def delete_all_child_collections()
+      all_names = get_all_child_collections_names()
       all_names.each do |name|
-        delete_collection(name)
+        delete_child_collection(name)
       end
     end
 
@@ -92,7 +95,7 @@ module Transformer
     # String with the ID of the collection
     # ==== Raises
     # Transformer::MappingException - If collection with such a name does not exist
-    def get_collection_id(name)
+    def get_child_collection_id(name)
       coll_id = @db_interface.get_hash_value(@certain_coll_key, name)
       raise Transformer::MappingException, "Collection with such a name doesn't exist." unless coll_id
       coll_id
@@ -101,7 +104,7 @@ module Transformer
     # Returns IDs of all collections in the database
     # ==== Return value
     # Array with IDs of all collections
-    def get_all_collections_ids()
+    def get_all_child_collections_ids()
       ids =  @db_interface.get_all_hash_values(@certain_coll_key)
       ids ||= []
       return ids
@@ -110,7 +113,7 @@ module Transformer
     # Returns names of all collections in the database
     # ==== Return value
     # Array with names of all collections
-    def get_all_collections_names()
+    def get_all_child_collections_names()
       #Remember there are fields begininf with "<" which has to be excluded
       names =  @db_interface.get_all_hash_fields(@certain_coll_key)
       names ||= []
@@ -160,7 +163,7 @@ module Transformer
     # ==== Raises
     # Transformer::MappingException - If collection with old_name does not exist or if there already
     # is collection with name parameter as it's name
-    def rename_collection(old_name, name)
+    def rename_child_collection(old_name, name)
       #Verify that new name isn't already in database
       result = @db_interface.hash_value_exist?(@certain_coll_key, name)
       raise Transformer::MappingException, "Collection with such a name already exist." if result
@@ -168,7 +171,7 @@ module Transformer
       raise Transformer::MappingException, "Cannot rename, collection #{old_name} doesn't exist." unless result
 
       #Delete old enevironment
-      old_id = get_collection_id(old_name)
+      old_id = get_child_collection_id(old_name)
 
       result = @db_interface.transaction do
         @db_interface.delete_from_hash(@certain_coll_key, old_name)
@@ -185,7 +188,7 @@ module Transformer
     # on which is using this service)
     # ==== Return value
     # True if the collection with given name exist, False otherwise
-    def collection_exist?(name)
+    def child_collection_exist?(name)
       return @db_interface.hash_value_exist?(@certain_coll_key, name)
     end
   end

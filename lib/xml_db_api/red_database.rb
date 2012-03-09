@@ -48,7 +48,7 @@ module XMLDBApi
         coll_id = ""
         collections.each do |name|
           begin
-            coll_id = coll_service.get_collection_id(name)
+            coll_id = coll_service.get_child_collection_id(name)
             coll_name = name
             coll_service = Transformer::CollectionService.new(@db_id, coll_id)
           rescue Transformer::MappingException => ex

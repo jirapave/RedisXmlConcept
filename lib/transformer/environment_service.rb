@@ -42,7 +42,7 @@ module Transformer
         ex.message
         return
       end
-      RedXmlApi::Environment.new(env_id).delete_all_collections
+      RedXmlApi::Environment.new(env_id).delete_all_child_collections
       @db_interface.delete_from_hash @env_key, name
       info = Transformer::KeyBuilder.environment_info(env_id)
       @db_interface.delete_keys [info]

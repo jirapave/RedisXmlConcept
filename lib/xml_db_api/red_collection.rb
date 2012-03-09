@@ -106,7 +106,7 @@ module XMLDBApi
           raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
         end
         
-        result = @coll_service.get_all_collections_names
+        result = @coll_service.get_all_child_collections_names
         return result.length if result
         return 0
       end
@@ -125,7 +125,7 @@ module XMLDBApi
           raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot perform action, collection is closed"
         end
         
-        return @coll_service.get_all_collections_names
+        return @coll_service.get_all_child_collections_names
       end
 
       # Returns XMLDBApi::RedCollection instance for the requested child collection
@@ -144,7 +144,7 @@ module XMLDBApi
         end
         
         begin
-          id = @coll_service.get_collection_id(name)
+          id = @coll_service.get_child_collection_id(name)
           return XMLDBApi::RedCollection.new(@db_id, id, name)
         rescue Transformer::MappingException => ex
           return nil

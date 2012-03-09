@@ -26,7 +26,7 @@ module XMLDBApi
       def create_collection(name)
         begin
           @coll_service = Transformer::CollectionService.new(@db_id) unless @coll_service
-          coll_id = @coll_service.create_collection(name)
+          coll_id = @coll_service.create_child_collection(name)
           return XMLDBApi::RedCollection.new(@db_id, coll_id, name)
         rescue Transformer::MappingException => ex
           raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::COLLECTION_CLOSED), "Cannot create collection, collection with the name #{name} already exist"
@@ -40,7 +40,7 @@ module XMLDBApi
       # * +name+ - The name of the collection to remove.
       def remove_collection(name)
         begin
-          @coll_service.delete_collection(name)
+          @coll_service.delete_child_collection(name)
         rescue Exception => ex
           raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::UNKNOWN_ERROR), "Delete operation failed, collection #{name} couldn't be removed"
         end

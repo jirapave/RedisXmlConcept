@@ -27,14 +27,14 @@ file_path = "./books-100000.xml"
 file_name = File.basename(file_path)
 env_manager = RedXmlApi::EnvironmentManager.new()
 env = env_manager.create_environment(env_name)
-coll = env.create_collection(coll_name)
-aaa = coll.create_collection("aaa")
-bbb = coll.create_collection("bbb")
-ccc = aaa.create_collection("ccc")
+coll = env.create_child_collection(coll_name)
+aaa = coll.create_child_collection("aaa")
+bbb = coll.create_child_collection("bbb")
+ccc = aaa.create_child_collection("ccc")
 puts "new=#{coll.get_id},aaa=#{aaa.get_id}, bbb=#{bbb.get_id}, ccc=#{ccc.get_id}"
-puts "PRED: aaa ma: #{aaa.get_all_collections_names}"
-coll.delete_collection("aaa")
-puts "PRED: aaa ma: #{aaa.get_all_collections_names}"
+puts "PRED: aaa ma: #{aaa.get_all_child_collections_names}"
+coll.delete_child_collection("aaa")
+puts "PRED: aaa ma: #{aaa.get_all_child_collections_names}"
 
 #debug purposes
 env_id = Transformer::MappingService.map_env(env_name)

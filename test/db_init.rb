@@ -41,6 +41,9 @@ class DBInit
     elements = %w(catalog 1 product 2 number 3 name 4 colorChoices 5)
     attributes = %w(dept 1 language 2)
     
+    #Some hash values for db_interface testing
+    hash = %w(field-1 value-1 field-2 value-2 field-3 value-3 field-4 value-4)
+    
     content_arr = []
     content_arr << "1" << "1:2>1|1:2>2"
     content_arr << "1:2>1" << "1:2>1:3>1|1:2>1:4>1|1:2>1:5>1" #first product
@@ -68,6 +71,7 @@ class DBInit
       db.add_to_hash("1:4#{INFO_SIGN}", ["<name>", "cfourth"], true)
       db.add_to_hash("1:5#{INFO_SIGN}", ["<name>", "cfifth"], true)
       db.add_to_hash("1:6#{INFO_SIGN}", ["<name>", "child", "<parent_id>", "2"], true)
+      db.add_to_hash "hash", hash, true
       db.add_to_hash(ELEM_MAP_KEY, elements, true)
       db.add_to_hash(ELEM_MAP_KEY, ["<iterator>", "5"], true)
       db.add_to_hash(ATTR_MAP_KEY, attributes, true)
