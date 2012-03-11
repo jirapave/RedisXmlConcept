@@ -13,7 +13,7 @@ module XQuery
     ComparisonExpr = "ComparisonExpr"
     ForClause = "ForClause"
     LetClause = "LetClause"
-    WhereCaluse = "WhereCaluse"
+    WhereClause = "WhereClause"
     OrderByClause = "OrderByClause"
     Predicate = "Predicate"
     ReturnExpr = "ReturnExpr"

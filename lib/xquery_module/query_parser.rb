@@ -1,5 +1,4 @@
-require_relative "../parser_extension/XQueryParser"
-# require_relative "../zkouska/XQueryParser"
+require_relative "parser_extension/XQueryParser"
 require_relative "expression/expression_module"
 require "rubygems"
 require "nokogiri"

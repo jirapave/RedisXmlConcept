@@ -31,19 +31,21 @@ module XQuery
         val = ExpressionModule::checked_reduce(node, AbbrevForwardStep) #we don't count on predicates here
         case val.name
           
-        when "#{DoubleLiteral}", "#{DecimalLiteral}", "#{IntegerLiteral}"
+        when DoubleLiteral, DecimalLiteral, IntegerLiteral
           val = val.parent
           return ExpressionHandle.new(val) #NumericLiteral
 
           
-        when "#{AbbrevForwardStep}"
+        when AbbrevForwardStep
           return AbbrevForwardStepHandle.new(val)
+        
+        when RelativePathExpr
+          return RelativePathExprHandle.new(val)  
           
-          
-        when "#{StringLiteral}"
+        when StringLiteral
           return ExpressionHandle.new(val)
           
-        when "#{FunctionCall}"
+        when FunctionCall
           return FunctionCallHandle.new(val)
           
         when "TOKEN"

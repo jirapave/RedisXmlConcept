@@ -38,7 +38,7 @@ module XQuery
           @for_let_clause_solver.solve(part, context)
         }
         flatten_contexts()
-      when ExpressionModule::WhereCaluse
+      when ExpressionModule::WhereClause
         @contexts.each { |context|
           @where_clause_solver.solve(part, context)
         }

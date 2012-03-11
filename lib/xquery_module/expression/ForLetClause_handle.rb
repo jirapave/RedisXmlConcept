@@ -3,7 +3,7 @@ require_relative "expression_handle"
 
 module XQuery
   module ExpressionModule
-    class ForClauseHandle < ExpressionHandle
+    class ForLetClauseHandle < ExpressionHandle
       
       attr_reader :parts
       
@@ -31,7 +31,11 @@ module XQuery
         var_node_set = node.xpath("./VarName")
         path_node_set = node.xpath("./ExprSingle")
         var_node_set.each_with_index { |var, index|
-          @parts << Part.new(var.content, create_expr(path_node_set[index]))
+          reduced = ExpressionModule::reduce(path_node_set[index])
+          if(reduced.name != RelativePathExpr)
+            raise StandardError, "other type not supported: #{reduced.name}"
+          end
+          @parts << Part.new(var.content, RelativePathExprHandle.new(reduced))
         }
       end
       

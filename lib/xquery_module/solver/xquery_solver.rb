@@ -1,8 +1,8 @@
 require_relative "flwor_solver"
 require_relative "path_solver"
 require_relative "../expression/expression_module"
-require_relative "../../../transformer/key_builder"
-require_relative "../../../transformer/key_element_builder"
+require_relative "../../transformer/key_builder"
+require_relative "../../transformer/key_element_builder"
 
 module XQuery
   class XQuerySolver

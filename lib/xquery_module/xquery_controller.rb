@@ -1,5 +1,5 @@
 require_relative "solver/xquery_solver"
-require_relative "../exceptions"
+require_relative "exceptions"
 require_relative "query_parser"
 
 module XQuery

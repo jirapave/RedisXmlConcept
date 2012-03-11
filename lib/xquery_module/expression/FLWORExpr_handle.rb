@@ -1,5 +1,9 @@
 require_relative "expression_module"
 require_relative "expression_handle"
+require_relative "ForLetClause_handle"
+require_relative "WhereClause_handle"
+require_relative "OrderByClause_handle"
+require_relative "ReturnExpr_handle"
 
 module XQuery
   module ExpressionModule
@@ -15,7 +19,9 @@ module XQuery
         #scan for clauses and prepare parts this time
         @children = []
         was_return = false
-        node.children { |child|
+        puts "children count: #{node.children.length}"
+        node.children.each { |child|
+          puts "child name: #{child.name}"
           if(child.name == "TOKEN" && child.content == "return")
             was_return = true
             next
@@ -32,7 +38,7 @@ module XQuery
               raise StandardError, "such FLWOR expression not recognised: #{child.name}"
             end
           else
-            @children << ReturnExpr.new(child)
+            @children << ReturnExprHandle.new(child)
           end
         }
         

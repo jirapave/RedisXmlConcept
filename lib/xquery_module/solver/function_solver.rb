@@ -1,19 +1,16 @@
 require_relative "../../transformer/mapping_service"
-require_relative "../../transformer/key_builder"
 require_relative "../../transformer/document_service"
-require_relative "../exceptions"
-
+require_relative "../../transformer/key_builder"
 
 module XQuery
-  class FunctionProcessor
+  class FunctionSolver
     
     def initialize(environment, collection)
       @environment = environment
       @collection = collection
     end
     
-    
-    def doc(file_name)#:Transformer::Key
+    def doc(file_name) #returns KeyBuilder
       env_id = Transformer::MappingService.map_env(@environment)
       coll_id = Transformer::MappingService.map_coll(env_id, @collection)
       document_service = Transformer::DocumentService.new(env_id, coll_id)
@@ -26,4 +23,3 @@ module XQuery
     
   end
 end
-

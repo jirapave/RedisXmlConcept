@@ -11,7 +11,7 @@ module XQuery
       if(env == nil)
         env = RedXmlApi::Environment.new(ENV_NAME)
       end
-      coll = env.create_collection(COLL_NAME)
+      coll = env.create_child_collection(COLL_NAME)
       if(coll == nil)
         coll = RedXmlApi::Collection.new(ENV_NAME, COLL_NAME)
       end

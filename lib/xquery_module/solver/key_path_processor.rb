@@ -1,8 +1,8 @@
 require_relative "path_processor"
-require_relative "../../../base_interface/db_interface"
-require_relative "../../../transformer/key_element_builder"
-require_relative "../../../transformer/key_builder"
-require_relative "../../../transformer/mapping_service"
+require_relative "../../base_interface/db_interface"
+require_relative "../../transformer/key_element_builder"
+require_relative "../../transformer/key_builder"
+require_relative "../../transformer/mapping_service"
 
 module XQuery
   class KeyPathProcessor < PathProcessor

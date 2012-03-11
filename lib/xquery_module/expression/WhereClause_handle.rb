@@ -1,9 +1,10 @@
 require_relative "expression_module"
 require_relative "expression_handle"
+require_relative "ComparisonExpr_handle"
 
 module XQuery
   module ExpressionModule
-    class ReturnExprHandle < ExpressionHandle
+    class WhereClauseHandle < ExpressionHandle
       
       attr_reader :value
       
@@ -11,14 +12,14 @@ module XQuery
         super(node)
         
         #TODO delete
-        puts "initializing ReturnExpr"
+        puts "initializing WhereClause"
         #TODO delete
         
         reduced = ExpressionModule::reduce(node.children[1])
-        if(reduced.name == RelativePathExpr)
-          @value = RelativePathExprHandle.new(reduced)
+        if(reduced.name == ComparisonExpr)
+          @value = ComparisonExprHandle.new(reduced)
         else
-          raise StandardError, "not implemented other type of return expression then RelativePath: #{reduced.name}"
+          raise StandardError, "no other where clause implmenented: #{reduced.name}"
         end
         
       end

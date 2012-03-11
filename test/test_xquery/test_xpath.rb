@@ -1,5 +1,5 @@
 require_relative "../../lib/red_xml_api/environment_manager"
-require_relative "../../lib/xquery_module/xquery/xquery_controller"
+require_relative "../../lib/xquery_module/xquery_controller"
 require_relative "../../lib/xml/node"
 require_relative "xquery_test_helper"
 require "rubygems"
