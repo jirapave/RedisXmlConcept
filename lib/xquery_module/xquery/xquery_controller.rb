@@ -1,6 +1,6 @@
-require_relative "xquery_solver"
+require_relative "solver/xquery_solver"
 require_relative "../exceptions"
-require_relative "xquery_parser"
+require_relative "query_parser"
 
 module XQuery
   class XQueryController
@@ -12,10 +12,10 @@ module XQuery
     def get_results(query)
       
       #parse query into Expression object
-      expression = XQueryParser.parse_query(query)
+      expression = QueryParser.parse_query(query)
       
       #solve parsed expression
-      return @xquery_solver.get_results(expression)
+      return @xquery_solver.solve(expression)
       
     end
     
@@ -23,3 +23,6 @@ module XQuery
     
   end
 end
+
+
+

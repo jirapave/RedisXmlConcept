@@ -27,8 +27,8 @@ module XQuery
     TEST_CASES = [
       TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. = 443]",
         ["<number>443</number>"]),
-      TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. eq 443]",
-        []),#TODO this should be TypeError
+      # TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. eq 443]",
+        # []),#TODO this should be TypeError #TODO do another test class for errors TODO
       TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. eq '443']",
         ["<number>443</number>"]),
       TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[.=443]",
