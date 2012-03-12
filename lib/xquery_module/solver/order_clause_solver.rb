@@ -6,6 +6,8 @@ module XQuery
     end
     
     def solve(order_expr, contexts)
+      puts "solving #{order_expr.type}"
+      
       #support for one order so far TODO support for more
       if(order_expr.parts.length > 1)
         raise StandardError, "more then one order part not supported yet: #{order_expr.parts.length}"
@@ -25,17 +27,28 @@ module XQuery
         
         #retrieve results for ordering
         result = @path_solver.solve(ordering_expr, context)[0] # should be the same count
-        result_str = result.to_s
+        result_str = @path_solver.path_processor.get_text(result, false)
         original_results_order[result_str] = index
         ordering_results << result_str
         
       }
       
-      
+      puts "UNordered: #{ordering_results.inspect}"
       
       #sort
-      ordering_results.sort.each_with_index { |sorted_result, index|
-        contexts[index].order = original_results_order[sorted_result]
+      case modifier
+      when "", "ascending" #classic
+        ordering_results.sort!
+      when "descending"
+        ordering_results.sort!.reverse!
+      else
+        raise StandardError, "another sorting modifier not supported: #{modifier}"
+      end
+      
+      
+      ordering_results.each_with_index { |sorted_result, index|
+        puts "IN order result: #{sorted_result}"
+        contexts[original_results_order[sorted_result]].order = index
       }
       
       

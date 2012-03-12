@@ -21,7 +21,7 @@ module XQuery
         was_return = false
         puts "children count: #{node.children.length}"
         node.children.each { |child|
-          puts "child name: #{child.name}"
+          puts "child name: #{child.name}, child content: #{child.content}"
           if(child.name == "TOKEN" && child.content == "return")
             was_return = true
             next

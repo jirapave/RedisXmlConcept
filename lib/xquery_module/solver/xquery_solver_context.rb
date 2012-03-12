@@ -23,9 +23,9 @@ module XQuery
     
     def populate(var_name, var_contents)
       var_contents.each { |content|
-        @variables[var_name] = content
-        new_context = XQuerySolverContext.new(@variables)
-        new_context.last_var_name = var_name
+        @new_variables = @variables.clone
+        @new_variables[var_name] = content
+        new_context = XQuerySolverContext.new(@new_variables)
         @cycles << new_context
       }
       @variables = nil

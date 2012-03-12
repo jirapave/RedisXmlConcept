@@ -15,7 +15,7 @@ module Transformer
     ITERATOR_KEY = "<iterator>"
     
     # Attributes with a root id = root key
-    attr_reader :root_key
+    attr_reader :root_key, :key_builder
     
     # Minimal value of order of the element (first descendant, second...cannot be zero or lower)
     MIN_ORDER = 1
@@ -27,6 +27,7 @@ module Transformer
     def initialize(key_builder, root_id)
       @root_key = "#{root_id}"
       @elem_str = ""
+      @key_builder = key_builder
     end
     
     # Creates new instance of KeyElementBuilder with new element added to the key with certain order.

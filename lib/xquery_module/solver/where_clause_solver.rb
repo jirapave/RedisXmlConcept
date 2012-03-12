@@ -9,6 +9,8 @@ module XQuery
     end
     
     def solve(where_expr, context)
+      puts "solving #{where_expr.type}"
+      
       specific_where_expr = where_expr.value 
       case specific_where_expr.type
       when ExpressionModule::ComparisonExpr
@@ -29,7 +31,12 @@ module XQuery
     def get_comparison_values(expression, context)
       case expression.type
       when ExpressionModule::RelativePathExpr
-        return @path_solver.solve(expression, context)
+        results = @path_solver.solve(expression, context)
+        final_values = []
+        results.each { |result|
+          final_values << ExpressionModule::DummyExpressionHandle.new(ExpressionModule::StringLiteral, result.to_s)
+        }
+        return final_values
         
       #String and Numeric literals return as are - literal objects, so it is recognisable the type
       when ExpressionModule::NumericLiteral

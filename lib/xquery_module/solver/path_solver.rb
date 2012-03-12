@@ -96,7 +96,17 @@ module XQuery
           if(node == nil)
             raise QueryStringError, "such variable (#{specified_step.var_name}) not found in current context"
           end
-          @path_processor = NodePathProcessor.new(node, true) #TODO TODO resolve stripping possibility
+          
+          if(node.kind_of?(XML::Node))
+            @path_processor = NodePathProcessor.new(node, true) #TODO TODO resolve stripping possibility
+          elsif(node.kind_of?(Transformer::KeyBuilder))
+            @path_processor = KeyPathProcessor.new(node)
+          elsif(node.kind_of?(Transformer::KeyElementBuilder))
+            @path_processor = KeyPathProcessor.new(node.key_builder)
+          else
+            raise StandardError, "unknown type of node in variable: #{node.class}"
+          end
+          
           
           #maybe predicates?
           if(!predicates.empty?)

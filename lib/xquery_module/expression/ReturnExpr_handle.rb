@@ -25,6 +25,10 @@ module XQuery
         
       end
       
+      def type
+        ReturnExpr
+      end
+      
     end
   end
 end

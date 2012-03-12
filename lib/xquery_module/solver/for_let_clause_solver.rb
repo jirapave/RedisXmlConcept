@@ -10,17 +10,19 @@ module XQuery
     end
     
     def solve(clause_expr, context)
+      puts "solving #{clause_expr.type}"
+      
       clause_expr.parts.reverse!
       first_part = clause_expr.parts.pop
       solve_part(first_part, clause_expr.parts, context)
     end
     
     def solve_part(clause_part, rest_parts, context)#returns new hash with new var and values (hierarchically child of incomming context)
-      context.cycles { |cycle|
+      puts "solving part"
+      context.cycles.each { |cycle|
+        puts "solving part cycle"
         path_results = @path_solver.solve(clause_part.path_expr, cycle)
-        path_results.each { |result|
-          cycle.add_cycle(clause_part.var_name, result)
-        }
+        cycle.populate(clause_part.var_name, path_results)
         
         if(!rest_parts.empty?)
           next_part = rest_parts.pop

@@ -37,17 +37,27 @@ module XQuery
         @contexts.each { |context|
           @for_let_clause_solver.solve(part, context)
         }
+        puts "before flatten: #{@contexts.inspect}"
         flatten_contexts()
+        puts "after for/let flattening - context count: #{@contexts.length}"
+        @contexts.each { |context|
+          puts "final: #{context.final}, inspect: #{context.variables.inspect}"
+        }
       when ExpressionModule::WhereClause
+        new_contexts = []
         @contexts.each { |context|
           @where_clause_solver.solve(part, context)
+          if(context.passed)
+            new_contexts << context
+          end
         }
+        @contexts = new_contexts
       when ExpressionModule::OrderByClause
-        @order_clause_solver.solve(part, contexts)
+        @order_clause_solver.solve(part, @contexts)
       when ExpressionModule::ReturnExpr
-        @results = @return_expr_solver.solve(part, contexts)
+        @results = @return_expr_solver.solve(part, @contexts)
       else
-        raise StandardError, "not possible"
+        raise StandardError, "not possible flwor part type: #{part.type}"
       end
       
     end
@@ -62,19 +72,22 @@ module XQuery
           if(ctx.final)
             @contexts << ctx
           else
-            @contexts << flatten_contexts(ctx)
+            @contexts.concat(flatten_contexts(ctx))
           end
         }
+        puts "flatten return context count: #{@contexts.length}"
         return
       end
       
+      ctxs = []
       context.cycles.each { |ctx|
         if(ctx.final)
-          return ctx
+          ctxs << ctx
         else
-          return flatten_contexts(ctx)
+          ctxs << flatten_contexts(ctx)
         end
       }
+      return ctxs
     end
     
     
