@@ -26,7 +26,15 @@ module XQuery
         # original_order_hash[context.last_var_name] = index
         
         #retrieve results for ordering
-        result = @path_solver.solve(ordering_expr, context)[0] # should be the same count
+        result = nil
+        case ordering_expr.type
+        when ExpressionModule::RelativePathExpr
+          result = @path_solver.solve(ordering_expr, context)[0] # should be the same count
+        when ExpressionModule::VarRef
+          result = context.variables[ordering_expr.var_name] # should be the same count
+        else
+          raise NotSupportedError, ordering_expr.type
+        end
         result_str = @path_solver.path_processor.get_text(result, false)
         original_results_order[result_str] = index
         ordering_results << result_str

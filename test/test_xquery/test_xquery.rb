@@ -25,16 +25,36 @@ module XQuery
     end
     
     TEST_CASES = [
+      #regular for, where, order by, return
       TestCase.new("for $prod in doc(  \"catalog.xml\"  )/catalog/product[position()<=3]  where $prod/@dept<=\"ACC\" order by $prod/name return $prod/name",
         ["<name language=\"en\">Deluxe Travel Bag</name>", "<name language=\"en\">Floppy Sun Hat</name>"]),
+      #check where difference
       TestCase.new("for $prod in doc(  \"catalog.xml\"  )/catalog/product[position()<=3]  where $prod/@dept>=\"ACC\" order by $prod/name return $prod/name",
         ["<name language=\"en\">Deluxe Travel Bag</name>", '<name language="en">Fleece Pullover</name>', "<name language=\"en\">Floppy Sun Hat</name>"]),
+      #check ascending order
       TestCase.new("for $prod in doc(  \"catalog.xml\"  )/catalog/product[position()<=3]  where $prod/@dept>=\"ACC\" order by $prod/name ascending return $prod/name",
         ["<name language=\"en\">Deluxe Travel Bag</name>", '<name language="en">Fleece Pullover</name>', "<name language=\"en\">Floppy Sun Hat</name>"]),
+      #check descending order
       TestCase.new("for $prod in doc(  \"catalog.xml\"  )/catalog/product[position()<=3]  where $prod/@dept>=\"ACC\" order by $prod/name descending return $prod/name",
         ["<name language=\"en\">Floppy Sun Hat</name>", '<name language="en">Fleece Pullover</name>', "<name language=\"en\">Deluxe Travel Bag</name>"]),
-      # TestCase.new("for $prod in doc(  \"catalog.xml\"  )/catalog/product[position()<=3]  where $prod/@dept<=\"ACC\" order by $prod/name return <elem>$prod/name</elem>",
-        # ["<elem><name language=\"en\">Deluxe Travel Bag</name></elem>", "<elem><name language=\"en\">Floppy Sun Hat</name></elem>"]),
+      #check return element wrap
+      TestCase.new("for $prod in doc(  \"catalog.xml\"  )/catalog/product[position()<=3]  where $prod/@dept<=\"ACC\" order by $prod/name return <elem>$prod/name</elem>",
+        ["<elem><name language=\"en\">Deluxe Travel Bag</name></elem>", "<elem><name language=\"en\">Floppy Sun Hat</name></elem>"]),
+      #check whitespaces and without order
+      TestCase.new("for $prod in  doc(  \"catalog.xml\"  ) /  catalog/ product[position() <=3 ]  where $prod/@dept<=\"ACC\" return <elem>$prod/name</elem>",
+        ["<elem><name language=\"en\">Floppy Sun Hat</name></elem>", "<elem><name language=\"en\">Deluxe Travel Bag</name></elem>"]),
+      #check without where and order
+      TestCase.new('for $prod in doc("catalog.xml")/catalog/product  return <elem>$prod/name</elem>',
+        ['<elem><name language="en">Fleece Pullover</name></elem>', "<elem><name language=\"en\">Floppy Sun Hat</name></elem>", "<elem><name language=\"en\">Deluxe Travel Bag</name></elem>", '<elem><name language="en">Cotton Dress Shirt</name></elem>']),
+      #check text
+      TestCase.new('for $prod in doc("catalog.xml")/catalog/product[2]  return <elem>$prod/name/text()</elem>',
+        ['<elem>Floppy Sun Hat</elem>']),
+      #check let
+      TestCase.new('for $prod in doc("catalog.xml")/catalog/product[2] let $name := $prod/name  return <elem>$name/text()</elem>',
+        ['<elem>Floppy Sun Hat</elem>']),
+      #let
+      TestCase.new("for $prod in doc(  \"catalog.xml\"  )/catalog/product[position()<=3] let $name := $prod/name where $prod/@dept<=\"ACC\" order by $name return <elem>$name</elem>",
+        ["<elem><name language=\"en\">Deluxe Travel Bag</name></elem>", "<elem><name language=\"en\">Floppy Sun Hat</name></elem>"]),
     ]
     
     

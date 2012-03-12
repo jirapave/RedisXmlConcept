@@ -1,6 +1,7 @@
 require_relative "FLWORExpr_handle"
 require_relative "RelativePathExpr_handle"
 require_relative "expression_handle"
+require_relative "../exceptions"
 
 module XQuery
   module ExpressionModule
@@ -18,6 +19,9 @@ module XQuery
     Predicate = "Predicate"
     ReturnExpr = "ReturnExpr"
     StepExpr = "StepExpr"
+    DirElemConstructor = "DirElemConstructor"
+    DirElemContent = "DirElemContent"
+    ReturnText = "ReturnText"
     
     StringLiteral = "StringLiteral"
     NumericLiteral = "NumericLiteral"
@@ -41,11 +45,14 @@ module XQuery
       reduced_node = reduce(node)
       case reduced_node.name
         
-      when "#{FLWORExpr}"
+      when FLWORExpr
         return FLWORExprHandle.new(reduced_node)
         
-      when "#{RelativePathExpr}"
+      when RelativePathExpr
         return RelativePathExprHandle.new(reduced_node)
+        
+      when VarRef
+        return VarRefHandle.new(reduced_node)
         
       else
         puts "WARNING: creating generic expression"

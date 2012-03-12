@@ -40,8 +40,11 @@ module XQuery
           end
           
           reduced_order = ExpressionModule::reduce(order_spec.children[0])
-          if(reduced_order.name == RelativePathExpr)
+          case reduced_order.name
+          when RelativePathExpr
             @parts << OrderSpec.new(RelativePathExprHandle.new(reduced_order), modifier)
+          when VarRef
+            @parts << OrderSpec.new(VarRefHandle.new(reduced_order), modifier)
           else
             raise StandardError, "other order expr then RelativePathExpr not supported: #{reduced_order.name}"
           end

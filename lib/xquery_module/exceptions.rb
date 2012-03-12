@@ -4,4 +4,7 @@ module XQuery
   
   class TypeError < QueryStringError
   end
+  
+  class NotSupportedError < StandardError
+  end
 end

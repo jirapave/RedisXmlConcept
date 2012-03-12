@@ -12,9 +12,12 @@ module XQuery
     def solve(clause_expr, context)
       puts "solving #{clause_expr.type}"
       
-      clause_expr.parts.reverse!
-      first_part = clause_expr.parts.pop
-      solve_part(first_part, clause_expr.parts, context)
+      #clone parts
+      clause_parts = clause_expr.parts.clone
+      
+      clause_parts.reverse!
+      first_part = clause_parts.pop
+      solve_part(first_part, clause_parts, context)
     end
     
     def solve_part(clause_part, rest_parts, context)#returns new hash with new var and values (hierarchically child of incomming context)

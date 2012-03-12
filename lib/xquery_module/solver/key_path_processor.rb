@@ -108,6 +108,9 @@ module XQuery
     end
     
     def get_node(key)
+      # if(key.kind_of?(String) && Transformer::KeyElementBuilder.text?(key))
+        # return XML::TextContent.new(@db.find_value(key), -1, XML::TextContent::PLAIN)
+      # end
       return @xml_transformer.find_node(key)
     end
     

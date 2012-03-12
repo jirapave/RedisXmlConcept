@@ -32,6 +32,7 @@ end
 
 
 #testing
+XQuery::QueryParser.parse_query("$prod")
 # XQuery::QueryParser.parse_query("for $prod in doc( \"catalog.xml\")/catalog/product/number[.=333][@dept gt 56] let $name:=$prod/name where $prod/@dept=\"ACC\" order by $x/title return $name")
 # XQuery::QueryParser.parse_query("for $prod in doc( \"catalog.xml\")/catalog/product/number[2][@dept gt 56] let $name:=$prod/name where $prod/@dept=\"ACC\" order by $x/title return $name")
 # XQuery::QueryParser.parse_query("doc( \"catalog.xml\")/catalog/product/number[2][no = 56][@dept = 'ACC'][. > 56][position() gt 57]")
