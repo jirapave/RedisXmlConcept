@@ -12,14 +12,12 @@ module XQuery
     def get_results(query)
       
       #parse query into Expression object
-      expression = QueryParser.parse_query(query)
+      expression = QueryParser.parse_xquery(query)
       
       #solve parsed expression
       return @xquery_solver.solve(expression)
       
     end
-    
-    
     
   end
 end
