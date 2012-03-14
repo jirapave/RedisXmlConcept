@@ -1,11 +1,40 @@
 require_relative "modules/xml_resource"
+require_relative "../xml/dom_sax_service"
+require_relative "../xml/sax_dom_creator"
+require "rubygems"
+require "nokogiri"
 
 module XMLDBApi
   class RedXmlResource < XMLDBApi::Modules::XMLResource
-    
-    def initialize
+      TYPE = "XMLResource"
       
-    end
+      # Returns Nokogiri::XML::Document instance or nil
+      attr_reader :document
+      # Returns ID that represents resource in a database
+      attr_reader :doc_id 
+      
+      def initialize(db_id, coll_id, doc_name, doc_id, document)
+        @doc_id = doc_id
+        @doc_name = doc_name
+        @coll_id = coll_id
+        @db_id = db_id
+        @coll_service = Transformer::CollectionService.new(@db_id, @coll_id)
+        @doc_service = Transformer::DocumentService.new(@db_id, @coll_id)
+        @document = document
+        @empty = false
+        @empty = true if @document == nil
+      end
+      
+      # Refresh state of the resource, useful when we have empty resource, should't be used by users
+      # ==== Parameters
+      # * +doc_id+ - Real Id (not name) of the resource
+      # * +document+ - Nokogiri::XML::Document instance
+      def refresh_state(doc_id, document)
+        @doc_id = doc_id
+        @document = document
+        @empty = false
+        @empty = true if @document == nil or doc_id == nil
+      end
 
       # Returns the unique id for the parent document to this Resource
       # or null if the Resource does not have a parent document.
@@ -19,46 +48,73 @@ module XMLDBApi
       # The id for the parent document of this Resource or
       # null if there is no parent document for this Resource.
       def get_document_id()
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        return @doc_name #Remember, name = id in xmldb API
       end
 
       # Returns the content of the Resource as a DOM Node.
       # ==== Return value
-      # The XML content as a DOM Node
+      # The XML content as a DOM Node (Nokogiri::XML::Document)
       def get_content_as_dom()
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        return @document
       end
 
       # Sets the content of the Resource using a DOM Node as the
       # source.
       # ==== Parameters
-      # * +content+ - The new content value
+      # * +content+ - The new content value of type Nokogiri::XML::Document or
+      #               Nokogiri::XML::Node. If Node is used, than it is considered
+      #               to be a root of new document
       # ==== Raises
       # XMLDBApi::Base::XMLDBException with expected error codes.
       # ErrorCodes.INVALID_RESOURCE if the content value provided is null.
       # ErrorCodes.WRONG_CONTENT_TYPE if the content provided in not
-      # a valid DOM Node.
+      # a valid DOM Node = Nokogiri::XML::Document or Nokogiri::XML::Node.
       def set_content_as_dom(content)
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::INVALID_RESOURCE), "Content is nil" if content == nil
+        
+        #Variable document should always contain document, not just plain element
+        
+        if content.respond_to?(:root)
+          @document = content
+          @empty = false
+          return
+        end
+        
+        if content.respond_to?(:element_node?)
+          if content.element_node?
+            builder = Nokogiri::XML::Builder.new
+            @document = builder.doc
+            @document.root = content
+            @empty = false
+            return
+          end
+        end
+        raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::WRONG_CONTENT_TYPE), "Given parameter is not a valid XML Node or Document"
       end
 
-      # Allows you to use a ContentHandler to parse the XML data from
+      # Allows you to use a Nokogiri::XML::SAX::Document to parse the XML data from
       # the database for use in an application.
       # ==== Parameters
-      # * +handler+ - the SAX ContentHandler to use to handle the Resource content.
+      # * +handler+ - the SAX content handler to use to handle the Resource content, it has to extend
+      #               Nokogiri::XML::SAX::Document
       # ==== Raises
       # XMLDBApi::Base::XMLDBException with expected error codes.
       # ErrorCodes.INVALID_RESOURCE if the content value provided is null.
       def get_content_as_sax(handler)
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        return if empty?
+        #dom_sax_service = XML::DomSaxService.new 
+        #dom_sax_service.generate_sax_from_dom(handler, @document)
+        parser = Nokogiri::XML::SAX::Parser.new(handler)
+        parser.parse("#{@document}")
       end
 
       # Sets the content of the Resource using a SAX
       # ContentHandler.
       # ==== Return value
-      # A SAX ContentHandler that can be used to add content into the Resource.
+      # A SAX ContentHandler (Nokogiri::XML::SAX::Document) that can be used to add content 
+      # into the Resource. 
       def set_content_as_sax()
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        return XML::SaxDomCreator.new(self)
       end
       
       # Returns the RedCollection instance that this resource is
@@ -67,7 +123,7 @@ module XMLDBApi
       # ==== Return value
       # The RedCollection asociated with the resource
       def get_parent_collection()
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        return XMLDBApi::RedCollection.new(@db_id, @coll_service.get_collection_id, @coll_service.get_collection_name)
       end
 
       # Returns the unique id for this RedXMLResource or nil if the
@@ -76,21 +132,21 @@ module XMLDBApi
       # ==== Return value
       # The id for the RedXMLResource or nil if no id exists.
       def get_id()
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        return @id
       end
 
       # Returns the XMLResource type
       # ==== Return value
       # String with XMLResource type
       def get_resource_type()
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        return RedXmlResource::TYPE
       end
 
       # Retrieves the content from the RedXMLResource, basically XML String
       # ==== Return value
       # String value with content of the XML
       def get_content()
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        return "#{@document}"
       end
 
       # Sets the content for this resource. The type of content that can be set
@@ -98,7 +154,16 @@ module XMLDBApi
       # ==== Parameters
       # * +value+ - The XML content value to set for the resource as a String
       def set_content(value)
-        raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
+        @document = Nokogiri::XML(value)
+        @empty = false if @document #Resource can now be stored in database
+      end
+      
+      # Check if the RedXmlResource is empty = cannot be stored in database because it has no
+      # content
+      # ==== Return value
+      # True if this RedXmlResource instance is empty, False otherwise
+      def empty?()
+        return @empty
       end
   end
 end

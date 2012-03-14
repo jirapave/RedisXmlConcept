@@ -40,7 +40,9 @@ class TestEnvironmentService < Test::Unit::TestCase
     #Fails because there are 6 collections, one named "nobody" which gets somehow created in rename_collection
     #in test_collection_service. What is strange, that before each test method, DBIinit.init_database should
     #be run, which deletes all keys and than recreates default database.
-    
+    aaa = @coll_service.get_all_child_collections_names
+    puts ""
+    puts "delete PRED: #{aaa}"
     assert_equal(true, @env_service.environment_exist?("esecond") == true)
     @env_service.delete_environment("esecond")
     assert_equal(true, @env_service.environment_exist?("esecond") == false)
@@ -130,7 +132,7 @@ class TestEnvironmentService < Test::Unit::TestCase
     @env_service.rename_environment("esecond", "nobody")
     assert_equal(true, @env_service.get_environment_id("nobody") == id)
     assert_raise Transformer::MappingException do
-      #esecond does not exist anymore, it was renamed
+     #esecond does not exist anymore, it was renamed
      @env_service.get_environment_id("esecond")
     end
     assert_raise Transformer::MappingException do

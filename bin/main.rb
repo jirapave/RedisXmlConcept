@@ -2,14 +2,14 @@ require_relative "../lib/transformer/key_element_builder"
 require_relative "../lib/base_interface/db_interface"
 require_relative "../lib/transformer/document_service"
 require_relative "../lib/transformer/mapping_service"
-require_relative "../lib/xml/sax_document"
+require_relative "../lib/xml/sax_db_writer"
 require "rubygems"
 require "nokogiri"
 
 #require all *.rb files in certain directory
 Dir["../lib/red_xml_api/*.rb"].each {|file| require file }
 
-def time
+def self.time #Must be static, otherwise could rise an error, when using Nokogiri::XML::Builder with send command
   start = Time.now
   yield
   time = Time.now - start
@@ -23,7 +23,8 @@ db.delete_keys keys unless keys.empty?
 
 env_name = "test"
 coll_name = "new"
-file_path = "./books-100000.xml"
+#file_path = "./books-425000.xml"
+file_path = "./size>1-4>coeff>0-0-1.xml"
 file_name = File.basename(file_path)
 env_manager = RedXmlApi::EnvironmentManager.new()
 env = env_manager.create_environment(env_name)
@@ -42,12 +43,12 @@ puts "env id: #{env_id}"
 coll_id = Transformer::MappingService.map_coll(env_id, coll_name)
 puts "coll id: #{coll_id}"
 
-time do
+self.time do
   puts "Saving document..."
   coll.save_document(file_path)
 end
 
-time do
+self.time do
   puts "Retrieving document from database..."
   # retrieve document string, whole DOM is created, Node overrides to_s
   # puts document_service.find_file(file_name, 1, 1)

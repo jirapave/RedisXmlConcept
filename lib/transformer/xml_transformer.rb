@@ -4,6 +4,7 @@ require_relative "../xml/node"
 require_relative "../xml/document"
 require_relative "../xml/text_content"
 require_relative "../xml/element"
+require "nokogiri"
 
 module Transformer
   # This class is used as a simple abstract layer to work with documents (document is based on KeyBuilder given
@@ -11,7 +12,7 @@ module Transformer
   class XMLTransformer
     
     # Separator of attributes, those are saved in one string with separator as delimiter
-    ATTR_SEPARATOR = "\""
+    ATTR_SEPARATOR = "|"
     
     # Creates new instance of XmlTransformer to work with document.
     # ==== Parameters
@@ -21,77 +22,7 @@ module Transformer
       @key_builder = key_builder
       @elem_mapping = {}
       @attr_mapping = {}
-    end
-    
-    # Finds a node under the given key and build it's structure recursively. When called on root, whole
-    # document is retrieved. 
-    # ==== Parameters
-    # * +key+ - KeyBuilder if we want whole document, KeyElementBuilder when we want certain node
-    # ==== Return value
-    # XML::Document if KeyBuilder was used, otherwise XML::Element, False if node wasn't found
-    def find_node(key):Node
-      load_mappings() if @elem_mapping.empty?
-      if(key.instance_of? Transformer::KeyBuilder)
-        
-        info_hash = @db_interface.find_value(key.info)
-        
-        doc = XML::Document.new()
-        doc.file_name = info_hash["name"]
-        doc.version = info_hash["version"]
-        doc.encoding = info_hash["encoding"]
-        doc.standalone = info_hash["standalone"]
-        
-        root_key = info_hash["root"]
-        root_key_builder = Transformer::KeyElementBuilder.build_from_s(@key_builder, root_key)
-        doc.root_element = find_node(root_key_builder)
-        doc.root_element.name = doc.root_element.name
-        return doc
-        
-      elsif(key.instance_of? Transformer::KeyElementBuilder)
-        elem_name = @elem_mapping[key.elem_id]
-        ns_split = elem_name.split(':')
-        namespace = false
-        if(ns_split.length > 1)
-          namespace = ns_split[0]
-          elem_name = ns_split[1]
-        end
-        
-        #create element (without parent so far)
-        elem = XML::Element.new(elem_name, key.to_s, namespace, nil)
-        
-        #add attributes
-        attrs_hash = get_attributes(key)
-        elem.attributes = XML::Attributes.new(elem_name, attrs_hash)
-        #add descendants
-        desc_keys = @db_interface.get_hash_value(@key_builder.content_key, key.to_s)
-        part_keys = []
-        if desc_keys != nil
-          desc_keys.split('|').each do |key|
-            #Last one may be empty, we are adding those as << name << "|", so the last one is empty
-            part_keys << key if key != ""
-          end
-        end
-        
-        if part_keys # if this element is not empty (like <element />)
-          part_keys.each do |key_str|
-            type = Transformer::KeyElementBuilder.text_type(key_str)
-            if type
-              text_content = @db_interface.get_hash_value(@key_builder.content_key, key_str)
-              elem.descendants << XML::TextContent.new(text_content, Transformer::KeyElementBuilder.text_order(key_str), type)
-            else
-              #Element
-              child = find_node(Transformer::KeyElementBuilder.build_from_s(@key_builder, key_str))
-              child.name = child.name
-              child.parent = elem
-              elem.descendants << child
-            end
-          end
-        end
-        
-        return elem
-      else
-        return false    
-      end
+      @doc = nil
     end
     
     # Currently not implemented
@@ -186,6 +117,105 @@ module Transformer
         return attrs_hash
     end
     
+    
+    
+    
+    # Retrieves a document under certain key represented as a key parameter.
+    # ==== Parameters
+    # * +key+ - KeyBuilder instane to specify a document to be retrieved
+    # ==== Return value
+    # Nokogiri::XML::Document instance 
+    def get_document(key_builder)
+      load_mappings() if @elem_mapping.empty?
+      info_hash = @db_interface.find_value(key_builder.info)
+      if info_hash["root"] == nil #document is empty
+        builder = Nokogiri::XML::Builder.new
+        return builder.doc
+      end
+      #Probably the only way how to set standalone, Nokogiri::XML::Document doesn't allow to set standalone
+      #otherwise, only encoding and version
+      doc = "<?xml version=\"#{info_hash["version"]}\" encoding=\"#{info_hash["encoding"]}\" standalone=\"#{info_hash["standalone"]}\" ?>"
+      doc = Nokogiri::XML(doc)
+        
+      builder = Nokogiri::XML::Builder.with(doc) do |xml|
+        root_key = info_hash["root"]
+        root_key_builder = Transformer::KeyElementBuilder.build_from_s(key_builder, root_key)
+        build_node(root_key_builder, xml)
+      end
+      return builder.doc
+    end
+    
+    # Finds a node under the given key and build it's structure recursively. When called on root, whole
+    # document is retrieved. Result is added under the content specified by xml parameter. This parameter
+    # represents block parameter Nokogiri::XML::Builder.new { |xml| }
+    # ==== Parameters
+    # * +key+ - KeyElementBuilder to specify a node
+    # * +xml+ - Context under which should the element be retrieved. This context can be created by using
+    #           Nokogiri::XML::Builder.new { |xml|} or Nokogiri::XML::Builder.with(doc_or_elem) { |xml|}
+    def build_node(key, xml)
+        elem_name = @elem_mapping[key.elem_id]
+        ns_split = elem_name.split(':')
+        namespace = nil
+        if(ns_split.length > 1)
+          namespace = ns_split[0]
+          elem_name = ns_split[1]
+        end
+        
+        attrs_hash = get_attributes(key)
+        
+        #This will ad namespace to the current element in xml, raise ArgumentError if given namespace
+        #dos not exist = hasn't been defined in xmlns attribute
+        xml["#{namespace}"] if namespace
+        
+        #Creating element with a given name and attributes, xmlns attributes are automaticaly parsed
+        #as namesace declarations
+        #puts "jmeno: #{elem_name}, atributy: #{attrs_hash.inspect}"
+        xml.send("#{elem_name}", attrs_hash) do |elem_xml|
+        
+        #add descendants
+          desc_keys = @db_interface.get_hash_value(@key_builder.content_key, key.to_s)
+          part_keys = []
+          if desc_keys != nil
+            desc_keys.split('|').each do |key|
+             #Last one may be empty, we are adding those as << name << "|", so the last one is empty
+             part_keys << key if key != ""
+           end
+          end
+        
+         if part_keys # if this element is not empty (like <element />)
+            part_keys.each do |key_str|
+              type = Transformer::KeyElementBuilder.text_type(key_str)
+              if type
+                text_content = @db_interface.get_hash_value(@key_builder.content_key, key_str)
+                case type
+                  when XML::TextContent::PLAIN
+                    elem_xml.text text_content
+                  when XML::TextContent::COMMENT
+                    elem_xml.comment text_content
+                  when XML::TextContent::CDATA
+                    elem_xml.cdata text_content
+                end
+              else
+                #Child element
+                build_node(Transformer::KeyElementBuilder.build_from_s(@key_builder, key_str), elem_xml)
+              end
+            end
+          end
+        end
+    end
+    
+    # Retrieves specified element.
+    # ==== Parameters
+    # * +key_elem_builder+ - KeyElementBuilder instance to specify a node to be retrieved
+    # ==== Return value
+    # Nokogiri::XML::Document instance 
+    def get_node(key_elem_builder)
+      builder = Nokogiri::XML::Builder.new do |xml|
+        build_node(key_elem_builder, xml)
+      end
+      return builder.doc.root
+    end
+    
     private 
     def get_elem_name(id)# :nodoc:
       mapping.each do |key, value|
@@ -199,7 +229,8 @@ module Transformer
     def load_mappings# :nodoc:
       @elem_mapping = @db_interface.find_value(@key_builder.elem_mapping_key)
       @attr_mapping = @db_interface.find_value(@key_builder.attr_mapping_key)
-
+      @elem_mapping = {} if @elem_mapping == nil
+      @attr_mapping = {} if @attr_mapping == nil
       #Now we will reverse them so we can get O(1) complexity of finding name
       temp = {}
       @elem_mapping.each do |key, value|

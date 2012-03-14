@@ -108,6 +108,20 @@ module Transformer
       end
     end
     
+    # Creates a string with last part of the element key after the last separator.
+    # ==== Return value
+    # String of the created key
+    # ==== Raises
+    # Transformer::NoElementError - When there is no parent of the current element
+    def last_part_only()
+      if(@elem_str.empty?)
+        raise Transformer::NoElementError, "There is no parent element for root element."
+      else
+        last_separator = @elem_str.rindex(SEPARATOR)
+        return "#{@elem_str.slice(last_separator+1, @elem_str.length)}"
+      end
+    end
+    
     # Creates a string of the current key with changed order (+1)
     # ==== Return value
     # String of the created key

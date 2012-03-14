@@ -36,6 +36,16 @@ module Transformer
       result = @coll_id if @coll_id
       result
     end
+    
+    # Returns ID of the collection, which is using this instance of CollectionService
+    # ==== Return value
+    # String with the ID of the colletion which uses this instance of CollectionService or nil if
+    # this service is used by Environment
+    def get_collection_name()
+      result = nil
+      result = @coll_name if @coll_name
+      result
+    end
 
     # Creates new collection with a given name in a database and returns it's ID
     # ==== Parameters
@@ -172,14 +182,11 @@ module Transformer
 
       #Delete old enevironment
       old_id = get_child_collection_id(old_name)
-
-      result = @db_interface.transaction do
-        @db_interface.delete_from_hash(@certain_coll_key, old_name)
-        @db_interface.add_to_hash_ne(@certain_coll_key, name, old_id)
-      end
-
+      result = []
+      result[0] = @db_interface.delete_from_hash(@certain_coll_key, old_name)
+      result[1] = @db_interface.add_to_hash_ne(@certain_coll_key, name, old_id)
       #Note: result may obtain some old return values from redis, we have to lookup at the end of result
-      raise Transformer::MappingException, "Cannot delete old collection's name, rename aborted." if result[-1] != 1
+      raise Transformer::MappingException, "Cannot delete old collection's name, rename aborted." unless result[-1]
       raise Transformer::MappingException, "Renaming failed." if result[-2] != 1
       true
     end

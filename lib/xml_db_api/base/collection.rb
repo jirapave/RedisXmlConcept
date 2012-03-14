@@ -251,7 +251,7 @@ module XMLDBApi
       # *  <code>ErrorCodes.COLLECTION_CLOSED</code> if the <code>close</code>
       # *  method has been called on the <code>Collection</code><br />
       # */
-      def removeResource(res)
+      def remove_resource(res)
         raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
       end
 

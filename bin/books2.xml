@@ -2,7 +2,7 @@
 <catalog>
    <book id="bk101">
    	  Author now:
-      <author>Gambardella, Matthew</author>
+   	  <author>Gambardella, Matthew</author>
       Title now:
       <title>XML Developer's Guide</title>
       <genre>Computer</genre>

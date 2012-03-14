@@ -14,7 +14,7 @@ module XML
   #or element ends are raised and this class react to them. It is used to build whole elements and when
   #element is completly loaded, it is sent to document_service
   #This class is part of Observer pattern as an Observable. It's observer is document_service.
-  class SaxDocument < Nokogiri::XML::SAX::Document
+  class SaxDbWriter < Nokogiri::XML::SAX::Document
     include Observable 
     def initialize(service, mapping)
       @mapping_service = mapping

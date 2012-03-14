@@ -133,7 +133,7 @@ class TestCollectionService < Test::Unit::TestCase
     @coll_service.rename_child_collection("cthird", "nobody")
     assert_equal(true, @coll_service.get_child_collection_id("nobody") == id)
     assert_raise Transformer::MappingException do
-      #cthird does not exist anymore, it was renamed
+     #cthird does not exist anymore, it was renamed
      @coll_service.get_child_collection_id("cthird")
     end
     assert_raise Transformer::MappingException do

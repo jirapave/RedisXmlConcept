@@ -129,6 +129,10 @@ module XMLDBApi
       # * Set if the resource type requested is unknown to the API implementation.
       # */
       UNKNOWN_RESOURCE_TYPE = 302
+      # /**
+      # * Set if resource with provided ID already exist
+      # */
+      RESOURCE_ID_ALREADY_EXIST = 303
 
       # /**
       # * Set if a <code>Database</code> instance can not be located for the

@@ -1,8 +1,9 @@
 require_relative "xml_transformer"
 require_relative "../xml/document"
-require_relative "../xml/sax_document"
+require_relative "../xml/sax_db_writer"
 require_relative "../base_interface/db_interface"
 require_relative "../transformer/key_builder"
+require_relative "../xml_db_api/red_xml_resource"
 require_relative "exceptions"
 require "nokogiri"
 require "observer"
@@ -58,6 +59,11 @@ module Transformer
       end
     end
     
+    # Used to create empty resource
+    def get_possible_id()
+      return @db_interface.increment_hash(@env_info, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
+    end
+    
     #Method will save a given file to the given database under the given collection if it doensn't
     #already exist. SAX parser is used to parse an XML file.
     def save_document(file)
@@ -70,7 +76,7 @@ module Transformer
       puts "Does document exist?"
       doc_id = @db_interface.increment_hash(@env_info, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
       result = @db_interface.add_to_hash_ne(@doc_key, file_name, doc_id)
-      raise MappingException, "Document with such a name already exist." unless result
+      raise Transformer::MappingException, "Document with such a name already exist." unless result
       
       puts "No, proceeding with saving..."
       
@@ -80,7 +86,7 @@ module Transformer
       puts "Saving document: #{info.inspect}"
       #Now file is saved, we have it's id and we can know proceed to parsing
       mapping = Transformer::MappingService.new(@builder)
-      parser = Nokogiri::XML::SAX::Parser.new(XML::SaxDocument.new(self, mapping))
+      parser = Nokogiri::XML::SAX::Parser.new(XML::SaxDbWriter.new(self, mapping))
       @doc_name = file_name
       # parser = Nokogiri::XML::SAX::Parser.new(XML::ConsoleSaxDocument.new)
       
@@ -107,7 +113,51 @@ module Transformer
       end
       @builder = Transformer::KeyBuilder.new(@env_id, @coll_id, file_id)
       @xml_transformer = Transformer::XMLTransformer.new(@builder)
-      return @xml_transformer.find_node(@builder)
+      return @xml_transformer.get_document(@builder)
+    end
+    
+    def save_resource(resource)
+      if !resource.respond_to?(:get_content_as_sax)
+        puts "Parameter is not a valid resource"
+        return false
+      end
+      
+      name = resource.get_document_id
+      puts "Does document exist?"
+      doc_id = resource.doc_id
+      result = @db_interface.add_to_hash_ne(@doc_key, name, doc_id)
+      raise Transformer::MappingException, "Document with such a name already exist." unless result
+      
+      puts "No, proceeding with saving..."
+      
+      @builder = Transformer::KeyBuilder.new(@env_id, @coll_id, doc_id)
+      @xml_transformer = Transformer::XMLTransformer.new(@builder)
+      info = [name, doc_id]
+      puts "Saving document: #{info.inspect}"
+      #Now file is saved, we have it's id and we can know proceed to parsing
+      mapping = Transformer::MappingService.new(@builder)
+      handler = XML::SaxDbWriter.new(self, mapping)
+      @doc_name = name
+      
+      @db_interface.transaction do
+        resource.get_content_as_sax(handler)
+      end
+      
+      puts "Document saved"
+      true
+    end
+    
+    def get_resource(name)#:XML::Document
+      file_id = get_document_id(name)
+      
+      if(file_id == nil)
+        raise Transformer::MappingException, "Document with name #{file_name} not found."
+        return nil
+      end
+      @builder = Transformer::KeyBuilder.new(@env_id, @coll_id, file_id)
+      @xml_transformer = Transformer::XMLTransformer.new(@builder)
+      document = @xml_transformer.get_document(@builder)
+      return XMLDBApi::RedXmlResource.new(@env_id, @coll_id, name, file_id, document)
     end
     
     def get_document_id(name)
