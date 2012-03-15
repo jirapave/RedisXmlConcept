@@ -4,7 +4,7 @@ require 'mkmf'
 $libs = append_library($libs, "supc++")
 
 # Give it a name
-extension_name = 'XQueryParser'
+extension_name = 'Parsers'
 
 # The destination
 dir_config(extension_name)

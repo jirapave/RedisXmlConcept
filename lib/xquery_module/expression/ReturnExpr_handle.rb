@@ -36,6 +36,10 @@ module XQuery
           @parts << RelativePathExprHandle.new(reduced)
           
           
+        when VarRef
+          @parts << VarRefHandle.new(reduced)
+          
+          
         when DirElemConstructor
           path_expr = ""
           return_text = ""
@@ -48,7 +52,7 @@ module XQuery
               path_expr << child.content
             else
               if(!path_expr.empty?)
-                @parts << XQuery::QueryParser.parse_query(path_expr)
+                @parts << XQuery::QueryParser.parse_xquery(path_expr)
                 path_expr = ""
               end
               return_text << child.content
