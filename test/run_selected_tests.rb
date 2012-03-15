@@ -2,6 +2,7 @@ require "test/unit"
 
 Dir["./test_transformer/*.rb"].each {|file| require file }
 Dir["./test_base_interface/*.rb"].each {|file| require file }
+Dir["./test_xml_db_api/*.rb"].each {|file| require file }
 
 #Note that if we want to run all test files (test_*.rb) in a given folder, we can use
 #command "testrb folder" in command line and all test files will be processed.

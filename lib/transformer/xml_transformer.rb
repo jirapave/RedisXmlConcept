@@ -98,7 +98,7 @@ module Transformer
     # * +key_elem_builder+ - KeyElementBuilder
     # ==== Return value
     # Hash where field is name of the attribute and value is obviously value.
-    def get_attributes(key_elem_builder)
+    def get_attributes(key_elem_builder, mapped=true)
       attrs = @db_interface.get_hash_value(@key_builder.content_key, key_elem_builder.attr)
         if attrs != nil
           attrs_hash = {}
@@ -110,7 +110,8 @@ module Transformer
           end
           #Now we have fields and values apart
           fields_only.each_with_index do |field, index|
-            attr_name = @attr_mapping[field]
+            attr_name = field
+            attr_name = @attr_mapping[field] if mapped
             attrs_hash[attr_name] = values_only[index]
           end
         end
@@ -207,7 +208,7 @@ module Transformer
     # ==== Parameters
     # * +key_elem_builder+ - KeyElementBuilder instance to specify a node to be retrieved
     # ==== Return value
-    # Nokogiri::XML::Document instance 
+    # Nokogiri::XML::Node instance 
     def get_node(key_elem_builder)
       load_mappings(key_elem_builder.key_builder)
       builder = Nokogiri::XML::Builder.new do |xml|

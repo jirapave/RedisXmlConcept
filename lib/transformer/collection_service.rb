@@ -27,26 +27,6 @@ module Transformer
       @db_interface = BaseInterface::DBInterface.instance
     end
 
-    # Returns ID of the collection, which is using this instance of CollectionService
-    # ==== Return value
-    # String with the ID of the colletion which uses this instance of CollectionService or nil if
-    # this service is used by Environment
-    def get_collection_id()
-      result = nil
-      result = @coll_id if @coll_id
-      result
-    end
-    
-    # Returns ID of the collection, which is using this instance of CollectionService
-    # ==== Return value
-    # String with the ID of the colletion which uses this instance of CollectionService or nil if
-    # this service is used by Environment
-    def get_collection_name()
-      result = nil
-      result = @coll_name if @coll_name
-      result
-    end
-
     # Creates new collection with a given name in a database and returns it's ID
     # ==== Parameters
     # * +name+ - Name of the collection to be created
@@ -151,6 +131,14 @@ module Transformer
       temp_coll_service = Transformer::CollectionService.new(@env_id, parent_id)
       parent_name = temp_coll_service.get_collection_name
       return parent_name
+    end
+    
+    # Returns ID of the collection, which is using this instance of CollectionService
+    # ==== Return value
+    # String with the ID of the colletion which uses this instance of CollectionService or nil if
+    # this service is used by Environment
+    def get_collection_id()
+      return @coll_id
     end
     
     # Returns name of the collection which is using this instance of CollectionService
