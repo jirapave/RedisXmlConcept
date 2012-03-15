@@ -55,7 +55,7 @@ module XQuery
         return VarRefHandle.new(reduced_node)
         
       else
-        puts "WARNING: creating generic expression"
+        puts "WARNING: creating generic expression #{reduced_node.name}"
         return ExpressionHandle.new(reduced_node)
       end
     end

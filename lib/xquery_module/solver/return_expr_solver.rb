@@ -21,12 +21,12 @@ module XQuery
             #should return only one value
             path_result = @path_solver.solve(part, context)[0]
             if(!path_result.kind_of?(String))
-              path_result = @path_solver.path_processor.get_node(path_result).to_stripped_s
+              path_result = @path_solver.path_processor.get_node(path_result).to_s #TODO do it differently - to return node
             end
             result << path_result
           when ExpressionModule::VarRef
             #should return only one value
-            result << @path_solver.path_processor.get_node(context.variables[part.var_name]).to_stripped_s
+            result << @path_solver.path_processor.get_node(context.variables[part.var_name]).to_s
             
           else
             raise NotSupportedError, part.type

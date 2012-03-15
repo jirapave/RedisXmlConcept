@@ -35,7 +35,7 @@ module XQuery
         else
           raise NotSupportedError, ordering_expr.type
         end
-        result_str = @path_solver.path_processor.get_text(result, false)
+        result_str = @path_solver.path_processor.get_text(result)
         original_results_order[result_str] = index
         ordering_results << result_str
         

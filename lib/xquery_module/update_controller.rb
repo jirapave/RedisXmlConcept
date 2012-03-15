@@ -3,7 +3,7 @@ require_relative "exceptions"
 require_relative "query_parser"
 
 module XQuery
-  class XQueryController
+  class UpdateController
     
     def initialize(environment, collection)
       @xquery_solver = XQuerySolver.new(environment, collection)
@@ -12,7 +12,6 @@ module XQuery
     def get_results(query)
       
       #parse query into Expression object
-      # expression = QueryParser.parse_xquery(query)
       expression = QueryParser.parse_update(query)
       
       #solve parsed expression
@@ -22,6 +21,3 @@ module XQuery
     
   end
 end
-
-
-

@@ -62,13 +62,13 @@ module XQuery
       TestCase.new("doc(\"catalog.xml\")//@dept",
         ["WMN", "ACC", "ACC", "MEN"]),
       TestCase.new("doc(\"catalog.xml\")//product[last()]",
-        ["<product dept=\"MEN\"><number>784</number><name language=\"en\">Cotton Dress Shirt</name><colorChoices>white gray</colorChoices><desc>Our<i>favorite</i>shirt!<!-- Second commentary --></desc></product>"]),
+        ["<product dept=\"MEN\">\n  <number>784</number>\n  <name language=\"en\">Cotton Dress Shirt</name>\n  <colorChoices>white gray</colorChoices>\n  <desc>Our<i>favorite</i>shirt!<!--Second commentary--></desc>\n</product>"]),
       TestCase.new("doc(\"catalog.xml\")//product[position() >= 4]",
-        ["<product dept=\"MEN\"><number>784</number><name language=\"en\">Cotton Dress Shirt</name><colorChoices>white gray</colorChoices><desc>Our<i>favorite</i>shirt!<!-- Second commentary --></desc></product>"]),
+        ["<product dept=\"MEN\">\n  <number>784</number>\n  <name language=\"en\">Cotton Dress Shirt</name>\n  <colorChoices>white gray</colorChoices>\n  <desc>Our<i>favorite</i>shirt!<!--Second commentary--></desc>\n</product>"]),
       TestCase.new("doc(\"catalog.xml\")//product[position() > 3]",
-        ["<product dept=\"MEN\"><number>784</number><name language=\"en\">Cotton Dress Shirt</name><colorChoices>white gray</colorChoices><desc>Our<i>favorite</i>shirt!<!-- Second commentary --></desc></product>"]),
+        ["<product dept=\"MEN\">\n  <number>784</number>\n  <name language=\"en\">Cotton Dress Shirt</name>\n  <colorChoices>white gray</colorChoices>\n  <desc>Our<i>favorite</i>shirt!<!--Second commentary--></desc>\n</product>"]),
       TestCase.new("doc(\"catalog.xml\")//product[3 < position()]",
-        ["<product dept=\"MEN\"><number>784</number><name language=\"en\">Cotton Dress Shirt</name><colorChoices>white gray</colorChoices><desc>Our<i>favorite</i>shirt!<!-- Second commentary --></desc></product>"]),
+        ["<product dept=\"MEN\">\n  <number>784</number>\n  <name language=\"en\">Cotton Dress Shirt</name>\n  <colorChoices>white gray</colorChoices>\n  <desc>Our<i>favorite</i>shirt!<!--Second commentary--></desc>\n</product>"]),
       TestCase.new("doc(\"catalog.xml\")//product[last()]/name/text()",
         ["Cotton Dress Shirt"]),
       TestCase.new("doc(\"catalog.xml\")/catalog/product[name = \"Fleece Pullover\"]/number/text()",
@@ -91,8 +91,8 @@ module XQuery
         
         right_results.each_with_index { |right_result, index|
           new_result = new_results[index]
-          if(new_result.kind_of?(XML::Node))
-            new_result = new_result.to_stripped_s
+          if(new_result.kind_of?(Nokogiri::XML::Node))
+            new_result = new_result.to_s
           end
           assert_equal(right_result, new_result, "for query: #{test_case.query}, results are not the same")
         }

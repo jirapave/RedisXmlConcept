@@ -10,15 +10,6 @@ module XQuery
           return @node.name
         end
         
-        # def parts #DEPRICATED shouldnt be used...
-          # puts "DEPRICATED call of expression_module.parts, shouldnt be called"
-          # parts = []
-          # @node.children { |child|
-            # parts << create_expr(child)
-          # }
-          # return parts
-        # end
-        
         def text
           @node.content
         end

@@ -73,8 +73,8 @@ module XQuery
         
         right_results.each_with_index { |right_result, index|
           new_result = new_results[index]
-          if(new_result.kind_of?(XML::Node))
-            new_result = new_result.to_stripped_s
+          if(new_result.kind_of?(Nokogiri::XML::Node))
+            new_result = new_result.to_s
           end
           assert_equal(right_result, new_result, "for query: #{test_case.query}, results are not the same")
         }

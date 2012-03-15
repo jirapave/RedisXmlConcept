@@ -159,10 +159,10 @@ module XQuery
             case step_expression.step_type
             when ExpressionModule::StepExprHandle::ORDINARY
               ### results setting
-              results =  [ @path_processor.get_text(actual_result, false) ] #TODO stripped? - no so far
+              results =  [ @path_processor.get_text(actual_result) ]
             when ExpressionModule::StepExprHandle::RECURSIVE
               ### results setting
-              results = @path_processor.get_descendant_texts(actual_result, false) #TODO stripped?
+              results = @path_processor.get_descendant_texts(actual_result)
             else
               raise StandardError, "impossible, abbrevforward ATTRIBUTE, value name: #{specified_step.value_name}"
             end
@@ -175,7 +175,7 @@ module XQuery
           #only text() supported
           if(specified_step.function_name == "text" && specified_step.function_params.empty?)
             ### results setting
-            results = @path_processor.get_texts(actual_result, true) #TODO TODO stripped?
+            results = @path_processor.get_texts(actual_result)
           else
             raise StandardError, "other function not implemented"
           end
