@@ -87,7 +87,7 @@ module XML
     
     def cdata_block(string)
       Nokogiri::XML::Builder.with(@current_tag) do |xml|
-        xml.cdata(text)
+        xml.cdata(string)
       end
     end
     

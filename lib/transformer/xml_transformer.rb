@@ -54,7 +54,7 @@ module Transformer
           end
         end
       end
-      @db_interface.add_to_hash(main_hash, [key, descendant_keys], false)
+      @db_interface.add_to_hash(main_hash, [key, descendant_keys], true)
       
       
       #Than we will save information about text nodes
@@ -126,7 +126,7 @@ module Transformer
     # ==== Return value
     # Nokogiri::XML::Document instance 
     def get_document(key_builder)
-      load_mappings() if @elem_mapping.empty?
+      load_mappings(key_builder)
       info_hash = @db_interface.find_value(key_builder.info)
       if info_hash["root"] == nil #document is empty
         builder = Nokogiri::XML::Builder.new
@@ -169,7 +169,6 @@ module Transformer
         
         #Creating element with a given name and attributes, xmlns attributes are automaticaly parsed
         #as namesace declarations
-        #puts "jmeno: #{elem_name}, atributy: #{attrs_hash.inspect}"
         xml.send("#{elem_name}", attrs_hash) do |elem_xml|
         
         #add descendants
@@ -182,7 +181,7 @@ module Transformer
            end
           end
         
-         if part_keys # if this element is not empty (like <element />)
+         if part_keys # if this element is not empty (like <element />
             part_keys.each do |key_str|
               type = Transformer::KeyElementBuilder.text_type(key_str)
               if type
@@ -210,6 +209,7 @@ module Transformer
     # ==== Return value
     # Nokogiri::XML::Document instance 
     def get_node(key_elem_builder)
+      load_mappings(key_elem_builder.key_builder)
       builder = Nokogiri::XML::Builder.new do |xml|
         build_node(key_elem_builder, xml)
       end
@@ -226,9 +226,11 @@ module Transformer
       return id
     end
     
-    def load_mappings# :nodoc:
+    def load_mappings(key_builder)# :nodoc:
       @elem_mapping = @db_interface.find_value(@key_builder.elem_mapping_key)
       @attr_mapping = @db_interface.find_value(@key_builder.attr_mapping_key)
+      @elem_mapping.reject! { |field, value| field[0] == "<" } if @elem_mapping
+      @attr_mapping.reject! { |field, value| field[0] == "<" } if @attr_mapping
       @elem_mapping = {} if @elem_mapping == nil
       @attr_mapping = {} if @attr_mapping == nil
       #Now we will reverse them so we can get O(1) complexity of finding name

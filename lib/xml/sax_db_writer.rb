@@ -35,7 +35,6 @@ module XML
     end
     
     def start_document()
-      puts "SAX starting"
     end
     
     def end_document()
@@ -155,7 +154,7 @@ module XML
     def rename_elem(name)
       if (@elem_mapping[name] == nil)
         elem_id = @mapping_service.create_elem_mapping(name)
-        puts "Mapping of element failed, this should not happend." unless elem_id
+        puts "Mapping of element failed, this should not happend, name=#{name}" unless elem_id
         @elem_mapping[name] = elem_id
       end
       return @elem_mapping[name]
@@ -164,7 +163,7 @@ module XML
     def rename_attr(name)
       if (@attr_mapping[name] == nil)
         attr_id = @mapping_service.create_attr_mapping(name)
-        puts "Mapping of element failed, this should not happend." unless attr_id
+        puts "Mapping of element failed, this should not happend, name=#{name}" unless attr_id
         @attr_mapping[name] = attr_id
       end
       return @attr_mapping[name]

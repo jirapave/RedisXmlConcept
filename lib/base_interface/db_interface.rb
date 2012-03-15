@@ -47,6 +47,8 @@ module BaseInterface
     #redis.hsetnx - params: key, field, value - !!!only one field at a time, set field only if the field does not exist
 
     #Saves a given array in a database as a hash under a given key, example: ["key", "value"] >> {"key" => "value"}
+    # Note: There is probably some concurrency problem with hsetnx, it is very well hidden, for the time being
+    # use overwrite=true
     def add_to_hash(key, hash, overwrite)
       if @transaction or @pipelined
         params = [key, hash, overwrite]
@@ -65,6 +67,10 @@ module BaseInterface
           #Now we have fields and values apart
           fields_only.each_with_index do |field, index|
             @redis.hsetnx key, field, values_only[index] #set value only if field does not exist
+            #TODO may no work in some very rare cases, i still don't fully understand how is this possible
+            # probably some concurrency problem with Redis
+            #val = get_hash_value(key, field)
+            #puts "Saved value: #{val}"
           end
         end
       end
@@ -257,6 +263,11 @@ module BaseInterface
       return @redis.get key if type == "string"
       #We don't use set or sorted set, so return nil
       return nil
+    end
+    
+    # Deletes all keys in all databases
+    def delete_all_keys()
+      @redis.flushall
     end
 
     def check_buffer

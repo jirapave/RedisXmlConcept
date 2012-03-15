@@ -119,7 +119,7 @@ module XMLDBApi
       # * <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
       # * specific errors that occur.<br />
       # */
-      def getIterator()
+      def get_iterator()
         raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
       end
 
@@ -152,7 +152,7 @@ module XMLDBApi
       # * <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
       # * specific errors that occur.<br />
       # */
-      def getSize()
+      def get_size()
         raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
       end
 

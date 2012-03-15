@@ -1,6 +1,7 @@
 require_relative "../db_init"
 require_relative "../../lib/xml_db_api/database_manager"
 require_relative "../../lib/xml_db_api/red_xml_resource"
+require_relative "../../lib/xml_db_api/red_resource_set"
 require_relative "../../lib/xml_db_api/base/xmldb_exception"
 require_relative "../../lib/transformer/collection_service"
 require_relative "../../lib/xml_db_api/red_collection_management_service"
@@ -8,12 +9,11 @@ require_relative "../../lib/base_interface/db_interface"
 require "test/unit"
 
 # We re using unit tests technology to create integration tests more easily
-class TestXmlbApi < Test::Unit::TestCase
+class TestXmlDbApi < Test::Unit::TestCase
   def setup
-    db = BaseInterface::DBInterface.instance
+    @db = BaseInterface::DBInterface.instance
     #Delete whole content of database
-    keys = db.find_keys("*")
-    db.delete_keys keys unless keys.empty?
+    @db.delete_all_keys
   end
   
   # Test XML:DB API funcionalit only, proprietary functions are nos used here except
@@ -26,6 +26,7 @@ class TestXmlbApi < Test::Unit::TestCase
     service.create_collection("coll-1")
     service.create_collection("coll-2")
     XMLDBApi::DatabaseManager.register_database(first_db)
+    
     coll = XMLDBApi::DatabaseManager.get_collection("xmldb:first://coll-1")
     service = coll.get_service("RedCollectionManagementService", "1.0")
     service.create_collection("coll-1-child")
@@ -35,6 +36,7 @@ class TestXmlbApi < Test::Unit::TestCase
     service = coll.get_service("RedCollectionManagementService", "1.0")
     service.remove_collection("coll-1-child")
     child_coll = coll.get_child_collection("coll-1-child")
+    
     assert_equal(true, child_coll == nil)
     assert_equal(true, coll.get_child_collection_count == 0)
     assert_raise XMLDBApi::Base::XMLDBException do
@@ -57,7 +59,6 @@ class TestXmlbApi < Test::Unit::TestCase
     res = coll.get_resource("id1")
     
     res = coll.create_resource(nil, "XMLResource") #generates random id
-    id = res.get_document_id
     assert_raise XMLDBApi::Base::XMLDBException do
       coll.store_resource(res) #res is empty, cannot be stored
     end
@@ -66,6 +67,9 @@ class TestXmlbApi < Test::Unit::TestCase
     handler = res.set_content_as_sax
     parser = Nokogiri::XML::SAX::Parser.new(handler)
     parser.parse(File.open(File.absolute_path(file)))
+    
+    document = res.get_content_as_dom
+    id = res.get_document_id
     coll.store_resource(res)
     names = coll.list_resources
     assert_equal(true, names.length == 2)
@@ -77,5 +81,36 @@ class TestXmlbApi < Test::Unit::TestCase
     coll.remove_resource(res)
     names = coll.list_resources
     assert_equal(true, (names.length == 1 and names[0] == "id1"))
+  end
+  
+  def test_resource_sets()
+    first_db = XMLDBApi::RedDatabase.new("first")
+    service = first_db.get_collection_management_service
+    coll = service.create_collection("coll-1")
+    
+    resource_set = XMLDBApi::RedResourceSet.new() #ResourceSet needs to part of certain database and collection
+    
+    res = coll.create_resource("id1", XMLDBApi::RedXmlResource::TYPE)
+    res.set_content("<root><book id=\"aaa\">Pad Hyperionu</book></root>")
+    coll.store_resource(res)
+    res = coll.get_resource("id1")
+    resource_set.add_resource(res)
+    res = coll.create_resource("id2", XMLDBApi::RedXmlResource::TYPE)
+    res.set_content("<root><book id=\"bbb\">Stret Kralu</book></root>")
+    coll.store_resource(res)
+    res = coll.get_resource("id2")
+    resource_set.add_resource(res)
+    res = coll.create_resource("id3", XMLDBApi::RedXmlResource::TYPE)
+    res.set_content("<root><book id=\"ccc\">Nocni klub</book></root>")
+    coll.store_resource(res)
+    res = coll.get_resource("id3")
+    resource_set.add_resource(res)
+    
+    all = resource_set.get_members_as_resource
+    document = all.get_content_as_dom
+    result = document.xpath("//resource")
+    assert_equal(true, result.length == 3)
+    result = document.xpath("//book[@id=\"ccc\"]")
+    assert_equal(true, result.length == 1)
   end
 end

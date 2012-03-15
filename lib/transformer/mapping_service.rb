@@ -31,7 +31,9 @@ module Transformer
       @key_builder = key_builder
       @db_interface = BaseInterface::DBInterface.instance
       @elem_hash = @db_interface.find_value(@key_builder.elem_mapping_key)
+      @elem_hash.reject! { |field, value| field[0] == "<" } if @elem_hash
       @attr_hash = @db_interface.find_value(@key_builder.attr_mapping_key)
+      @attr_hash.reject! { |field, value| field[0] == "<" } if @attr_hash
       @elem_hash ||= {}
       @attr_hash ||= {}
     end
@@ -40,7 +42,9 @@ module Transformer
     # were changed.
     def refresh_hash_mapping()
       @elem_hash = @db_interface.find_value(@key_builder.elem_mapping_key)
+      @elem_hash.reject! { |field, value| field[0] == "<" } if @elem_hash
       @attr_hash = @db_interface.find_value(@key_builder.attr_mapping_key)
+      @attr_hash.reject! { |field, value| field[0] == "<" } if @attr_hash
     end
     
     # Creates new id for the given element name. If the element name already had ID, new ID is not used
@@ -50,11 +54,16 @@ module Transformer
     # ==== Return value
     # String with the ID of the element or false if element already had ID
     def create_elem_mapping(elem_name)
+      #return @elem_hash[elem_name] if @elem_hash[elem_name]
       elem_id = @db_interface.increment_hash(@key_builder.elem_mapping_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1, true)
-      result = @db_interface.add_to_hash_ne(@key_builder.elem_mapping_key, elem_name, elem_id, true)
+      #result = @db_interface.add_to_hash_ne(@key_builder.elem_mapping_key, elem_name, elem_id, true)
+      @db_interface.add_to_hash(@key_builder.elem_mapping_key, [elem_name, elem_id], true)
+      result = true
       if result
         @elem_hash[elem_name] = elem_id
         return elem_id
+      else
+        puts "result in create_elem_mapping = #{result}, hofnota je =  #{@elem_hash[elem_name]}"
       end
       false
     end
@@ -66,9 +75,12 @@ module Transformer
     # ==== Return value
     # String with the ID of the attribute or false if attribute already had ID
     def create_attr_mapping(attr_name)
+      #return @attr_hash[attr_name] if @attr_hash[attr_name]
       attr_id = @db_interface.increment_hash(@key_builder.attr_mapping_key, Transformer::KeyElementBuilder::ITERATOR_KEY, 1, true)
-      result = @db_interface.add_to_hash_ne(@key_builder.attr_mapping_key, attr_name, attr_id, true)
+      #result = @db_interface.add_to_hash_ne(@key_builder.attr_mapping_key, attr_name, attr_id, true)
+      result = true
       if result
+        @db_interface.add_to_hash(@key_builder.attr_mapping_key, [attr_name, attr_id], true)
         @attr_hash[attr_name] = attr_id
         return attr_id
       end
@@ -298,6 +310,7 @@ module Transformer
     end
     
     private
+    
     def self.map_to_id(key, name, description)#:nodoc:
       db_interface = BaseInterface::DBInterface.instance
       id = db_interface.get_hash_value(key, name)

@@ -36,12 +36,10 @@ module Transformer
           field_values << "version" << value[0] if value[0] != nil
           field_values << "encoding" << value[1] if value[1] != nil
           field_values << "standalone" << value[2] if value[2] != nil
-          puts "Saving document info..."
           @db_interface.add_to_hash(key, field_values, false)
       elsif value.instance_of? String
         #Root element name
         key = @builder.info()
-        puts "Saving string values...document info, root_name: #{value}"
         info = ["root", "#{value}"]
         @db_interface.add_to_hash(key, info, false)
       elsif value.instance_of? Hash
@@ -73,17 +71,14 @@ module Transformer
       end
       
       file_name = File.basename(file)
-      puts "Does document exist?"
       doc_id = @db_interface.increment_hash(@env_info, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
       result = @db_interface.add_to_hash_ne(@doc_key, file_name, doc_id)
       raise Transformer::MappingException, "Document with such a name already exist." unless result
       
-      puts "No, proceeding with saving..."
       
       @builder = Transformer::KeyBuilder.new(@env_id, @coll_id, doc_id)
       @xml_transformer = Transformer::XMLTransformer.new(@builder)
       info = [file_name, doc_id]
-      puts "Saving document: #{info.inspect}"
       #Now file is saved, we have it's id and we can know proceed to parsing
       mapping = Transformer::MappingService.new(@builder)
       parser = Nokogiri::XML::SAX::Parser.new(XML::SaxDbWriter.new(self, mapping))
@@ -93,8 +88,6 @@ module Transformer
       #Main idea here is to SAX parser, events should be handled by SaxDocument, which
       #will prepare whole nodes and when the node ends, it will send event here (update method) so we
       #can use XmlTranformer to save it.
-      puts "Parsing in progress..."
-      
       @db_interface.transaction do
         parser.parse(File.open(File.absolute_path(file)))
       end
@@ -117,23 +110,21 @@ module Transformer
     end
     
     def save_resource(resource)
+      document = resource.get_content_as_dom
       if !resource.respond_to?(:get_content_as_sax)
         puts "Parameter is not a valid resource"
         return false
       end
       
       name = resource.get_document_id
-      puts "Does document exist?"
       doc_id = resource.doc_id
       result = @db_interface.add_to_hash_ne(@doc_key, name, doc_id)
       raise Transformer::MappingException, "Document with such a name already exist." unless result
       
-      puts "No, proceeding with saving..."
       
       @builder = Transformer::KeyBuilder.new(@env_id, @coll_id, doc_id)
       @xml_transformer = Transformer::XMLTransformer.new(@builder)
       info = [name, doc_id]
-      puts "Saving document: #{info.inspect}"
       #Now file is saved, we have it's id and we can know proceed to parsing
       mapping = Transformer::MappingService.new(@builder)
       handler = XML::SaxDbWriter.new(self, mapping)

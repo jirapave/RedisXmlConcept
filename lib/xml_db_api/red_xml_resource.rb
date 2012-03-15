@@ -8,10 +8,7 @@ module XMLDBApi
   class RedXmlResource < XMLDBApi::Modules::XMLResource
       TYPE = "XMLResource"
       
-      # Returns Nokogiri::XML::Document instance or nil
-      attr_reader :document
-      # Returns ID that represents resource in a database
-      attr_reader :doc_id 
+      attr_reader :document, :doc_id, :db_id, :coll_id, :doc_name
       
       def initialize(db_id, coll_id, doc_name, doc_id, document)
         @doc_id = doc_id
