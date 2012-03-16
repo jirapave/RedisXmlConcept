@@ -1,5 +1,6 @@
 require_relative "FLWORExpr_handle"
 require_relative "RelativePathExpr_handle"
+require_relative "DeleteExpr_handle"
 require_relative "expression_handle"
 require_relative "../exceptions"
 
@@ -38,6 +39,8 @@ module XQuery
     
     GeneralComp = "GeneralComp"
     ValueComp = "ValueComp"
+    
+    DeleteExpr = "DeleteExpr"
     #expression types
      
     
@@ -53,6 +56,9 @@ module XQuery
         
       when VarRef
         return VarRefHandle.new(reduced_node)
+        
+      when DeleteExpr
+        return DeleteExprHandle.new(reduced_node)
         
       else
         puts "WARNING: creating generic expression #{reduced_node.name}"

@@ -1,8 +1,8 @@
 require_relative "function_solver"
 require_relative "predicate_solver"
 require_relative "xquery_solver_context"
-require_relative "key_path_processor"
-require_relative "node_path_processor"
+require_relative "../processor/key_path_processor"
+require_relative "../processor/node_path_processor"
 require_relative "../exceptions"
 require_relative "../expression/expression_module"
 require_relative "../expression/AbbrevForwardStep_handle"
@@ -29,7 +29,11 @@ module XQuery
       #TODO we need to grab each step and sequentially take care of it
       results = [] #results are prepared nodes with all data or KeyElementBuilders
       path_expr.steps.each { |step|
+        
+        #debug TODO delete
         puts "step, type: #{step.step_type}, content: #{step.text}"
+        #debug TODO delete
+         
         if(step.step_type == ExpressionModule::StepExprHandle::STARTING)
           results = solve_step(step, context)
         elsif(results.empty?)
@@ -44,19 +48,26 @@ module XQuery
           }
           results = new_results
         end
+        
+        #debug TODO delete
         puts "===>STEP RESULTS start"
         results.each { |res|
           puts res.inspect
         }
         puts "===<STEP RESULTS end"
+        #debug TODO delete
+        
       }
       
+      #debug TODO delete
       puts "Path Solver RETURNING: "
       puts "===>STEP RESULTS start"
       results.each { |res|
         puts res.inspect
       }
       puts "===<STEP RESULTS end"
+      #debug TODO delete
+      
       return results
     end
     
@@ -87,7 +98,7 @@ module XQuery
             raise QueryStringError, "other function then doc with 1 string parameter is not allowed, here we have: #{specified_step.function_name}(#{parameters.length} params, type(1):#{parameters[0].type})" 
           end
           
-          return [ key_builder ]
+          return [ ExtendedKey.new(key_builder) ]
           #probably no need to solve predicates
           
           
@@ -97,15 +108,15 @@ module XQuery
             raise QueryStringError, "such variable (#{specified_step.var_name}) not found in current context"
           end
           
-          if(node.kind_of?(XML::Node))
-            @path_processor = NodePathProcessor.new(node, true) #TODO TODO resolve stripping possibility
-          elsif(node.kind_of?(Transformer::KeyBuilder))
-            @path_processor = KeyPathProcessor.new(node)
-          elsif(node.kind_of?(Transformer::KeyElementBuilder))
-            @path_processor = KeyPathProcessor.new(node.key_builder)
-          else
-            raise StandardError, "unknown type of node in variable: #{node.class}"
-          end
+          @path_processor = KeyPathProcessor.new(node.key_builder)
+          
+          # if(node.kind_of?(Transformer::KeyBuilder))
+            # @path_processor = KeyPathProcessor.new(node)
+          # elsif(node.kind_of?(Transformer::KeyElementBuilder))
+            # @path_processor = KeyPathProcessor.new(node.key_builder)
+          # else
+            # raise StandardError, "unknown type of node in variable: #{node.class}"
+          # end
           
           
           #maybe predicates?

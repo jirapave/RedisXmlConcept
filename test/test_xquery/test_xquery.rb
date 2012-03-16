@@ -8,7 +8,6 @@ require "test/unit"
 
 #missing in other files
 require_relative "../../lib/transformer/exceptions"
-# require_relative "../../lib/transformer/document_service"
 
 
 module XQuery

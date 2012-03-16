@@ -3,6 +3,7 @@ require_relative "for_let_clause_solver"
 require_relative "where_clause_solver"
 require_relative "order_clause_solver"
 require_relative "return_expr_solver"
+require_relative "../processor/update_processor"
 require_relative "xquery_solver_context"
 require_relative "../expression/expression_module"
 
@@ -18,6 +19,7 @@ module XQuery
       case expression.location.type
       when ExpressionModule::RelativePathExpr
         nodes_to_delete = @path_solver.solve(expression.location)
+        UpdateProcessor.delete_nodes(nodes_to_delete)
         
       else
         raise NotSupportedError, expression.location.type 

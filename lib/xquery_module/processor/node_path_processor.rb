@@ -5,6 +5,7 @@ require "nokogiri"
 module XQuery
   class NodePathProcessor < PathProcessor
     
+    #DEPRICATED - currently not needed
     
     def valid_elem?(incomming) #return true/false
       return incomming.kind_of?(Nokogiri::XML::Node) 
