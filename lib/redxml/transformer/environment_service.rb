@@ -43,7 +43,7 @@ module Transformer
         return
       end
       RedXmlApi::Environment.new(env_id).delete_all_child_collections
-      @db_interface.delete_from_hash @env_key, name
+      @db_interface.delete_from_hash @env_key, [name]
       info = Transformer::KeyBuilder.environment_info(env_id)
       @db_interface.delete_keys [info]
     end
@@ -104,7 +104,7 @@ module Transformer
       #Delete old enevironment
       old_id = get_environment_id(old_name)
       result = @db_interface.transaction do
-        @db_interface.delete_from_hash(@env_key, old_name)
+        @db_interface.delete_from_hash(@env_key, [old_name])
         @db_interface.add_to_hash_ne(@env_key, name, old_id)
       end
       

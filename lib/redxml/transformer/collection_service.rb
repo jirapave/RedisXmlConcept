@@ -64,7 +64,7 @@ module Transformer
       collection = RedXmlApi::Collection.new(@env_id, coll_id)
       collection.delete_all_documents
       collection.delete_all_child_collections
-      @db_interface.delete_from_hash @certain_coll_key, name
+      @db_interface.delete_from_hash @certain_coll_key, [name]
       #We have to delete all keys of collection, e.g. <info, <documents, <collections
       del_keys = [Transformer::KeyBuilder.collection_info(@env_id, coll_id), Transformer::KeyBuilder.documents_key(@env_id, coll_id), Transformer::KeyBuilder.child_collections_key(@env_id, coll_id)]
       @db_interface.delete_keys del_keys
@@ -171,12 +171,11 @@ module Transformer
       #Delete old enevironment
       old_id = get_child_collection_id(old_name)
       result = []
-      result[0] = @db_interface.delete_from_hash(@certain_coll_key, old_name)
+      result[0] = @db_interface.delete_from_hash(@certain_coll_key, [old_name])
       result[1] = @db_interface.add_to_hash_ne(@certain_coll_key, name, old_id)
       #Note: result may obtain some old return values from redis, we have to lookup at the end of result
       raise Transformer::MappingException, "Cannot delete old collection's name, rename aborted." unless result[-1]
-      raise Transformer::MappingException, "Renaming failed." if result[-2] != 1
-      true
+      raise Transformer::MappingException, "Renaming failed." unless result[-2]
     end
 
     # Verifies if collection with a given name exist (under the certain Environment or Collection based

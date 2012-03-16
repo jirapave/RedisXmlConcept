@@ -1,8 +1,5 @@
 require_relative "../lib/redxml"
 
-#require all *.rb files in certain directory
-Dir["../lib/red_xml_api/*.rb"].each {|file| require file }
-
 def self.time #Must be static, otherwise could rise an error, when using Nokogiri::XML::Builder with send command
   start = Time.now
   yield

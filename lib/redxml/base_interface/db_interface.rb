@@ -113,7 +113,10 @@ module BaseInterface
         @commands << BaseInterface::Command.new(__method__, params)
       return
       else
-      @redis.hdel key, *hash_fields
+          hash_fields.each do |field|
+            @redis.hdel key, field
+          end
+      #@redis.hdel key, *hash_fields
       end
     end
 

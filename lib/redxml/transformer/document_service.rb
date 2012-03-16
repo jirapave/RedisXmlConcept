@@ -182,7 +182,7 @@ module Transformer
       del_keys = [@builder.content_key, @builder.info, @builder.elem_mapping_key, @builder.attr_mapping_key]
       @db_interface.transaction do
         @db_interface.delete_keys del_keys
-        @db_interface.delete_from_hash(@doc_key, name)
+        @db_interface.delete_from_hash(@doc_key, [name])
       end
     end
     
@@ -194,7 +194,7 @@ module Transformer
       #Delete old document
       old_id = get_document_id(old_name)
       result = @db_interface.transaction do
-        @db_interface.delete_from_hash(@doc_key, old_name)
+        @db_interface.delete_from_hash(@doc_key, [old_name])
         @db_interface.add_to_hash_ne(@doc_key, name, old_id)
       end
       
@@ -213,7 +213,7 @@ module Transformer
       #Delete old enevironment
       old_id = get_document_id(old_name)
       result = @db_interface.transaction do
-        @db_interface.delete_from_hash(@doc_key, old_name)
+        @db_interface.delete_from_hash(@doc_key, [old_name])
         @db_interface.add_to_hash_ne(@doc_key, name, old_id)
       end
       
