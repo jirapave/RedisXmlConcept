@@ -1,11 +1,8 @@
-require_relative "../db_init"
-require_relative "../../lib/xml_db_api/database_manager"
-require_relative "../../lib/xml_db_api/red_xml_resource"
-require_relative "../../lib/xml_db_api/red_resource_set"
-require_relative "../../lib/xml_db_api/base/xmldb_exception"
-require_relative "../../lib/transformer/collection_service"
-require_relative "../../lib/xml_db_api/red_collection_management_service"
-require_relative "../../lib/base_interface/db_interface"
+if File.basename($0) == "#{File.basename(__FILE__)}"
+  require_relative "../../lib/redxml.rb"
+else
+  require "redxml"
+end
 require "test/unit"
 
 # We re using unit tests technology to create integration tests more easily
@@ -63,7 +60,7 @@ class TestXmlDbApi < Test::Unit::TestCase
       coll.store_resource(res) #res is empty, cannot be stored
     end
     
-    file = "../../bin/books2.xml"
+    file = "#{__FILE__}/../books2.xml"
     handler = res.set_content_as_sax
     parser = Nokogiri::XML::SAX::Parser.new(handler)
     parser.parse(File.open(File.absolute_path(file)))

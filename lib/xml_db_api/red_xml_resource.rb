@@ -1,6 +1,10 @@
 require_relative "modules/xml_resource"
 require_relative "../xml/dom_sax_service"
 require_relative "../xml/sax_dom_creator"
+require_relative "../transformer/collection_service"
+require_relative "../transformer/document_service"
+require_relative "../xml/sax_dom_creator"
+require_relative "red_collection"
 require "rubygems"
 require "nokogiri"
 
@@ -10,7 +14,9 @@ module XMLDBApi
       
       attr_reader :document, :doc_id, :db_id, :coll_id, :doc_name
       
-      def initialize(db_id, coll_id, doc_name, doc_id, document)
+      # Creates new instance of RedXmlResource. All parameters are required except document. When document
+      # is not specified empty resource will be returned
+      def initialize(db_id, coll_id, doc_name, doc_id, document = nil)
         @doc_id = doc_id
         @doc_name = doc_name
         @coll_id = coll_id
@@ -20,17 +26,8 @@ module XMLDBApi
         @document = document
         @empty = false
         @empty = true if @document == nil
-      end
-      
-      # Refresh state of the resource, useful when we have empty resource, should't be used by users
-      # ==== Parameters
-      # * +doc_id+ - Real Id (not name) of the resource
-      # * +document+ - Nokogiri::XML::Document instance
-      def refresh_state(doc_id, document)
-        @doc_id = doc_id
-        @document = document
-        @empty = false
-        @empty = true if @document == nil or doc_id == nil
+        
+        @features = get_features()
       end
 
       # Returns the unique id for the parent document to this Resource
@@ -46,6 +43,17 @@ module XMLDBApi
       # null if there is no parent document for this Resource.
       def get_document_id()
         return @doc_name #Remember, name = id in xmldb API
+      end
+      
+      # Returns current setting of a SAX feature that will be used when this XMLResource 
+      # is used to produce SAX events (through the get_content_as_sax() method)
+      # ==== Parameters
+      # * +feature+ - Feature name. Standard SAX feature names are documented 
+      #               at http://sax.sourceforge.net/
+      # ==== Retun value
+      # True if the feature is set, false otherwise.
+      def get_sax_feature(feature)
+        return @features[feature]
       end
 
       # Returns the content of the Resource as a DOM Node.
@@ -129,7 +137,7 @@ module XMLDBApi
       # ==== Return value
       # The id for the RedXMLResource or nil if no id exists.
       def get_id()
-        return @id
+        return @doc_name
       end
 
       # Returns the XMLResource type
@@ -161,6 +169,35 @@ module XMLDBApi
       # True if this RedXmlResource instance is empty, False otherwise
       def empty?()
         return @empty
+      end
+      
+      private
+      
+      # Returns all features which SAX parser has
+      def get_features()#:nodoc:
+        # These features are more or less accurate. Many values couldn't be verified because
+        # they are used in context of Java programming language a sometimes Nokogiri just
+        # dont't provide any information on the feature
+        
+        features = {
+          "external-general-entities" => false,
+          "external-parameter-entities" => false,
+          "is-standalone" => false, #Zjistit jak ziskat z dokumentu standalone
+          "lexical-handler/parameter-entities" => false,
+          "namespaces" => true,
+          "namespace-prefixes" => true,
+          "resolve-dtd-uris" => false,
+          "string-interning" => false,
+          "unicode-normalization-checking" => true, #Nokogiri probably supports this, needs to be verified
+          "use-attributes2" => false,
+          "use-locator2" => false,
+          "use-entity-resolver2" => false,
+          "validation" => true, #Nokogiri is probably reporting erros
+          "xmlns-uris" => true, #Nokogiri is probably treating xmlns declarations as part of xmlns namespace
+          "xml-1.1" => false #Don't know
+        }
+        
+        return features
       end
   end
 end

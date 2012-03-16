@@ -1,6 +1,8 @@
-require_relative "../db_init"
-require_relative "../../lib/transformer/key_builder"
-require_relative "../../lib/transformer/collection_service"
+if File.basename($0) == "#{File.basename(__FILE__)}"
+  require_relative "../../lib/redxml.rb"
+else
+  require "redxml"
+end
 require "test/unit"
 
 class TestCollectionService < Test::Unit::TestCase
@@ -21,7 +23,6 @@ class TestCollectionService < Test::Unit::TestCase
     newest_id = "1"
     assert_nothing_raised do
       newest_id = @coll_service.get_child_collection_id("newest") #Raise error if no id is retrieved
-      puts "nwest id je: #{newest_id}"
     end
     assert_equal(true, @coll_service.child_collection_exist?("newest") == true)
     @coll_service.create_child_collection("another")

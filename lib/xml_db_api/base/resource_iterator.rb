@@ -70,7 +70,7 @@ module XMLDBApi
       # *  <code>ErrorCodes.VENDOR_ERROR</code> for any vendor
       # *  specific errors that occur.<br />
       # */
-      def has_more_resources()
+      def has_more_resources?()
         raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
       end
 
