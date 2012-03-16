@@ -1,6 +1,9 @@
-require_relative "../db_init"
-require_relative "../../lib/base_interface/db_interface"
 require "test/unit"
+if File.basename($0) == "#{File.basename(__FILE__)}"
+  require_relative "../../lib/redxml.rb"
+else
+  require "redxml"
+end
 
 class TestDBInterface < Test::Unit::TestCase
   
@@ -56,7 +59,7 @@ class TestDBInterface < Test::Unit::TestCase
     assert_equal(true, result_hash.length == 1)
     assert_equal(true, result_hash["field-2"] == nil)
     assert_equal(true, result_hash["field-3"] == nil)
-    @db.delete_from_hash "hash", "field-4"
+    @db.delete_from_hash "hash", ["field-4"]
     result_hash = @db.find_value "hash"
     assert_equal(true, result_hash == nil)
   end

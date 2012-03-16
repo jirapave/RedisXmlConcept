@@ -91,6 +91,17 @@ module XMLDBApi
       def get_document_id()
         raise XMLDBApi::Base::ErrorCodes::NotImplemetedError
       end
+      
+      # Returns current setting of a SAX feature that will be used when this XMLResource 
+      # is used to produce SAX events (through the get_content_as_sax() method)
+      # ==== Parameters
+      # * +feature+ - Feature name. Standard SAX feature names are documented 
+      #               at http://sax.sourceforge.net/
+      # ==== Retun value
+      # True if the feature is set, false otherwise
+      def get_sax_feature(feature)
+        
+      end
 
       # /**
       # * Returns the content of the <code>Resource</code> as a DOM Node.

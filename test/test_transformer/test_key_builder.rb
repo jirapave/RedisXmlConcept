@@ -1,6 +1,8 @@
-require_relative "../db_init"
-require_relative "../../lib/transformer/key_builder"
-require_relative "../../lib/transformer/key_element_builder"
+if File.basename($0) == "#{File.basename(__FILE__)}"
+  require_relative "../../lib/redxml.rb"
+else
+  require "redxml"
+end
 require "test/unit"
 
 class TestKeyBuilder < Test::Unit::TestCase
@@ -30,9 +32,7 @@ class TestKeyBuilder < Test::Unit::TestCase
     test_two = "1:2:3"
     test_three = "1:2:3<nonsense"
     @key_builder = Transformer::KeyBuilder.build_from_s(test_one)
-    puts "Calling all"
     call_all_instance_method_tests()
-    puts "Done"
     @key_builder = Transformer::KeyBuilder.build_from_s(test_two)
     call_all_instance_method_tests()
     @key_builder = Transformer::KeyBuilder.build_from_s(test_three)
@@ -53,7 +53,6 @@ class TestKeyBuilder < Test::Unit::TestCase
   end
   
   def test_info()
-    puts "KeyBuilder info je: #{@key_builder.info}"
     assert_equal(true, @key_builder.info == "1:2:3<info")
   end
   

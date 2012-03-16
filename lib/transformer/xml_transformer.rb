@@ -111,7 +111,8 @@ module Transformer
           #Now we have fields and values apart
           fields_only.each_with_index do |field, index|
             attr_name = field
-            attr_name = @attr_mapping[field] if mapped
+            #attr_name = @attr_mapping[field] if mapped
+            attr_name = @mapping_service.unmap_attr_name field
             attrs_hash[attr_name] = values_only[index]
           end
         end
@@ -127,7 +128,7 @@ module Transformer
     # ==== Return value
     # Nokogiri::XML::Document instance 
     def get_document(key_builder)
-      load_mappings(key_builder)
+      @mapping_service = Transformer::MappingService.new(key_builder)
       info_hash = @db_interface.find_value(key_builder.info)
       if info_hash["root"] == nil #document is empty
         builder = Nokogiri::XML::Builder.new
@@ -154,7 +155,7 @@ module Transformer
     # * +xml+ - Context under which should the element be retrieved. This context can be created by using
     #           Nokogiri::XML::Builder.new { |xml|} or Nokogiri::XML::Builder.with(doc_or_elem) { |xml|}
     def build_node(key, xml)
-        elem_name = @elem_mapping[key.elem_id]
+        elem_name = @mapping_service.unmap_elem_name key.elem_id
         ns_split = elem_name.split(':')
         namespace = nil
         if(ns_split.length > 1)
@@ -210,7 +211,7 @@ module Transformer
     # ==== Return value
     # Nokogiri::XML::Node instance 
     def get_node(key_elem_builder)
-      load_mappings(key_elem_builder.key_builder)
+      @mapping_service = Transformer::MappingService.new(key_elem_builder.key_builder)
       builder = Nokogiri::XML::Builder.new do |xml|
         build_node(key_elem_builder, xml)
       end
@@ -225,26 +226,6 @@ module Transformer
         end
       end
       return id
-    end
-    
-    def load_mappings(key_builder)# :nodoc:
-      @elem_mapping = @db_interface.find_value(@key_builder.elem_mapping_key)
-      @attr_mapping = @db_interface.find_value(@key_builder.attr_mapping_key)
-      @elem_mapping.reject! { |field, value| field[0] == "<" } if @elem_mapping
-      @attr_mapping.reject! { |field, value| field[0] == "<" } if @attr_mapping
-      @elem_mapping = {} if @elem_mapping == nil
-      @attr_mapping = {} if @attr_mapping == nil
-      #Now we will reverse them so we can get O(1) complexity of finding name
-      temp = {}
-      @elem_mapping.each do |key, value|
-        temp["#{value}"] = key
-      end
-      @elem_mapping = temp
-      temp = {}
-      @attr_mapping.each do |key, value|
-        temp["#{value}"] = key
-      end
-      @attr_mapping = temp
     end
     
   end

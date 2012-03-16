@@ -1,7 +1,8 @@
-require_relative "../../lib/xml_db_api/red_xml_resource"
-require_relative "../db_init"
-require "rubygems"
-require "nokogiri"
+if File.basename($0) == "#{File.basename(__FILE__)}"
+  require_relative "../../lib/redxml.rb"
+else
+  require "redxml"
+end
 require "test/unit"
 
 class TestRedXmlResource < Test::Unit::TestCase

@@ -59,7 +59,16 @@ module Transformer
     
     # Used to create empty resource
     def get_possible_id()
-      return @db_interface.increment_hash(@env_info, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
+      @result = @db_interface.increment_hash(@env_info, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
+      
+      #TODO This is needed in some very rare scenarios, i dont' know how it is possible that
+      #if we increment the same key twice, we still have the same value, maybe some Redis bug. 
+      # Currently occurs ONLY when all tests are run, if you run test alone, it works
+      if @result == @last_result
+        @result = @db_interface.increment_hash(@env_info, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
+      end
+      @last_result = @result
+      return @result
     end
     
     #Method will save a given file to the given database under the given collection if it doensn't
@@ -133,9 +142,6 @@ module Transformer
       @db_interface.transaction do
         resource.get_content_as_sax(handler)
       end
-      
-      puts "Document saved"
-      true
     end
     
     def get_resource(name)#:XML::Document

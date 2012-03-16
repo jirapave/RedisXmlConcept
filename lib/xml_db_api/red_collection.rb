@@ -264,6 +264,7 @@ module XMLDBApi
       begin
         @doc_service.save_resource(res)
       rescue Transformer::MappingException => ex
+        puts ex.message
         puts "This should not happen until conccurency will be implemented"
       end
     end
@@ -284,8 +285,10 @@ module XMLDBApi
       end
 
       begin
+        result = @doc_service.get_resource(id)
         return @doc_service.get_resource(id)
       rescue Transformer::MappingException => ex
+        puts ex.message
         return nil
       end
     end

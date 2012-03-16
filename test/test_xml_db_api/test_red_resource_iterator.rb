@@ -1,11 +1,9 @@
+if File.basename($0) == "#{File.basename(__FILE__)}"
+  require_relative "../../lib/redxml.rb"
+else
+  require "redxml"
+end
 require "test/unit"
-require_relative "../../lib/xml_db_api/red_xml_resource"
-require_relative "../../lib/xml_db_api/red_resource_set"
-require_relative "../../lib/xml_db_api/red_resource_iterator"
-require_relative "../../lib/xml_db_api/base/resource_iterator"
-
-require "rubygems"
-require "nokogiri"
 
 class TestRedResourceIterator < Test::Unit::TestCase
   def setup

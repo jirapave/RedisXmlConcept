@@ -1,6 +1,8 @@
-require_relative "../db_init"
-require_relative "../../lib/transformer/key_builder"
-require_relative "../../lib/transformer/mapping_service"
+if File.basename($0) == "#{File.basename(__FILE__)}"
+  require_relative "../../lib/redxml.rb"
+else
+  require "redxml"
+end
 require "test/unit"
 
 class TestMappingService < Test::Unit::TestCase

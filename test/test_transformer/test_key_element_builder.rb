@@ -1,7 +1,8 @@
-require_relative "../db_init"
-require_relative "../../lib/transformer/key_builder"
-require_relative "../../lib/transformer/key_element_builder"
-require_relative "../../lib/xml/text_content"
+if File.basename($0) == "#{File.basename(__FILE__)}"
+  require_relative "../../lib/redxml.rb"
+else
+  require "redxml"
+end
 require "test/unit"
 
 class TestKeyElementBuilder < Test::Unit::TestCase
@@ -12,7 +13,6 @@ class TestKeyElementBuilder < Test::Unit::TestCase
   end
   
   def test_elem!()
-    puts "NILL to neni mozne" unless @key_elem_builder
     assert_equal(true, @key_elem_builder.elem!("30", "2").key_str == "1:30>2")
     assert_equal(true, @key_elem_builder.elem!(2, 3).key_str == "1:30>2:2>3")
     assert_equal(true, @key_elem_builder.elem!(71, "4").elem!("2", 1).key_str == "1:30>2:2>3:71>4:2>1")
@@ -26,7 +26,6 @@ class TestKeyElementBuilder < Test::Unit::TestCase
   end
   
   def test_attr()
-    puts "key_elem build je: #{@key_elem_builder}"
     assert_equal(true, @key_elem_builder.attr() == "1<a")
     assert_equal(true, @key_elem_builder.elem!(123, 2).attr() == "1:123>2<a")
   end
