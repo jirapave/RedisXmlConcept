@@ -12,7 +12,7 @@ module Transformer
   class XMLTransformer
     
     # Separator of attributes, those are saved in one string with separator as delimiter
-    ATTR_SEPARATOR = "|"
+    ATTR_SEPARATOR = "\""
     
     # Creates new instance of XmlTransformer to work with document.
     # ==== Parameters
