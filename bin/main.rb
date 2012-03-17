@@ -72,9 +72,11 @@ db.delete_keys keys unless keys.empty?
 #====DOCUMENT SAVE AND RETRIEVE
 
 #Choose your file
-file_name = "books2.xml"
+#file_name = "books2.xml"
 #file_name = "size>1-4>coeff>0-0-1.xml"
+#file_name = "size>7-2>coeff>0-0-5.xml"
 #file_name = "size>14-5>coeff>0-1.xml"
+file_name = "size>21-7>coeff>0-1-5.xml"
 #file_name = "size>29-3>coeff>0-2.xml"
 #file_name = "books-425 000.xml"
 document_service = Transformer::DocumentService.new() if type != CUTTING
