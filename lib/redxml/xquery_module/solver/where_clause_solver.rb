@@ -34,7 +34,11 @@ module XQuery
         results = @path_solver.solve(expression, context)
         final_values = []
         results.each { |result|
-          final_values << ExpressionModule::DummyExpressionHandle.new(ExpressionModule::StringLiteral, result.to_s)
+          final_result = result
+          if(result.kind_of?(ExtendedKey))
+            final_result = @path_solver.path_processor.get_node_content(result)
+          end
+          final_values << ExpressionModule::DummyExpressionHandle.new(ExpressionModule::StringLiteral, final_result)
         }
         return final_values
         

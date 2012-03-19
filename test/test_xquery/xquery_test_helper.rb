@@ -1,32 +1,38 @@
 module XQuery
   class XQueryTestHelper
     
-    ENV_NAME = "env_test"
-    COLL_NAME = "coll_test"
-    FILE_PATH = "../../bin/catalog.xml"
+    ENV_NAME = "env_test_xquery"
+    COLL_NAME = "coll_test_xquery"
+    FILE_PATH = "catalog.xml"
     
-    def self.create_test_file
-      env_manager = RedXmlApi::EnvironmentManager.new()
-      env = env_manager.create_environment(ENV_NAME)
-      if(env == nil)
-        env = RedXmlApi::Environment.new(ENV_NAME)
+    def initialize
+      env_manager = RedXmlApi::EnvironmentManager.new
+      @env = env_manager.create_environment(ENV_NAME)
+      if(@env == nil)
+        @env = env_manager.get_environment(ENV_NAME)
       end
-      coll = env.create_child_collection(COLL_NAME)
-      if(coll == nil)
-        coll = RedXmlApi::Collection.new(ENV_NAME, COLL_NAME)
-      end
-      begin
-        coll.save_document(FILE_PATH)
-      rescue Transformer::MappingException
-        puts "ok, document exists"
+      @coll = @env.create_child_collection(COLL_NAME)
+      if(@coll == nil)
+        @coll = @env.get_child_collection(COLL_NAME)
       end
     end
     
-    def self.cleanup_test_file
+    def create_test_file
+      begin
+        @coll.save_document(FILE_PATH)
+      rescue Transformer::MappingException
+        puts "document exists, deleting and creating new one"
+        cleanup_test_file
+        @coll.save_document(FILE_PATH)
+      end
+    end
+    
+    def cleanup_test_file
       file_name = File.basename(FILE_PATH)
-      coll = RedXmlApi::Collection.new(ENV_NAME, COLL_NAME)
-      if(coll.delete_document?(file_name))
+      if(@coll.delete_document?(file_name))
         puts "Test document removed."
+      else
+        puts "Test document was NOT removed."
       end
     end
     

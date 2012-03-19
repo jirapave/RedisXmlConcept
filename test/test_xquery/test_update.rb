@@ -1,14 +1,19 @@
-require_relative "../../lib/red_xml_api/environment_manager"
-require_relative "../../lib/xquery_module/update_controller"
-require_relative "../../lib/xquery_module/xquery_controller"
-require_relative "../../lib/xml/node"
+# require_relative "../../lib/red_xml_api/environment_manager"
+# require_relative "../../lib/xquery_module/update_controller"
+# require_relative "../../lib/xquery_module/xquery_controller"
+# require_relative "../../lib/xml/node"
 require_relative "xquery_test_helper"
-require "rubygems"
-require "nokogiri"
+# require "rubygems"
+# require "nokogiri"
+if File.basename($0) == "#{File.basename(__FILE__)}"
+  require_relative "../../lib/redxml.rb"
+else
+  require "redxml"
+end
 require "test/unit"
 
 #missing in other files
-require_relative "../../lib/transformer/exceptions"
+# require_relative "../../lib/transformer/exceptions"
 
 
 module XQuery
@@ -27,23 +32,33 @@ module XQuery
     end
     
     TEST_CASES = [
+      
       TestCase.new(
         'doc("catalog.xml")/catalog/product[3]/name/text()',
         [ "Deluxe Travel Bag" ],
         'delete node doc("catalog.xml")/catalog/product[3]',
+        [ "Cotton Dress Shirt" ]
+      ),
+      TestCase.new(
+        'doc("catalog.xml")/catalog/product[2]/name/text()',
+        [ "Floppy Sun Hat" ],
+        'for $prod in doc("catalog.xml")/catalog/product where $prod/number = 563 return delete node $prod',
         [ "Cotton Dress Shirt" ]
       )
     ]
     
     def test_update
       
+      
       #test file
-      XQueryTestHelper.create_test_file
+      xquery_test_helper = XQueryTestHelper.new        
+      xquery_test_helper.create_test_file
+      
       
       xquery_controller = XQuery::XQueryController.new(XQueryTestHelper::ENV_NAME, XQueryTestHelper::COLL_NAME)
-      update_controller = XQuery::UpdateController.new(XQueryTestHelper::ENV_NAME, XQueryTestHelper::COLL_NAME)
       
-      TEST_CASES.each { |test_case|
+      
+      TEST_CASES.each_with_index { |test_case, index|
         puts "CHECKING QUERY: #{test_case.checking_query}"
         puts "BEFORE RESULTS: #{test_case.before_results}"
         puts "UPDATE QUERY: #{test_case.update_query}"
@@ -62,7 +77,7 @@ module XQuery
         
         
         #perform update
-        update_controller.perform(test_case.update_query)
+        xquery_controller.get_results(test_case.update_query)
         
         #check results by checking query and after results
         after_results = xquery_controller.get_results(test_case.checking_query)
@@ -78,10 +93,12 @@ module XQuery
         puts "test #{index+1}/#{TEST_CASES.length} ok"
         
         
+        
+        
       }
       
       
-      XQueryTestHelper.cleanup_test_file
+      xquery_test_helper.cleanup_test_file
       
     end
     

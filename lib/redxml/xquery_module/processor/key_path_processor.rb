@@ -59,7 +59,7 @@ module XQuery
           content << get_node(Transformer::KeyElementBuilder.build_from_s(@key_builder, key_str)).to_stripped_s
         else
           content << @db.get_hash_value(@content_hash_key, key_str)
-        end          
+        end
       }
       return content
     end
@@ -72,13 +72,17 @@ module XQuery
       end
       
       children_array = get_children_plain(extended_key)
+      if(children_array == nil)
+        #extended_key is DOCUMENT key
+        return [ ExtendedKey.build_from_key(@root_key, nil, nil) ]
+      end
       
-      children_array(children_str).each { |key_str|
+      children_array.each { |key_str|
         if(Transformer::KeyElementBuilder.element?(key_str))
           new_key = Transformer::KeyElementBuilder.build_from_s(@key_builder, key_str)
           #check match_elem_name
           if(match_elem_id == "*" || new_key.elem_id == match_elem_id)
-            new_extended_key = ExtendedKey.new(new_key, extended_key.key_str, children_str)
+            new_extended_key = ExtendedKey.build_from_key(new_key, extended_key.key_str, children_array)
             key_array << new_extended_key
           end
         end
@@ -95,7 +99,7 @@ module XQuery
       all_keys = get_desc_elements(extended_key)
       key_array = []
       all_keys.each { |new_key|
-        if(match_elem_id == "*" || new_key.elem_id == match_elem_id)
+        if(match_elem_id == "*" || new_key.key_element_builder.elem_id == match_elem_id)
           key_array << new_key
         end
       }
@@ -107,34 +111,38 @@ module XQuery
       # if(extended_key.kind_of?(String) && Transformer::KeyElementBuilder.text?(extended_key))
         # return XML::TextContent.new(@db.find_value(extended_key), -1, XML::TextContent::PLAIN)
       # end
+      puts "GETTING NODE key=#{extended_key.key_element_builder.to_s}"
       return @xml_transformer.get_node(extended_key.key_element_builder)
     end
     
     def get_attribute(extended_key, attr_name)
-      attr_hash = @xml_transformer.get_attributes(extended_key.key_element_builder) #TODO resolve with Pavel
-      # attr_hash = get_attribute_hash(extended_key)
+      # attr_hash = @xml_transformer.get_attributes(extended_key.key_element_builder) #TODO resolve with Pavel
+      attr_hash = get_attribute_hash(extended_key.key_element_builder)
+      puts "ATTRS: #{attr_hash.inspect}"
       return attr_hash[get_attr_index(attr_name)]
     end
     
+  protected
+    attr_accessor :content_hash_key
     
   private
-    # def get_attribute_hash(key)
-      # attribute_hash = Hash.new
-      # list_str = @db.get_hash_value(@content_hash_key, key.attr)
-      # if(list_str == nil)
-        # return attribute_hash #empty hash
-      # end
-      # fields_only = []
-      # values_only = []
-      # list_str.split('|').each_with_index { |x, index|
-        # fields_only << x if(index%2 == 0)
-        # values_only << x if(index%2 != 0)
-      # }
-      # fields_only.each_with_index { |field, index|
-        # attribute_hash[field] = values_only[index]
-      # }
-      # return attribute_hash
-    # end
+    def get_attribute_hash(key)
+      attribute_hash = Hash.new
+      list_str = @db.get_hash_value(@content_hash_key, key.attr)
+      if(list_str == nil)
+        return attribute_hash #empty hash
+      end
+      fields_only = []
+      values_only = []
+      list_str.split('"').each_with_index { |x, index|
+        fields_only << x if(index%2 == 0)
+        values_only << x if(index%2 != 0)
+      }
+      fields_only.each_with_index { |field, index|
+        attribute_hash[field] = values_only[index]
+      }
+      return attribute_hash
+    end
     
     def get_desc_elements(extended_key)
       start_key_array = []
@@ -154,14 +162,12 @@ module XQuery
       return all_round_keys
     end
     
-    def get_children_plain(extended_key)#String Array
-      if(extended_key.type == ExtendedKey::DOCUMENT)
-        return nil
-      end
-      
-      list_str = @db.get_hash_value(@content_hash_key, extended_key.key_element_builder)
+    def get_plainly_children(key_str)
+      puts "getting plainly children key: #{key_str}"
+      list_str = @db.get_hash_value(@content_hash_key, key_str)
+      puts "got: #{list_str}"
       if(list_str == nil)
-        raise StandardError, "wrong key or content hash_key, nil found instead of descendants, hash_key: #{@content_hash_key}, key: #{key}"
+        raise StandardError, "wrong key or content hash_key, nil found instead of descendants, hash_key: #{@content_hash_key}, key: #{key_str}"
       end
       
       #TODO experimental shortage - check!
@@ -172,13 +178,37 @@ module XQuery
       return values
     end
     
+    def get_children_plain(extended_key)#String Array
+      if(extended_key.type == ExtendedKey::DOCUMENT)
+        
+        return nil
+      end
+      
+      return get_plainly_children(extended_key.key_element_builder.to_s)
+      
+      # list_str = @db.get_hash_value(@content_hash_key, extended_key.key_element_builder)
+      # if(list_str == nil)
+        # raise StandardError, "wrong key or content hash_key, nil found instead of descendants, hash_key: #{@content_hash_key}, key: #{key}"
+      # end
+#       
+      # #TODO experimental shortage - check!
+      # values = list_str.split(CHILDREN_SEPARATOR)
+      # # list_str.split(CHILDREN_SEPARATOR).each { |value|
+        # # values << value if(!value.empty?)
+      # # }
+      # return values
+    end
+    
     def get_texts(extended_key)
       texts = []
       key_array = get_children_plain(extended_key)
+      if(key_array == nil)
+        return [ "" ]
+      end
       key_array.each { |key_str|
         case Transformer::KeyElementBuilder.text_type(key_str)
         when XML::TextContent::PLAIN, XML::TextContent::CDATA
-          t = @db.get_hash_value(@content_hash_key, key)
+          t = @db.get_hash_value(@content_hash_key, key_str)
           texts << t
         end
       }

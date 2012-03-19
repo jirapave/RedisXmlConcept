@@ -9,7 +9,8 @@ module XQuery
     
     def initialize(environment, collection)
       @path_solver = PathSolver.new(environment, collection)
-      @flwor_solver = FLWORSolver.new(@path_solver)
+      @update_solver = UpdateSolver.new(@path_solver)
+      @flwor_solver = FLWORSolver.new(@path_solver, @update_solver)
     end
     
     def solve(expression)
@@ -22,6 +23,10 @@ module XQuery
         results = @path_solver.solve(expression) 
         return prepare_results(results)
         
+      #simple update queries
+      when ExpressionModule::DeleteExpr
+        @update_solver.solve(expression)
+        
       else
         raise StandardError, "not implemented #{expression.type}"
       end
@@ -30,7 +35,7 @@ module XQuery
     def prepare_results(results)
       final_results = []
       results.each { |result|
-        if(result.kind_of?(Transformer::KeyElementBuilder) || result.kind_of?(Transformer::KeyBuilder))
+        if(result.kind_of?(ExtendedKey))
           final_results << @path_solver.path_processor.get_node(result)
         else
           final_results << result

@@ -1,13 +1,18 @@
-require_relative "../../lib/red_xml_api/environment_manager"
-require_relative "../../lib/xquery_module/xquery_controller"
-require_relative "../../lib/xml/node"
+# require_relative "../../lib/red_xml_api/environment_manager"
+# require_relative "../../lib/xquery_module/xquery_controller"
+# require_relative "../../lib/xml/node"
 require_relative "xquery_test_helper"
-require "rubygems"
-require "nokogiri"
+# require "rubygems"
+# require "nokogiri"
+if File.basename($0) == "#{File.basename(__FILE__)}"
+  require_relative "../../lib/redxml.rb"
+else
+  require "redxml"
+end
 require "test/unit"
 
 #missing in other files
-require_relative "../../lib/transformer/exceptions"
+# require_relative "../../lib/transformer/exceptions"
 
 
 module XQuery
@@ -60,7 +65,8 @@ module XQuery
     
     def test_xquery
       
-      XQueryTestHelper.create_test_file
+      xquery_test_helper = XQueryTestHelper.new
+      xquery_test_helper.create_test_file
       
       xquery_controller = XQuery::XQueryController.new(XQueryTestHelper::ENV_NAME, XQueryTestHelper::COLL_NAME)
       
@@ -82,7 +88,7 @@ module XQuery
         
       }
       
-      XQueryTestHelper.cleanup_test_file
+      xquery_test_helper.cleanup_test_file
       
     end
     

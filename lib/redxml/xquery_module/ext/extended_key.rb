@@ -10,7 +10,7 @@ module XQuery
     CDATA = :CDATA
     DOCUMENT = :DOCUMENT
     
-    attr_accessor :key_builder, :key_element_builder, :parent_key, :parent_children_array, :type
+    attr_accessor :key_builder, :key_element_builder, :key_str, :parent_key, :parent_children_array, :type
     
     def initialize(key_builder)
       @key_builder = key_builder
@@ -21,18 +21,18 @@ module XQuery
       @type = DOCUMENT
     end
     
-    def self.build_from_key(key_element_builder, parent_key, parent_value)
+    def self.build_from_key(key_element_builder, parent_key, parent_children_array)
       instance = ExtendedKey.new(key_element_builder.key_builder)
       instance.key_element_builder = key_element_builder
       instance.key_str = key_element_builder.to_s
       instance.parent_key = parent_key
-      instance.parent_value = parent_value
-      instamce.type = ELEMENT
+      instance.parent_children_array = parent_children_array
+      instance.type = ELEMENT
       return instance
     end
     
     
-    def self.build_from_s(key_str, key_builder, parent_key, parent_value, key_element_builder=nil)
+    def self.build_from_s(key_str, key_builder, parent_key, parent_children_array, key_element_builder=nil)
       instance = ExtendedKey.new(key_builder)
       if(key_element_builder == nil)
         instance.key_element_builder = Transformer::KeyElementBuilder.build_from_s(key_builder, key_str)
@@ -52,7 +52,7 @@ module XQuery
         instance.type = ELEMENT
       end
       instance.parent_key = parent_key
-      instance.parent_value = parent_value
+      instance.parent_children_array = parent_children_array
     end
     
   end

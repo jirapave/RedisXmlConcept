@@ -68,6 +68,10 @@ module XQuery
           end
           
           
+        when DeleteExpr
+          @parts << DeleteExprHandle.new(reduced)
+          
+          
         else
           raise NotSupportedError, reduced.name
         end

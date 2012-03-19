@@ -15,12 +15,13 @@ module XQuery
         #TODO delete
         
         location_node = node.children[2]
-        
         reduced_node = ExpressionModule::reduce(location_node) #should give RelativePathExpr - typically
         
         case reduced_node.name
         when RelativePathExpr
           @location = RelativePathExprHandle.new(reduced_node)
+        when VarRef
+          @location = VarRefHandle.new(reduced_node)
         else
           raise NotSupportedError, @location.name
         end

@@ -9,12 +9,12 @@ require_relative "../expression/expression_module"
 module XQuery
   class FLWORSolver
     
-    def initialize(path_solver)
+    def initialize(path_solver, update_solver)
       @path_solver = path_solver
       @for_let_clause_solver = ForLetClauseSolver.new(@path_solver)
       @where_clause_solver = WhereClauseSolver.new(@path_solver)
       @order_clause_solver = OrderClauseSolver.new(@path_solver)
-      @return_expr_solver = ReturnExprSolver.new(@path_solver)
+      @return_expr_solver = ReturnExprSolver.new(@path_solver, update_solver)
     end
     
     def solve(expression)
@@ -51,6 +51,7 @@ module XQuery
             new_contexts << context
           end
         }
+        puts "after where context length: #{new_contexts.length}"
         @contexts = new_contexts
       when ExpressionModule::OrderByClause
         @order_clause_solver.solve(part, @contexts)

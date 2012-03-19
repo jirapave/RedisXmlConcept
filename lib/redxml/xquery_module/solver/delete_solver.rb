@@ -14,12 +14,18 @@ module XQuery
       @path_solver = path_solver
     end
     
-    def solve(expression)
+    def solve(expression, context, pipelined=true)
       
-      case expression.location.type
+      location = expression.location
+      
+      case location.type
       when ExpressionModule::RelativePathExpr
-        nodes_to_delete = @path_solver.solve(expression.location)
-        UpdateProcessor.delete_nodes(nodes_to_delete)
+        nodes_to_delete = @path_solver.solve(expression.location, context)
+        UpdateProcessor.delete_nodes(nodes_to_delete, pipelined)
+        
+      when ExpressionModule::VarRef
+        nodes_to_delete = [ context.variables[location.var_name] ]
+        UpdateProcessor.delete_nodes(nodes_to_delete, pipelined)
         
       else
         raise NotSupportedError, expression.location.type 
