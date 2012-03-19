@@ -19,6 +19,7 @@ module Transformer
     # * +key_builder+ - KeyBuilder which is used to determine the document with which we are working
     def initialize(key_builder)
       @db_interface = BaseInterface::DBInterface.instance
+      @mapping_service = Transformer::MappingService.new(key_builder)
       @key_builder = key_builder
       @elem_mapping = {}
       @attr_mapping = {}
@@ -211,7 +212,6 @@ module Transformer
     # ==== Return value
     # Nokogiri::XML::Node instance 
     def get_node(key_elem_builder)
-      @mapping_service = Transformer::MappingService.new(key_elem_builder.key_builder)
       builder = Nokogiri::XML::Builder.new do |xml|
         build_node(key_elem_builder, xml)
       end

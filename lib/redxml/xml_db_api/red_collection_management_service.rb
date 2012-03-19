@@ -6,7 +6,7 @@ require_relative "../transformer/exceptions"
 module XMLDBApi
   class RedCollectionManagementService < XMLDBApi::Modules::CollectionManagementService
     def initialize(db_id)
-      @name = "RedCollectionManagementService"
+      @name = "CollectionManagementService"
       @version = "1.0"
       @db_id = db_id
       @collection = nil

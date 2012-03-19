@@ -25,12 +25,12 @@ class TestXmlDbApi < Test::Unit::TestCase
     XMLDBApi::DatabaseManager.register_database(first_db)
     
     coll = XMLDBApi::DatabaseManager.get_collection("xmldb:first://coll-1")
-    service = coll.get_service("RedCollectionManagementService", "1.0")
+    service = coll.get_service("CollectionManagementService", "1.0")
     service.create_collection("coll-1-child")
     child_coll = coll.get_child_collection("coll-1-child")
     coll = child_coll.get_parent_collection
     assert_equal(true, coll.get_child_collection_count == 1)
-    service = coll.get_service("RedCollectionManagementService", "1.0")
+    service = coll.get_service("CollectionManagementService", "1.0")
     service.remove_collection("coll-1-child")
     child_coll = coll.get_child_collection("coll-1-child")
     
