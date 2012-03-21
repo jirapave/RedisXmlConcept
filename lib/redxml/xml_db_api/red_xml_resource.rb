@@ -171,6 +171,13 @@ module XMLDBApi
         return @empty
       end
       
+      # Crates new KeyBuilder based on content of this XMLResource
+      # ==== Return value
+      # KeyBuilder instance
+      def key_builder()
+        Transformer::KeyBuilder.new(@db_id, @coll_id, @doc_id)
+      end
+      
       private
       
       # Returns all features which SAX parser has

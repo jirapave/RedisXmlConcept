@@ -78,9 +78,8 @@ module Transformer
         puts "Nejedna se o soubor"
         return false
       end
-      
       file_name = File.basename(file)
-      doc_id = @db_interface.increment_hash(@env_info, Transformer::KeyElementBuilder::ITERATOR_KEY, 1)
+      doc_id = get_possible_id
       result = @db_interface.add_to_hash_ne(@doc_key, file_name, doc_id)
       raise Transformer::MappingException, "Document with such a name already exist." unless result
       
@@ -97,10 +96,11 @@ module Transformer
       #Main idea here is to SAX parser, events should be handled by SaxDocument, which
       #will prepare whole nodes and when the node ends, it will send event here (update method) so we
       #can use XmlTranformer to save it.
+      h = @db_interface.find_value(@doc_key)
       @db_interface.transaction do
         parser.parse(File.open(File.absolute_path(file)))
       end
-      
+      h = @db_interface.find_value(@doc_key)
       puts "Document saved"
       true
     end
@@ -148,7 +148,7 @@ module Transformer
       file_id = get_document_id(name)
       
       if(file_id == nil)
-        raise Transformer::MappingException, "Document with name #{file_name} not found."
+        raise Transformer::MappingException, "Document with name #{name} not found."
         return nil
       end
       @builder = Transformer::KeyBuilder.new(@env_id, @coll_id, file_id)

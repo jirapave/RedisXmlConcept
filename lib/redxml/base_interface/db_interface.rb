@@ -287,6 +287,7 @@ module BaseInterface
         @commands.each do |command|
           send command.method_name, *command.params
         end
+        @commands.clear
       end
     end
 

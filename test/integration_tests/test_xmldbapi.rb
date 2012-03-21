@@ -78,6 +78,16 @@ class TestXmlDbApi < Test::Unit::TestCase
     coll.remove_resource(res)
     names = coll.list_resources
     assert_equal(true, (names.length == 1 and names[0] == "id1"))
+    
+    res = coll.create_resource("id20", XMLDBApi::RedXmlResource::TYPE)
+    res.set_content("<root><book>Pad Hyperionu</book></root>")
+    coll.store_resource(res)
+    coll.remove_resource(res)
+    res = coll.create_resource("id20", XMLDBApi::RedXmlResource::TYPE)
+    res.set_content("<root><book>Pad Hyperionu</book></root>")
+    coll.store_resource(res)
+    res = coll.get_resource("id20")
+    assert_equal(true, res.get_document_id == "id20")
   end
   
   def test_resource_sets()
