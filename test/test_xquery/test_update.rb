@@ -43,7 +43,8 @@ module XQuery
         'doc("catalog.xml")/catalog/product[2]/name/text()',
         [ "Floppy Sun Hat" ],
         'for $prod in doc("catalog.xml")/catalog/product where $prod/number = 563 return delete node $prod',
-        [ "Cotton Dress Shirt" ]
+        # [ "Cotton Dress Shirt" ]
+        [ "Deluxe Travel Bag" ]
       )
     ]
     
@@ -52,13 +53,16 @@ module XQuery
       
       #test file
       xquery_test_helper = XQueryTestHelper.new        
-      xquery_test_helper.create_test_file
+      
       
       
       xquery_controller = XQuery::XQueryController.new(XQueryTestHelper::ENV_NAME, XQueryTestHelper::COLL_NAME)
       
       
       TEST_CASES.each_with_index { |test_case, index|
+        
+        xquery_test_helper.create_test_file
+        
         puts "CHECKING QUERY: #{test_case.checking_query}"
         puts "BEFORE RESULTS: #{test_case.before_results}"
         puts "UPDATE QUERY: #{test_case.update_query}"
@@ -93,12 +97,12 @@ module XQuery
         puts "test #{index+1}/#{TEST_CASES.length} ok"
         
         
-        
+        xquery_test_helper.cleanup_test_file
         
       }
       
       
-      xquery_test_helper.cleanup_test_file
+      
       
     end
     
