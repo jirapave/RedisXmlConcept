@@ -151,10 +151,19 @@ module Transformer
         raise Transformer::MappingException, "Document with name #{name} not found."
         return nil
       end
+      return XMLDBApi::RedXmlResource.new(@env_id, @coll_id, name, file_id, nil, XMLDBApi::RedXmlResource::STATE_LAZY)
+    end
+    
+    def generate_sax_events(doc_name, handler)
+      file_id = get_document_id(doc_name)
+      
+      if(file_id == nil)
+        raise Transformer::MappingException, "Document with name #{doc_name} not found."
+        return nil
+      end
       @builder = Transformer::KeyBuilder.new(@env_id, @coll_id, file_id)
       @xml_transformer = Transformer::XMLTransformer.new(@builder)
-      document = @xml_transformer.get_document(@builder)
-      return XMLDBApi::RedXmlResource.new(@env_id, @coll_id, name, file_id, document)
+      @xml_transformer.get_document_as_sax(@builder, handler)
     end
     
     def get_document_id(name)

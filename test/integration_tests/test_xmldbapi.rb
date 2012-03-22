@@ -88,6 +88,18 @@ class TestXmlDbApi < Test::Unit::TestCase
     coll.store_resource(res)
     res = coll.get_resource("id20")
     assert_equal(true, res.get_document_id == "id20")
+    
+    #SAX event generation
+    res = coll.create_resource("id30", XMLDBApi::RedXmlResource::TYPE)
+    res.set_content("<root><book>Next generation</book></root>")
+    coll.store_resource(res)
+    res = coll.create_resource("id31", XMLDBApi::RedXmlResource::TYPE)
+    prev = coll.get_resource("id30")
+    handler = res.set_content_as_sax
+    prev.get_content_as_sax(handler)
+    value1 = res.get_content_as_dom.xpath("//book").first.content
+    value2 = prev.get_content_as_dom.xpath("//book").first.content
+    assert_equal(true, value1 == value2)
   end
   
   def test_resource_sets()

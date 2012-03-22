@@ -31,6 +31,149 @@ module Transformer
       
     end
     
+    def generate_node_sax_events(key_elem_builder)
+      # Element preparation
+      elem_name = @mapping_service.unmap_elem_name key_elem_builder.elem_id
+      ns_split = elem_name.split(':')
+      namespace = nil
+      if(ns_split.length > 1)
+        namespace = ns_split[0]
+        elem_name = ns_split[1]
+      end
+        
+      # Attributes preparation
+      attrs = @db_interface.get_hash_value(@key_builder.content_key, key_elem_builder.attr)
+      fields_only = []
+      values_only = []
+      if attrs != nil
+        attrs.split(ATTR_SEPARATOR).each_with_index do |x, index|
+          fields_only << @mapping_service.unmap_attr_name(x) if index%2 == 0
+          values_only << x if index%2 != 0
+        end
+      end
+        
+      # Handle element namespace, we have to find it's URI
+      attrs = []
+      prefix = namespace # Element prefix
+      uri = nil
+      ns = []
+      
+      # Handle attributes and their namespaces
+      fields_only.each_with_index do |field, index|
+        parts = field.split(":")
+        if parts[0] == "xmlns" #Namespace declaration
+          result = [parts[1..-1].join(":"), values_only[index]]
+          ns << result
+          @ns << result
+        elsif parts.length > 1 #Attribute with namespace
+          pref = parts[0] # Attribute prefix
+          name = parts[1..-1].join(":") # Recover attribute name
+          # Now we have to get uri, uris are saved under @ns variable
+          attr_uri = nil
+          @ns.each do |decl|
+            if decl[0] == pref
+              attr_uri = decl[1]
+            end
+          end
+          raise StandardError, "XML is not a valid document, attribute used undeclared namespace" unless attr_uri
+          #Now we have all the information needed
+          info = Nokogiri::XML::SAX::Parser::Attribute.new
+          info.localname = name
+          info.prefix = pref
+          info.uri = attr_uri
+          info.value = values_only[index]
+          attrs << info
+        else # Basic attriute with name and value
+          info = Nokogiri::XML::SAX::Parser::Attribute.new
+          info.localname = parts[0]
+          info.value = values_only[index]
+          attrs << info 
+        end
+      end
+      
+      # Now we have parsed all possible attributes and xmlns declarations, so we have to verify URI
+      if prefix
+        @ns.each do |decl|
+          if decl[0] == prefix
+            uri = decl[1]
+          end
+        end
+        raise StandardError, "XML is not a valid document, element used undeclared namespace" unless uri
+      end
+      
+      # Element completely read, event start_element can now be launched
+      @handler.start_element_namespace(elem_name, attrs, prefix, uri, ns)
+      
+      # Format of attribs
+      # [ ["xmlns:foo", "http://sample.net"], ["size", "large"] ]
+      name = [prefix, elem_name].compact.join(':')
+      attribs = ns.map { |ns_prefix,ns_uri|
+        [['xmlns', ns_prefix].compact.join(':'), ns_uri]
+      } + attrs.map { |attr|
+        [[attr.prefix, attr.localname].compact.join(':'), attr.value]
+      }
+      @handler.start_element(name, attribs)
+      
+        
+        #<root xmlns:a=\"http://www.neco.com/a\"><a:book a:info=\"aaaa\" 
+        #xmlns:b=\"http://www.blbla.com/u\">Pad Hyperionu</book></root>"
+        #Produkuje: 
+        #attrs: [#<struct Nokogiri::XML::SAX::Parser::Attribute localname="info", prefix="a", uri="http://www.neco.com/a", value="aaaa">]
+        #prefix: a
+        #uri: http://www.neco.com/a
+        #ns: [["b", "http://www.blbla.com/u"]] 
+        
+      desc_keys = @db_interface.get_hash_value(@key_builder.content_key, key_elem_builder.to_s)
+      part_keys = []
+      if desc_keys != nil
+        desc_keys.split('|').each do |key|
+          #Last one may be empty, we are adding those as << name << "|", so the last one is empty
+          part_keys << key if key != ""
+        end
+      end
+        
+      if part_keys # if this element is not empty (like <element />
+        part_keys.each do |key_str|
+          type = Transformer::KeyElementBuilder.text_type(key_str)
+          if type
+            text_content = @db_interface.get_hash_value(@key_builder.content_key, key_str)
+            case type
+              when XML::TextContent::PLAIN
+                @handler.characters(text_content)
+              when XML::TextContent::COMMENT
+                @handler.comment(text_content)
+              when XML::TextContent::CDATA
+                @handler.cdata_block(text_content)
+            end
+          else
+            #Child element
+            generate_node_sax_events(Transformer::KeyElementBuilder.build_from_s(@key_builder, key_str))
+          end
+        end
+      end
+      
+      #Now end_elemeny events
+      @handler.end_element_namespace(elem_name, prefix, uri)
+      @handler.end_element(name)
+    end
+    
+    def get_document_as_sax(key_builder, handler)
+      @handler = handler
+      
+      @mapping_service = Transformer::MappingService.new(key_builder)
+      info_hash = @db_interface.find_value(key_builder.info)
+      @handler.xmldecl(info_hash["version"], info_hash["encoding"], info_hash["standalone"])
+        
+      root_key = info_hash["root"]
+      #TODO generate start document and decaration
+      root_key_builder = Transformer::KeyElementBuilder.build_from_s(key_builder, root_key)
+      @ns = [] #Contains declared namespaces
+      @handler.start_document
+      generate_node_sax_events(root_key_builder)
+      @handler.end_document
+      document = @handler.document
+    end
+    
     # Saves a given node in a database, node knows it's database key under which it should be saved. Node
     # is saved recursively, so if we pass root element, whole document will be saved.
     # ==== Parameters

@@ -88,11 +88,11 @@ class TestRedResourceSet < Test::Unit::TestCase
     set = XMLDBApi::RedResourceSet.new
     
     doc = Nokogiri::XML("<root><book>First</book>")
-    res = XMLDBApi::RedXmlResource.new("1", "1", "first", "1", doc)
+    res = XMLDBApi::RedXmlResource.new("1", "1", "first", "1", doc, XMLDBApi::RedXmlResource::STATE_LOADED)
     set.add_resource(res)
     
     doc = Nokogiri::XML("<root><book>Second</book>")
-    res = XMLDBApi::RedXmlResource.new("1", "1", "second", "2", doc)
+    res = XMLDBApi::RedXmlResource.new("1", "1", "second", "2", doc, XMLDBApi::RedXmlResource::STATE_LOADED)
     set.add_resource(res)
     
     result = set.get_members_as_resource.get_content_as_dom

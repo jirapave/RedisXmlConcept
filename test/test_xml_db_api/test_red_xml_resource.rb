@@ -70,7 +70,7 @@ class TestRedXmlResource < Test::Unit::TestCase
     doc = Nokogiri::XML("<root xmlns:prefix=\"http://aaa.com/a\"><prefix:book>First</prefix:book></root>")
     res_first.set_content_as_dom(doc)
     
-    res_second = XMLDBApi::RedXmlResource.new("2", "2", "fourth", "2", nil)
+    res_second = XMLDBApi::RedXmlResource.new("1", "3", "fourth", "2", nil)
     handler = res_second.set_content_as_sax
     res_first.get_content_as_sax(handler)
     

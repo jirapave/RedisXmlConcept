@@ -12,6 +12,8 @@ module XML
   #element is completly loaded, it is sent to document_service
   #This class is part of Observer pattern as an Observable. It's observer is document_service.
   class SaxDomCreator < Nokogiri::XML::SAX::Document
+    # Get the current content of DOM documnt
+    attr_reader :document
     def initialize(red_xml_resource)
       @resource = red_xml_resource
       #Incomplete nodes are held in stack until end_tag arrives for them
@@ -44,7 +46,6 @@ module XML
     
     def start_element_namespace(name, attrs = [], prefix = nil, uri = nil, ns = [])      
       @stack.push(@current_tag) if @current_tag != nil
-      
       name = [prefix, name].compact.join(':')
       attribs = ns.map { |ns_prefix,ns_uri|
         [['xmlns', ns_prefix].compact.join(':'), ns_uri]

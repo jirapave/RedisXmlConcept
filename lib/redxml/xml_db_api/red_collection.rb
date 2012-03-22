@@ -4,6 +4,9 @@ require_relative "../transformer/collection_service"
 require_relative "../transformer/document_service"
 
 module XMLDBApi
+  # This class represents an implementation of Colletion and is used as a main point to going
+  # through the logical structure of content of the database. Basically collection represents
+  # folder.
   class RedCollection < XMLDBApi::Base::Collection
 
     # CollectionService getter to be used by RedCollectionManagementService
@@ -215,7 +218,7 @@ module XMLDBApi
 
       id = create_id if id == nil or id == ""
       real_id = @doc_service.get_possible_id
-      return XMLDBApi::RedXmlResource.new(@db_id, @coll_id, id, real_id, nil) #nil will create empty resource
+      return XMLDBApi::RedXmlResource.new(@db_id, @coll_id, id, real_id, nil, RedXmlResource::STATE_EMPTY) #nil will create empty resource
     end
 
     # Removes the RedXMLResource from the database.
@@ -285,7 +288,6 @@ module XMLDBApi
       end
 
       begin
-        result = @doc_service.get_resource(id)
         return @doc_service.get_resource(id)
       rescue Transformer::MappingException => ex
         puts ex.message

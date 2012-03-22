@@ -50,6 +50,7 @@ module XML
     end
     
     def start_element_namespace(name, attrs = [], prefix = nil, uri = nil, ns = [])
+      name = "#{prefix}:#{name}" if prefix
       name = rename_elem(name)
       @stack.push(@current_tag) if @current_tag != nil
       count = 0
@@ -80,8 +81,17 @@ module XML
       
       attributes = {}
       attrs.each do |attr|
-        attr_id = rename_attr(attr.localname)
+        attr_name = attr.localname
+        attr_name = "#{attr.prefix}:#{attr.localname}" if attr.prefix
+        attr_id = rename_attr(attr_name)
         attributes["#{attr_id}"] = attr.value
+      end
+      
+      # Now we have to map namespaces as attributes
+      ns.each do |namespace|
+        attr_name = "xmlns:#{namespace[0]}"
+        attr_id = rename_attr(attr_name)
+        attributes["#{attr_id}"] = namespace[1]
       end
       
       @current_tag.attributes = XML::Attributes.new(name, attributes)
@@ -89,6 +99,7 @@ module XML
     end
     
     def end_element_namespace(name, prefix = nil, uri = nil)
+      name = "#{prefix}:#{name}" if prefix
       name = rename_elem(name)
       @path.pop()
       order = 0;
