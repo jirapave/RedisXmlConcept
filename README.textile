@@ -94,7 +94,7 @@ names = coll.list_resources # ["someBook", "somethingLike-FDS432DS342FD6544VFD"]
 </pre>
 
 Examples shows only a part of possile usage. There are many more ways how you can
-work with this API, for details see: "XMLDB:API"http://xmldb-org.sourceforge.net/xapi/api/index.html
+work with this API, for details see: "XMLDB:API":http://xmldb-org.sourceforge.net/xapi/api/index.html
 but remember, methods are renamed to Ruby conventions (getService => get_service etc.)
 
 h1. AUTHORS
