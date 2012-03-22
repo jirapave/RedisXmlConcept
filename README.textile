@@ -10,7 +10,8 @@ main way to query stored XML files.
 
 h1. INSTALLATION
 
-p. To use this project correctly, it is needed to download and start Redis database instance. It is strongly
+p. RedXML gem comming soon.
+To use this project correctly, it is needed to download and start Redis database instance. It is strongly
 recommended to use official redis binaries:
 "Redis download page":http://redis.io/download
 Redis doesn't have official binaries for Windows, but we have found pretty stable and verified binaries here:
@@ -39,9 +40,71 @@ h2. Long-term
 
 h1. USED LIBRARIES
 
-p. Project uses some libraries, which are part of this library or you have to install them by hand (see installation)
+p. Project uses some libraries, which are not part of this library so you have to install them by hand (see installation)
+or use RedXML gem which is coming soon.
 * "Redis-rb":https://github.com/ezmobius/redis-rb - Client for Redis database
 * "Nokogiri":http://nokogiri.org/ - Library for working with XML files
+
+h1. EXAMPLES
+
+p. After you have successfully integrate our library into your project and your Redis instance is
+running, you can work with Redis like with native XML database. Following examples are based on
+our implementation of "XMLDB:API":http://xmldb-org.sourceforge.net/xapi/api/index.html with a
+little bit of proprietary code to make it more smooth
+
+h2. Creating root collections
+<pre>
+<code>
+# Creates database/environment in Redis
+db = XMLDBApi::RedDatabase.new("dbName")
+service = db.get_collection_management_service
+# Creates root collection collName in database dbName
+service.create_collection("collName")
+</code>
+</pre>
+
+h2. Creating collections in existing collections
+<pre>
+<code>
+# First we have to get the collection, register appropriate database
+XMLDBApi::DatabaseManager.register_database(XMLDBApi::RedDatabase.new("dbName"))
+# Get certain collection using URI
+coll = XMLDBApi::DatabaseManager.get_collection("xmldb:dbName://collName")
+service = coll.get_service("CollectionManagementService", "1.0")
+service.create_collection("childCollection")
+# Now we can access child collection
+coll = XMLDBApi::DatabaseManager.get_collection("xmldb:dbName://collName/childCollection")
+</code>
+</pre>
+
+h2. Working with resources = XML documents
+<pre>
+<code>
+coll = XMLDBApi::DatabaseManager.get_collection("xmldb:dbName://collName/childCollection")
+res = coll.create_resource("someBook", XMLDBApi::RedXmlResource::TYPE)
+res.set_content("<root><book>Hyperion</book></root>")
+# store_resource stores document in database
+coll.store_resource(res)
+# Lets try replace it's content using other features
+doc = Nokogiri::XML(File.open("something.xml"))
+res.set_content_as_dom(doc)
+coll.store_resource(res)
+# Or we can use SAX
+handler = res.set_content_as_sax
+parser = Nokogiri::XML::SAX::Parser.new(handler)
+parser.parse(File.open("another.xml")) # Now resource's content is replaed
+coll.store_resource(res)
+# Lets create new resource with generated name
+res = coll.create_resource(nil, XMLDBApi::RedXmlResource::TYPE)
+res.set_content("<root><book>Another book</book></root>")
+coll.store_resource(res)
+names = coll.list_resources # ["someBook", "somethingLike-FDS432DS342FD6544VFD"]
+</code>
+</pre>
+
+Examples shows only a part of possile usage. There are many more ways how you can
+work with this API, for details see: "XMLDB:API"http://xmldb-org.sourceforge.net/xapi/api/index.html
+but remember, methods are renamed to Ruby conventions (getService => get_service etc.)
 
 h1. AUTHORS
 

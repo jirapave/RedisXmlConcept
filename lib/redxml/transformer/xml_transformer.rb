@@ -13,6 +13,8 @@ module Transformer
     
     # Separator of attributes, those are saved in one string with separator as delimiter
     ATTR_SEPARATOR = "\""
+    # Separator of direct descendants of the certain element, used as delimiter
+    DESC_SEPARATOR = "|"
     
     # Creates new instance of XmlTransformer to work with document.
     # ==== Parameters
@@ -31,6 +33,10 @@ module Transformer
       
     end
     
+    # Generates SAX events fo the specified node
+    # ==== Parameters
+    # * +key_elem_builder+ - KeyElementBuilder which is used to determine the node for which the
+    #                        SAX events should generated
     def generate_node_sax_events(key_elem_builder)
       # Element preparation
       elem_name = @mapping_service.unmap_elem_name key_elem_builder.elem_id
@@ -117,7 +123,7 @@ module Transformer
         
         #<root xmlns:a=\"http://www.neco.com/a\"><a:book a:info=\"aaaa\" 
         #xmlns:b=\"http://www.blbla.com/u\">Pad Hyperionu</book></root>"
-        #Produkuje: 
+        #Produces 
         #attrs: [#<struct Nokogiri::XML::SAX::Parser::Attribute localname="info", prefix="a", uri="http://www.neco.com/a", value="aaaa">]
         #prefix: a
         #uri: http://www.neco.com/a
@@ -127,8 +133,7 @@ module Transformer
       part_keys = []
       if desc_keys != nil
         desc_keys.split('|').each do |key|
-          #Last one may be empty, we are adding those as << name << "|", so the last one is empty
-          part_keys << key if key != ""
+          part_keys << key
         end
       end
         
@@ -157,6 +162,11 @@ module Transformer
       @handler.end_element(name)
     end
     
+    # Load document from the database in the form of SAX events which are sent into given
+    # handler
+    # ==== Parameters
+    # * +key_builder+ - KeyBuilder which determines document to be retrieved
+    # * +handler+ - implementation of Nokogiri::XML::SAX::Document
     def get_document_as_sax(key_builder, handler)
       @handler = handler
       
@@ -171,7 +181,6 @@ module Transformer
       @handler.start_document
       generate_node_sax_events(root_key_builder)
       @handler.end_document
-      document = @handler.document
     end
     
     # Saves a given node in a database, node knows it's database key under which it should be saved. Node
@@ -182,15 +191,12 @@ module Transformer
       main_hash = @key_builder.content_key
       key = node.database_key
       descendant_keys = ""
-      child_keys = ""
       text_content = []
       node.descendants.each do |desc|
         if desc.instance_of? String
-          descendant_keys << desc << "|"
-          child_keys << desc << "|"
+          descendant_keys << desc << DESC_SEPARATOR
         else
-          #Non-element
-            descendant_keys << desc.database_key << "|"
+          descendant_keys << desc.database_key << DESC_SEPARATOR
           if desc.text_node?
             #text_node is plain text, commnt and cdata, sax_parser is creating keys for them, we don't bother here
             text_content << desc.database_key 
@@ -198,7 +204,10 @@ module Transformer
           end
         end
       end
-      @db_interface.add_to_hash(main_hash, [key, descendant_keys], true)
+      if descendant_keys != ""
+        descendant_keys = descendant_keys[0..-2] # Delete useless delimiter at the end
+        @db_interface.add_to_hash(main_hash, [key, descendant_keys], true)
+      end
       
       
       #Than we will save information about text nodes
@@ -322,8 +331,7 @@ module Transformer
           part_keys = []
           if desc_keys != nil
             desc_keys.split('|').each do |key|
-             #Last one may be empty, we are adding those as << name << "|", so the last one is empty
-             part_keys << key if key != ""
+             part_keys << key
            end
           end
         
