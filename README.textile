@@ -66,10 +66,8 @@ h2. Creating collections in existing collections
 <code>
 XMLDBApi::DatabaseManager.register_database(XMLDBApi::RedDatabase.new("dbName"))
 coll = XMLDBApi::DatabaseManager.get_collection("xmldb:dbName://collName")
-
 service = coll.get_service("CollectionManagementService", "1.0")
 service.create_collection("childCollection")
-
 coll = XMLDBApi::DatabaseManager.get_collection("xmldb:dbName://collName/childCollection")
 </code>
 </pre>
@@ -81,20 +79,16 @@ coll = XMLDBApi::DatabaseManager.get_collection("xmldb:dbName://collName/childCo
 res = coll.create_resource("someBook", XMLDBApi::RedXmlResource::TYPE)
 res.set_content("<root><book>Hyperion</book></root>")
 coll.store_resource(res)
-
 doc = Nokogiri::XML(File.open("something.xml"))
 res.set_content_as_dom(doc)
 coll.store_resource(res)
-
 handler = res.set_content_as_sax
 parser = Nokogiri::XML::SAX::Parser.new(handler)
 parser.parse(File.open("another.xml")) # Now resource's content is replaed
 coll.store_resource(res)
-
 res = coll.create_resource(nil, XMLDBApi::RedXmlResource::TYPE)
 res.set_content("<root><book>Another book</book></root>")
 coll.store_resource(res)
-
 names = coll.list_resources # ["someBook", "somethingLike-FDS432DS342FD6544VFD"]
 </code>
 </pre>
