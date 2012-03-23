@@ -100,6 +100,7 @@ module XMLDBApi
     def self.get_collection(uri)
       database = get_database(uri)
       parsed_uri = self.strip_URI(uri)
+      puts "Databaze ziskava kolekci: #{parsed_uri["coll_path"]}"
       return database.get_collection(parsed_uri["coll_path"])
     end
 
@@ -142,12 +143,14 @@ module XMLDBApi
       result["db_name"] = first_half[1]
       
       path = parts[1]
-      if path.split(":").length == 2
-        #Cut host:port/path/to/collection to path/to/collection 
-        path = path.split("/")[1..-1].join("/")
-      end
+      if path
+        if path.split(":").length == 2
+          #Cut host:port/path/to/collection to path/to/collection 
+          path = path.split("/")[1..-1].join("/")
+        end
       
-      result["coll_path"] = path
+        result["coll_path"] = path
+      end
       result
     end
     

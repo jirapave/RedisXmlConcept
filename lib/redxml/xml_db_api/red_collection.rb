@@ -27,9 +27,9 @@ module XMLDBApi
       @properties = {}
       @closed = false
 
-      service = XMLDBApi::RedCollectionManagementService.new(@db_id)
-      service.set_collection(self)
-      @services << service
+      @coll_man_service = XMLDBApi::RedCollectionManagementService.new(@db_id)
+      @coll_man_service.set_collection(self)
+      @services << @coll_man_service
     end
 
     # Returns the name associated with the Collection instance.
@@ -358,6 +358,25 @@ module XMLDBApi
     # * +value+ - The value to set for the property
     def set_property(name, value)
       @properties[name] = value
+    end
+    
+    # Creates a new RedCollection in the database which will be child of this collection
+    # ==== Parameters
+    # * +name+ - The name of the collection to create.
+    # ==== Return value
+    # The created RedCollection instance
+    # ==== Raises
+    # XMLDBApi::Base::XMLDBException with expected error codes.
+    # * ErrroCodes.COLLECTION_ALREADY_EXIST If there already exist child colletion with a given name
+    def create_child_collection(name)
+      return @coll_man_service.create_collection(name)
+    end
+    
+    # Removes specified child RedCollection from the database
+    # ==== Parameters
+    # * +name+ - The name of the child collection to remove.
+    def remove_child_collection(name)
+      return @coll_man_service.remove_collection(name)
     end
 
     private

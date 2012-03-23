@@ -40,6 +40,30 @@ class TestXmlDbApi < Test::Unit::TestCase
       XMLDBApi::DatabaseManager.deregister_database(first_db)
       coll = XMLDBApi::DatabaseManager.get_collection("xmldb:first://coll-1")
     end
+    
+    XMLDBApi::DatabaseManager.register_database(first_db)
+    
+    coll = XMLDBApi::DatabaseManager.get_collection("xmldb:first://coll-1")
+    coll.create_child_collection("order")
+    coll = XMLDBApi::DatabaseManager.get_collection("xmldb:first://coll-1/order")
+    coll.create_child_collection("another")
+    coll = XMLDBApi::DatabaseManager.get_collection("xmldb:first://coll-1/order/another")
+    coll = coll.get_parent_collection
+    coll.remove_child_collection("another")
+    assert_raise XMLDBApi::Base::XMLDBException do
+      coll = XMLDBApi::DatabaseManager.get_collection("xmldb:first://coll-1/order/another")
+    end
+    
+    first_db.create_collection("root_one")
+    coll = XMLDBApi::DatabaseManager.get_collection("xmldb:first://root_one")
+    assert_equal(true, coll.get_name == "root_one")
+    first_db.create_collection("root_two")
+    coll = XMLDBApi::DatabaseManager.get_collection("xmldb:first://root_two")
+    assert_equal(true, coll.get_name == "root_two")
+    first_db.remove_collection("root_two")
+    assert_raise XMLDBApi::Base::XMLDBException do
+      coll = XMLDBApi::DatabaseManager.get_collection("xmldb:first://root_two")
+    end
   end
   
   def test_resources()
