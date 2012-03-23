@@ -1,0 +1,23 @@
+<catalog xmlns:a="https://www.someweb.com/product">
+	<a:product xmlns:attr="http://www.anotherweb.cz/lang" dept="WMN">
+		<number>557<![CDATA[
+			cdata cast<>]]></number>
+		<name language="en">Fleece Pullover</name>
+		<colorChoices attr:language="english">navy black</colorChoices>
+	</a:product>
+	<a:product dept="ACC">
+		<number>563</number>
+		<name language="en">Floppy Sun Hat</name>
+	</a:product>
+	<a:product dept="ACC">
+		<!-- Commentary -->
+		<number>443</number>
+		<name language="en">Deluxe Travel Bag</name>
+	</a:product>
+	<a:product dept="MEN">
+		<number>784</number>
+		<name language="en">Cotton Dress Shirt</name>
+		<colorChoices>white gray</colorChoices>
+		<des>Our <i>favorite</i> shirt! <!-- Second commentary --></des>
+	</a:product>
+</catalog>

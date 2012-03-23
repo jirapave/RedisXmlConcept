@@ -60,7 +60,10 @@ module XML
       work_with = @document
       work_with = @current_tag if @current_tag
       Nokogiri::XML::Builder.with(work_with) do |xml|
-        xml.send("#{name}", attributes) do |elem_xml|
+        # Underscore is used to disambiguate ruby's internal calls
+        # See: http://nokogiri.org/Nokogiri/XML/Builder.html
+        # secion special tags
+        xml.send("#{name}_", attributes) do |elem_xml|
           @current_tag = xml.parent
         end
       end

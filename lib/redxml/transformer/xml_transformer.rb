@@ -132,7 +132,7 @@ module Transformer
       desc_keys = @db_interface.get_hash_value(@key_builder.content_key, key_elem_builder.to_s)
       part_keys = []
       if desc_keys != nil
-        desc_keys.split('|').each do |key|
+        desc_keys.split(DESC_SEPARATOR).each do |key|
           part_keys << key
         end
       end
@@ -291,7 +291,7 @@ module Transformer
       #otherwise, only encoding and version
       doc = "<?xml version=\"#{info_hash["version"]}\" encoding=\"#{info_hash["encoding"]}\" standalone=\"#{info_hash["standalone"]}\" ?>"
       doc = Nokogiri::XML(doc)
-        
+      
       builder = Nokogiri::XML::Builder.with(doc) do |xml|
         root_key = info_hash["root"]
         root_key_builder = Transformer::KeyElementBuilder.build_from_s(key_builder, root_key)
@@ -319,42 +319,46 @@ module Transformer
         attrs_hash = get_attributes(key)
         
         #This will ad namespace to the current element in xml, raise ArgumentError if given namespace
-        #dos not exist = hasn't been defined in xmlns attribute
-        xml["#{namespace}"] if namespace
-        
+        #dos not exist = hasn't been defined in xmlns attribute   
+        xml[namespace] if namespace
         #Creating element with a given name and attributes, xmlns attributes are automaticaly parsed
         #as namesace declarations
-        xml.send("#{elem_name}", attrs_hash) do |elem_xml|
-        
-        #add descendants
+        # Note: Underscore is crucial here, it is used to disambiguate ruby internal calls
+        # for detailed information see: http://nokogiri.org/Nokogiri/XML/Builder.html
+        # section special tags
+        xml.send("#{elem_name}_", attrs_hash) do |elem_xml|
+          # This is crucial, Nokogiri uilder automatically adds namespaces into children
+          # if we don't explicily delete them
+          elem_xml.parent.namespace = nil unless namespace
+          #add descendants
           desc_keys = @db_interface.get_hash_value(@key_builder.content_key, key.to_s)
           part_keys = []
           if desc_keys != nil
-            desc_keys.split('|').each do |key|
+            desc_keys.split(DESC_SEPARATOR).each do |key|
              part_keys << key
-           end
-          end
-        
-         if part_keys # if this element is not empty (like <element />
-            part_keys.each do |key_str|
-              type = Transformer::KeyElementBuilder.text_type(key_str)
-              if type
-                text_content = @db_interface.get_hash_value(@key_builder.content_key, key_str)
-                case type
-                  when XML::TextContent::PLAIN
-                    elem_xml.text text_content
-                  when XML::TextContent::COMMENT
-                    elem_xml.comment text_content
-                  when XML::TextContent::CDATA
-                    elem_xml.cdata text_content
-                end
-              else
-                #Child element
-                build_node(Transformer::KeyElementBuilder.build_from_s(@key_builder, key_str), elem_xml)
-              end
             end
           end
-        end
+        
+           if part_keys # if this element is not empty (like <element />
+             part_keys.each do |key_str|
+               type = Transformer::KeyElementBuilder.text_type(key_str)
+               if type
+                 text_content = @db_interface.get_hash_value(@key_builder.content_key, key_str)
+                 case type
+                   when XML::TextContent::PLAIN
+                     elem_xml.text text_content
+                   when XML::TextContent::COMMENT
+                     elem_xml.comment text_content
+                   when XML::TextContent::CDATA
+                     elem_xml.cdata text_content
+                 end
+               else
+                 #Child element
+                 build_node(Transformer::KeyElementBuilder.build_from_s(@key_builder, key_str), elem_xml)
+               end
+             end
+           end
+         end
     end
     
     # Retrieves specified element.

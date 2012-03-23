@@ -96,12 +96,9 @@ module Transformer
       #Main idea here is to SAX parser, events should be handled by SaxDocument, which
       #will prepare whole nodes and when the node ends, it will send event here (update method) so we
       #can use XmlTranformer to save it.
-      h = @db_interface.find_value(@doc_key)
       @db_interface.transaction do
         parser.parse(File.open(File.absolute_path(file)))
       end
-      h = @db_interface.find_value(@doc_key)
-      puts "Document saved"
       true
     end
     
@@ -119,7 +116,6 @@ module Transformer
     end
     
     def save_resource(resource)
-      document = resource.get_content_as_dom
       if !resource.respond_to?(:get_content_as_sax)
         puts "Parameter is not a valid resource"
         return false
@@ -138,7 +134,7 @@ module Transformer
       mapping = Transformer::MappingService.new(@builder)
       handler = XML::SaxDbWriter.new(self, mapping)
       @doc_name = name
-      
+      dc = resource.get_content_as_dom
       @db_interface.transaction do
         resource.get_content_as_sax(handler)
       end
@@ -195,24 +191,7 @@ module Transformer
       end
     end
     
-    def rename_document(document, name)
-      #Verify that new name isn't already in database
-      result = @db_interface.hash_value_exist?(@doc_key, name)
-      raise Transformer::MappingException, "Document with such a name already exist." if result
-      
-      #Delete old document
-      old_id = get_document_id(old_name)
-      result = @db_interface.transaction do
-        @db_interface.delete_from_hash(@doc_key, [old_name])
-        @db_interface.add_to_hash_ne(@doc_key, name, old_id)
-      end
-      
-      raise Transformer::MappingException, "Cannot delete old document's name, rename aborted." if result[0] != 1
-      raise Transformer::MappingException, "Renaming failed." if result[1] != 1
-      true
-    end
-    
-    def rename_file(old_name, name)
+    def rename_document(old_name, name)
       #Verify that new name isn't already in database
       result = @db_interface.hash_value_exist?(@doc_key, name)
       raise Transformer::MappingException, "Document with such a name already exist." if result
@@ -230,10 +209,6 @@ module Transformer
       raise Transformer::MappingException, "Cannot delete old document's name, rename aborted." if result[-1] != 1
       raise Transformer::MappingException, "Renaming failed." if result[-2] != 1
       true
-    end
-    
-    def update_document(file_name, document)
-      
     end
     
     #Verifies if a document with a given name exist. Database and collection should be specified before using 
