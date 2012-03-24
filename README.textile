@@ -49,8 +49,8 @@ h1. EXAMPLES
 
 p. After you have successfully integrate our library into your project and your Redis instance is
 running, you can work with Redis like with native XML database. Examples are based on
-our implementation of "XMLDB:API":http://xmldb-org.sourceforge.net/xapi/api/index.html with a
-little bit of proprietary code to make it more smooth. Examples can be found in examples folder.
+our implementation of "XMLDB:API":http://xmldb-org.sourceforge.net/xapi/api/index.html with a little bit of proprietary code 
+to make it more smooth. Examples can be found in examples folder.
 
 h1. AUTHORS
 
