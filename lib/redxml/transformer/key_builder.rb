@@ -158,6 +158,14 @@ module Transformer
     def content_key()
       "#{@document_key}<content"
     end
+    
+    # Creates String with the key pointing to the hash with all declared namespaces of XML
+    # document
+    # ==== Return value
+    # String of the key
+    def namespace_key()
+      "#{@document_key}<namespaces"
+    end
 
     # Creates new instance of KeyElementBuilder using given root_id. Environment, collection and
     # document is based on the inner state of this class.

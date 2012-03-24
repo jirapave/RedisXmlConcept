@@ -32,6 +32,9 @@ module XML
       @elem_mapping = {}
       #Attribute names mapping to id
       @attr_mapping = {}
+      #Contains all defined namespaces
+      @ns = []
+      @ns << "namespaces" # Used to determine content of array in update method in document_service
     end
     
     def start_document()
@@ -40,6 +43,9 @@ module XML
     def end_document()
       changed
         notify_observers @elem_mapping
+        
+      changed
+        notify_observers @ns
     end
     
     def xmldecl(version, encoding, standalone)
@@ -92,6 +98,7 @@ module XML
         attr_name = "xmlns:#{namespace[0]}"
         attr_id = rename_attr(attr_name)
         attributes["#{attr_id}"] = namespace[1]
+        @ns << namespace[0] << namespace[1]
       end
       
       @current_tag.attributes = XML::Attributes.new(name, attributes)

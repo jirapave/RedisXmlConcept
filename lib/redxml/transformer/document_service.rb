@@ -30,18 +30,24 @@ module Transformer
     def update(value)
       if value.instance_of? Array
           #Document information are here, [version, encoding, standalone]
-          key = @builder.info()
-          field_values = []
-          field_values << "name" << @doc_name
-          field_values << "version" << value[0] if value[0] != nil
-          field_values << "encoding" << value[1] if value[1] != nil
-          field_values << "standalone" << value[2] if value[2] != nil
-          @db_interface.add_to_hash(key, field_values, false)
+          if value[0] == "namespaces"
+            value.shift # Delete first member "namespaces"
+            key = @builder.namespace_key
+            @db_interface.add_to_hash(key, value, true)
+          else
+            key = @builder.info()
+            field_values = []
+            field_values << "name" << @doc_name
+            field_values << "version" << value[0] if value[0] != nil
+            field_values << "encoding" << value[1] if value[1] != nil
+            field_values << "standalone" << value[2] if value[2] != nil
+            @db_interface.add_to_hash(key, field_values, true)
+          end
       elsif value.instance_of? String
         #Root element name
         key = @builder.info()
         info = ["root", "#{value}"]
-        @db_interface.add_to_hash(key, info, false)
+        @db_interface.add_to_hash(key, info, true)
       elsif value.instance_of? Hash
         #Element mapping is passed here
         key = @builder.elem_mapping_key()
@@ -50,7 +56,7 @@ module Transformer
         value.each do |key, value|
           field_values << key << value
         end
-        @db_interface.add_to_hash(key, field_values, false)
+        @db_interface.add_to_hash(key, field_values, true)
       else
         #Element here
         @xml_transformer.save_node(value)
@@ -184,7 +190,7 @@ module Transformer
       doc_id = get_document_id(name)
       return unless doc_id
       @builder = Transformer::KeyBuilder.new(@env_id, @coll_id, doc_id)
-      del_keys = [@builder.content_key, @builder.info, @builder.elem_mapping_key, @builder.attr_mapping_key]
+      del_keys = [@builder.content_key, @builder.info, @builder.elem_mapping_key, @builder.attr_mapping_key, @builder.namespace_key]
       @db_interface.transaction do
         @db_interface.delete_keys del_keys
         @db_interface.delete_from_hash(@doc_key, [name])

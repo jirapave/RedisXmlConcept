@@ -28,11 +28,6 @@ module Transformer
       @doc = nil
     end
     
-    # Currently not implemented
-    def remove_node(node)
-      
-    end
-    
     # Generates SAX events fo the specified node
     # ==== Parameters
     # * +key_elem_builder+ - KeyElementBuilder which is used to determine the node for which the
@@ -219,11 +214,6 @@ module Transformer
       save_attributes(node)
     end
     
-    # Currently not implemented
-    def update_node(node)
-      
-    end
-    
     # Saves attributes of a given node in a database, remember that node itself know database key
     # under which it should be saved.
     # ==== Parameters
@@ -272,9 +262,6 @@ module Transformer
         return attrs_hash
     end
     
-    
-    
-    
     # Retrieves a document under certain key represented as a key parameter.
     # ==== Parameters
     # * +key+ - KeyBuilder instane to specify a document to be retrieved
@@ -292,12 +279,40 @@ module Transformer
       doc = "<?xml version=\"#{info_hash["version"]}\" encoding=\"#{info_hash["encoding"]}\" standalone=\"#{info_hash["standalone"]}\" ?>"
       doc = Nokogiri::XML(doc)
       
+      @ns = @db_interface.find_value(key_builder.namespace_key)
+      
       builder = Nokogiri::XML::Builder.with(doc) do |xml|
         root_key = info_hash["root"]
         root_key_builder = Transformer::KeyElementBuilder.build_from_s(key_builder, root_key)
         build_node(root_key_builder, xml)
       end
       return builder.doc
+    end
+    
+    # Retrieves specified element.
+    # ==== Parameters
+    # * +key_elem_builder+ - KeyElementBuilder instance to specify a node to be retrieved
+    # ==== Return value
+    # Nokogiri::XML::Node instance 
+    def get_node(key_elem_builder)
+      @ns = @db_interface.find_value(key_elem_builder.key_builder.namespace)
+      builder = Nokogiri::XML::Builder.new do |xml|
+        @ns.each do |field, value|
+          xml.parent.add_namespace_definition(field, value)
+        end
+        build_node(key_elem_builder, xml)
+      end
+      return builder.doc.root
+    end
+    
+    private 
+    def get_elem_name(id)# :nodoc:
+      mapping.each do |key, value|
+        if (id == value)
+          return key
+        end
+      end
+      return id
     end
     
     # Finds a node under the given key and build it's structure recursively. When called on root, whole
@@ -360,28 +375,5 @@ module Transformer
            end
          end
     end
-    
-    # Retrieves specified element.
-    # ==== Parameters
-    # * +key_elem_builder+ - KeyElementBuilder instance to specify a node to be retrieved
-    # ==== Return value
-    # Nokogiri::XML::Node instance 
-    def get_node(key_elem_builder)
-      builder = Nokogiri::XML::Builder.new do |xml|
-        build_node(key_elem_builder, xml)
-      end
-      return builder.doc.root
-    end
-    
-    private 
-    def get_elem_name(id)# :nodoc:
-      mapping.each do |key, value|
-        if (id == value)
-          return key
-        end
-      end
-      return id
-    end
-    
   end
 end

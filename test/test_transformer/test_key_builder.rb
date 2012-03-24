@@ -72,6 +72,10 @@ class TestKeyBuilder < Test::Unit::TestCase
     assert_equal(true, @key_builder.content_key == "1:2:3<content")
   end
   
+  def test_namespace_key()
+    assert_equal(true, @key_builder.namespace_key == "1:2:3<namespaces")
+  end
+  
   def test_root()
     element_builder = @key_builder.root("1")
     assert_equal(true, (element_builder.instance_of?(Transformer::KeyElementBuilder) and element_builder.root_key == "1"))
