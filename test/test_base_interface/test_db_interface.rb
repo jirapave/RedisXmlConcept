@@ -1,6 +1,7 @@
 require "test/unit"
 if File.basename($0) == "#{File.basename(__FILE__)}"
   require_relative "../../lib/redxml.rb"
+elsif File.basename($0) == "generate_coverage.rb"
 else
   require "redxml"
 end

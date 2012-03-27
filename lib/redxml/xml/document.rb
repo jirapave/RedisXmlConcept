@@ -3,7 +3,7 @@ require_relative "node"
 module XML
   class Document < XML::Node
     attr_accessor :doctype, :encoding, :file_name, :root_element, :standalone, :version
-    def initialize(doctype=false, encoding=false, file_name=false, root=false, standalone="none", version=false)
+    def initialize(doctype=false, encoding=false, file_name=false, root=false, standalone="yes", version=false)
       @doctype = doctype
       @encoding = encoding
       @file_name = file_name

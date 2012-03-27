@@ -239,6 +239,7 @@ module Transformer
     # Get all attributes of the element specified by KeyElementBuilder.
     # ==== Parameters
     # * +key_elem_builder+ - KeyElementBuilder
+    # * +mapped+ - Determines if the returned attributes contains real names or IDs
     # ==== Return value
     # Hash where field is name of the attribute and value is obviously value.
     def get_attributes(key_elem_builder, mapped=true)

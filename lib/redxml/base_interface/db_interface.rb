@@ -49,7 +49,7 @@ module BaseInterface
     #Saves a given array in a database as a hash under a given key, example: ["key", "value"] >> {"key" => "value"}
     # Note: There is probably some concurrency problem with hsetnx, it is very well hidden, for the time being
     # use overwrite=true
-    def add_to_hash(key, hash, overwrite)
+    def add_to_hash(key, hash, overwrite=true)
       if @transaction or @pipelined
         params = [key, hash, overwrite]
         @commands << BaseInterface::Command.new(__method__, params)
@@ -201,7 +201,7 @@ module BaseInterface
     #Saves multiple string values under the multiple keys specified in a hash parameter, example:
     #["key1" => "string1", "key2" => "string2"]
     #so basically the same function as save_string_entries with another type of parameter
-    def save_hash_entries(key_value_hash, overwrite)
+    def save_hash_entries(key_value_hash, overwrite=true)
       if @transaction or @pipelined
         params = [key_value_hash, overwrite]
         @commands << BaseInterface::Command.new(__method__, params)
@@ -312,12 +312,6 @@ module BaseInterface
       yield
       result = commit
       return result
-    end
-
-    def print_commands()
-      @commands.each do |command|
-        puts "Metoda[#{command.method_name}], params[#{command.params.inspect}]"
-      end
     end
 
   end
