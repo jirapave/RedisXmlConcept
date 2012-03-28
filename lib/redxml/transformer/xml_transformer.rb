@@ -296,10 +296,12 @@ module Transformer
     # ==== Return value
     # Nokogiri::XML::Node instance 
     def get_node(key_elem_builder)
-      @ns = @db_interface.find_value(key_elem_builder.key_builder.namespace)
+      @ns = @db_interface.find_value(key_elem_builder.key_builder.namespace_key)
       builder = Nokogiri::XML::Builder.new do |xml|
-        @ns.each do |field, value|
-          xml.parent.add_namespace_definition(field, value)
+        if @ns 
+          @ns.each do |field, value| 
+            xml.parent.add_namespace_definition(field, value)
+          end
         end
         build_node(key_elem_builder, xml)
       end

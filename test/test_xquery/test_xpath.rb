@@ -34,6 +34,8 @@ module XQuery
         # []),#TODO this should be TypeError #TODO do another test class for errors TODO
       TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. eq '443']",
         ["<number>443</number>"]),
+      TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/name",
+        ['<name language="en">Fleece Pullover</name>', '<name language="en">Floppy Sun Hat</name>', '<name language="en">Deluxe Travel Bag</name>', '<name language="en">Cotton Dress Shirt</name>']),
       TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[.=443]",
         ["<number>443</number>"]),
       TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. >= 563]",
