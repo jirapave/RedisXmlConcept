@@ -18,7 +18,8 @@ require "redis"
 #redis.hsetnx - params: key, field, value - !!!only one field at a time, set field only if the field does not exist
 
 module BaseInterface
-  #Class represents an interface between redis database and our application. It encapsulates redis commands.
+  # Class represents an interface between redis database, redis-rb and our application. 
+  # It encapsulates redis commands and enables usage of pipelining and transaction mode.
   class DBInterface
     include Singleton
 

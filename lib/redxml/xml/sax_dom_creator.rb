@@ -7,10 +7,10 @@ require "rubygems"
 require "nokogiri"
 
 module XML
-  #Class represents an event handler for Nokogiri::XML::SAX::Parser. During parsing, events like element starts
-  #or element ends are raised and this class react to them. It is used to build whole elements and when
-  #element is completly loaded, it is sent to document_service
-  #This class is part of Observer pattern as an Observable. It's observer is document_service.
+  # Class represents an event handler for Nokogiri::XML::SAX::Parser. During parsing, events
+  # like element starts or element ends are raised and this class react to them. It is used
+  # to build Nokogiri::XML::Document and add it into given RedXMLResource.
+  # This class is part of Observer pattern as an Observable. It's observer is document_service.
   class SaxDomCreator < Nokogiri::XML::SAX::Document
     # Get the current content of DOM documnt
     attr_reader :document

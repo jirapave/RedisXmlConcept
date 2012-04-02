@@ -1,4 +1,6 @@
 module BaseInterface
+  # Represents a command sent into DBInterface in pipelined or transaction mode to be able to
+  # replay them later.
   class Command
     attr_reader :method_name, :params
     

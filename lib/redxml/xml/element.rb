@@ -1,6 +1,7 @@
 require_relative "node"
 
 module XML
+  # Represents basic element in XML document including it's namespace
   class Element < XML::Node
     attr_reader :child_elements, :text_nodes_count
     def initialize(name, key, namespace, parent, child_elements=false)

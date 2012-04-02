@@ -1,6 +1,7 @@
 require_relative "node"
 
 module XML
+  # Represents Document with it's declaration and root element.
   class Document < XML::Node
     attr_accessor :doctype, :encoding, :file_name, :root_element, :standalone, :version
     def initialize(doctype=false, encoding=false, file_name=false, root=false, standalone="yes", version=false)

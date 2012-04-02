@@ -1,4 +1,5 @@
 module XML
+  # Class represents XML attributes of a certain node
   class Attributes
     attr_accessor :attrs, :node
     def initialize(node, attrs=false)

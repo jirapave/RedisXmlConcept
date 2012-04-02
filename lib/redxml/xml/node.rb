@@ -1,6 +1,7 @@
 require_relative "attributes"
 
 module XML
+  # Basic class to represent common properties of document and elements as in DOM
   class Node
     
     TAB_LENGTH = 4

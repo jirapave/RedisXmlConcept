@@ -1,6 +1,7 @@
 require_relative "node"
 
 module XML
+  # Class represents Document type definition, currently unused
   class DocType < XML::Node 
     attr_accessor :internal_subset, :name, :public_id, :system_id
     def initialize(internal_subset=false, name=false, public_id=false, system_id=false)
