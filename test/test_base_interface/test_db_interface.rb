@@ -140,6 +140,15 @@ class TestDBInterface < Test::Unit::TestCase
     assert_equal(true, result == "-1")
   end
   
+  def test_rename_key
+    @db.save_string_entries "another", "I will be changed", true
+    @db.rename_key("another", "changed")
+    result = @db.find_value("changed")
+    assert_equal(true, result == "I will be changed")
+    result = @db.find_value("another")
+    assert_equal(true, result == nil)
+  end
+  
   def test_find_keys
     @db.increment_string "laila"
     @db.increment_string "lanka"

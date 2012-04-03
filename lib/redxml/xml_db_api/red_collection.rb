@@ -266,6 +266,7 @@ module XMLDBApi
       @doc_service.delete_document(res.get_document_id)
       begin
         @doc_service.save_resource(res)
+        res.state = XMLDBApi::RedXmlResource::STATE_LOADED
       rescue Transformer::MappingException => ex
         puts ex.message
         puts "This should not happen until conccurency will be implemented"

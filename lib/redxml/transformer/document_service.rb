@@ -148,12 +148,31 @@ module Transformer
     
     def get_resource(name)#:XML::Document
       file_id = get_document_id(name)
-      
       if(file_id == nil)
         raise Transformer::MappingException, "Document with name #{name} not found."
-        return nil
       end
       return XMLDBApi::RedXmlResource.new(@env_id, @coll_id, name, file_id, nil, XMLDBApi::RedXmlResource::STATE_LAZY)
+    end
+    
+    def move_resource(res, target_coll_id)
+      result = @db_interface.pipelined do
+        # Create mapping in the new collection
+        key = Transformer::KeyBuilder.documents_key(res.db_id, target_coll_id)
+        @db_interface.add_to_hash key, [res.doc_name, res.doc_id]
+        # Delete mapping in the old collection
+        key_builder = Transformer::KeyBuilder.new(res.db_id, res.coll_id, res.doc_id)
+        key_builder_new = Transformer::KeyBuilder.new(res.db_id, target_coll_id, res.doc_id)
+        key = Transformer::KeyBuilder.documents_key(res.db_id, res.coll_id)
+        @db_interface.delete_from_hash key, [res.doc_name]
+        # Now rename keys <info, <emmaping, <amapping, <content, <namespaces to new collection
+        @db_interface.rename_key key_builder.info, key_builder_new.info
+        @db_interface.rename_key key_builder.elem_mapping_key, key_builder_new.elem_mapping_key
+        @db_interface.rename_key key_builder.attr_mapping_key, key_builder_new.attr_mapping_key
+        @db_interface.rename_key key_builder.content_key, key_builder_new.content_key
+        @db_interface.rename_key key_builder.namespace_key, key_builder_new.namespace_key
+        
+        res.coll_id = target_coll_id
+      end
     end
     
     def generate_sax_events(doc_name, handler)

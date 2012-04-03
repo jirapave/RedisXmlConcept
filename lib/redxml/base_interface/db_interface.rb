@@ -187,10 +187,24 @@ module BaseInterface
       if @transaction or @pipelined
         params = [key]
         @commands << BaseInterface::Command.new(__method__, params)
-      return
+        return
       else
-      @redis.decr key
-      @redis.get key
+        @redis.decr key
+        @redis.get key
+      end
+    end
+    
+    # Renames key to a given new name
+    # ====Parameters====
+    # * +old_key+ - Old name of the key ro be renamed
+    # * +new_key+ - New name of the key
+    def rename_key(old_key, new_key)
+      if @transaction or @pipelined
+        params = [old_key, new_key]
+        @commands << BaseInterface::Command.new(__method__, params)
+        return
+      else
+        @redis.rename old_key, new_key
       end
     end
 
