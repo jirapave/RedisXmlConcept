@@ -155,6 +155,15 @@ module XMLDBApi
     def get_parent_collection()
       return XMLDBApi::RedCollection.new(@db_id, @coll_service.get_collection_id, @coll_service.get_collection_name)
     end
+    
+    # Move this resource to another collection specified by parameter.
+    def move_to_collection(coll)
+      if @state == STATE_LOADED or @state == STATE_LAZY
+        @doc_service.move_resource(self, coll.coll_id)
+      else
+        raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::RESOURCE_NOT_PERSISTENT), "Resource is not persisted, it must be stored in database before moving."
+      end 
+    end
 
     # Returns the unique id for this RedXMLResource or nil if the
     # RedXMLResource is anonymous. The RedXMLResource will be

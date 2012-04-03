@@ -91,6 +91,36 @@ class TestRedXmlResource < Test::Unit::TestCase
     coll = res.get_parent_collection
     assert_equal(true, coll.get_name == "coll")
   end
+  
+  def test_move_to_collection
+    first_db = XMLDBApi::RedDatabase.new("new")
+    old_coll = first_db.create_collection("test_only")
+    res = old_coll.create_resource("moves_like_jagger", XMLDBApi::RedXmlResource::TYPE)
+    res.set_content("<root><book>Pad Hyperionu</book></root>")
+    old_coll.store_resource(res)
+    coll = first_db.create_collection("move_here")
+    
+    names = old_coll.list_resources
+    assert_equal(true, names.length == 1)
+    names = coll.list_resources
+    assert_equal(true, names.length == 0)
+    
+    res.move_to_collection(coll)
+    
+    names = old_coll.list_resources
+    assert_equal(true, names.length == 0)
+    names = coll.list_resources
+    assert_equal(true, names.length == 1)
+    assert_equal(true, old_coll.get_resource("moves_like_jagger") == nil)
+    assert_equal(true, coll.get_resource("moves_like_jagger").get_document_id == "moves_like_jagger")
+    result = coll.get_resource("moves_like_jagger").get_content_as_dom.xpath("//book").first
+    assert_equal(true, "#{result}" == "<book>Pad Hyperionu</book>")
+    
+    res = XMLDBApi::RedXmlResource.new("1", "12", "plot", "5", nil)
+    assert_raise XMLDBApi::Base::XMLDBException do
+      res.move_to_collection(coll)
+    end
+  end
 
   def test_get_id()
     res = XMLDBApi::RedXmlResource.new("1", "6", "third", "2", nil)
