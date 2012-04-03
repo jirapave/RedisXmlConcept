@@ -10,6 +10,18 @@ class TestRedXmlResource < Test::Unit::TestCase
   def setup
     DBInit.init_database
   end
+  
+  # Used ot supress stdout where it is needed
+  def capture_stdout(&block)
+    original_stdout = $stdout
+    $stdout = fake = StringIO.new
+    begin
+      yield
+    ensure
+      $stdout = original_stdout
+    end
+   fake.string
+  end
 
   def test_get_document_id()
     doc = Nokogiri::XML("<root><book>First</book></root>")
@@ -111,7 +123,9 @@ class TestRedXmlResource < Test::Unit::TestCase
     assert_equal(true, names.length == 0)
     names = coll.list_resources
     assert_equal(true, names.length == 1)
-    assert_equal(true, old_coll.get_resource("moves_like_jagger") == nil)
+    capture_stdout do
+      assert_equal(true, old_coll.get_resource("moves_like_jagger") == nil)
+    end
     assert_equal(true, coll.get_resource("moves_like_jagger").get_document_id == "moves_like_jagger")
     result = coll.get_resource("moves_like_jagger").get_content_as_dom.xpath("//book").first
     assert_equal(true, "#{result}" == "<book>Pad Hyperionu</book>")
@@ -120,6 +134,29 @@ class TestRedXmlResource < Test::Unit::TestCase
     assert_raise XMLDBApi::Base::XMLDBException do
       res.move_to_collection(coll)
     end
+    
+    coll = first_db.create_collection("test_existence")
+    old_res = coll.create_resource("exist", XMLDBApi::RedXmlResource::TYPE)
+    old_res.set_content("<root><book>content</book></root>")
+    coll.store_resource(old_res)
+    
+    coll_verify = first_db.create_collection("exist-here")
+    res = coll_verify.create_resource("exist", XMLDBApi::RedXmlResource::TYPE)
+    res.set_content("<root><book>another content</book></root>")
+    coll_verify.store_resource(res)
+    
+    # Now moving should not be possible
+    assert_raise Transformer::MappingException do
+      old_res.move_to_collection(coll_verify)
+    end
+    
+    # Now verify that nothing has changed
+    old_res = coll.get_resource("exist")
+    res = coll_verify.get_resource("exist")
+    result = old_res.get_content_as_dom.xpath("//book").first.to_s
+    assert_equal(true, result == "<book>content</book>")
+    result = res.get_content_as_dom.xpath("//book").first.to_s
+    assert_equal(true, result == "<book>another content</book>")
   end
 
   def test_get_id()
