@@ -13,15 +13,11 @@ module XQuery
     end
     
     #stripped: true/false
-    def get_text(elem, stripped)
+    def get_text(elem)
       raise NotImplementedError
     end
     
-    def get_descendant_texts(elem, stripped)
-      raise NotImplementedError
-    end
-    
-    def get_texts(elem, stripped)
+    def get_descendant_texts(elem)
       raise NotImplementedError
     end
     

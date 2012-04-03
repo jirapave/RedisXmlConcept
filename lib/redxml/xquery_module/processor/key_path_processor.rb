@@ -116,8 +116,11 @@ module XQuery
     end
     
     def get_attribute(extended_key, attr_name)
-      # attr_hash = @xml_transformer.get_attributes(extended_key.key_element_builder) #TODO resolve with Pavel
-      attr_hash = get_attribute_hash(extended_key.key_element_builder)
+      attr_hash = @xml_transformer.get_attributes(extended_key.key_element_builder, false) #TODO resolve with Pavel
+      # attr_hash = get_attribute_hash(extended_key.key_element_builder)
+      if(!attr_hash)
+        return nil
+      end
       puts "ATTRS: #{attr_hash.inspect}"
       return attr_hash[get_attr_index(attr_name)]
     end

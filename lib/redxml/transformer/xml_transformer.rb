@@ -256,7 +256,7 @@ module Transformer
           fields_only.each_with_index do |field, index|
             attr_name = field
             #attr_name = @attr_mapping[field] if mapped
-            attr_name = @mapping_service.unmap_attr_name field
+            attr_name = @mapping_service.unmap_attr_name field if mapped
             attrs_hash[attr_name] = values_only[index]
           end
         end

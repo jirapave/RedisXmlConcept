@@ -49,7 +49,7 @@ end
 
 
 #testing
-XQuery::QueryParser.parse_update('insert node doc("catalog.xml")/product/name as first into doc("catalog.xml")/root')
+# XQuery::QueryParser.parse_update('insert node doc("catalog.xml")/product/name as first into doc("catalog.xml")/root')
 # XQuery::QueryParser.parse_update('for $prod in doc("catalog.xml")/catalog/product/number[. = 333] let $name := $prod/name  where $prod/@dept = "ACC"    order by $x/title      return delete node $name')
 # XQuery::QueryParser.parse_update('delete node doc("catalog.xml")/root/product')
 # XQuery::QueryParser.parse_update('for $prod in doc("catalog.xml")/catalog/product/number[. = 333] let $name := $prod/name  where $prod/@dept = "ACC"    order by $x/title      return rename node $name as HELL')

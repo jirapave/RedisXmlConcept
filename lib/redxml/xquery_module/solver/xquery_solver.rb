@@ -32,6 +32,7 @@ module XQuery
       end
     end
     
+  private
     def prepare_results(results)
       final_results = []
       results.each { |result|

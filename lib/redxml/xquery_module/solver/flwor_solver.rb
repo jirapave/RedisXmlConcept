@@ -30,6 +30,7 @@ module XQuery
       return @results
     end
     
+  private
     def process_flwor_part(part)
       
       case part.type
