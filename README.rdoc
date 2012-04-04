@@ -1,59 +1,59 @@
-h1. ABOUT
+= ABOUT
 
-p. RedXml library is a project focusing on creating a basis for new XML native database. It is based on "Redis":http://redis.io/
+RedXml library is a project focusing on creating a basis for new XML native database. It is based on {Redis}[http://redis.io/]
 key-value database as it's underlying storage. RedXml uses own mapping of XML files into Redis and creates new
 abstraction layer to easily work with those documents. Currently proprietary API is supported (XML:DB API in the
 future) to work with environments, collections and documents. XPath/XQuery languages are beying implemented as a
 main way to query stored XML files.
 
-*Important:* Project is still under development
+Important: Project is still under development
 
-h1. INSTALLATION
+= INSTALLATION
 
-p. RedXML gem comming soon.
+RedXML gem comming soon.
 To use this project correctly, it is needed to download and start Redis database instance. It is strongly
 recommended to use official redis binaries:
-"Redis download page":http://redis.io/download
+{Redis download page}[http://redis.io/download]
 Redis doesn't have official binaries for Windows, but we have found pretty stable and verified binaries here:
-"redis windows binaries":https://github.com/dmajkic/redis/downloads
+{redis windows binaries}[https://github.com/dmajkic/redis/downloads]
 Use them only if speed is not an issue or to just test the library, you should avoid them in real-life application.
 (Storing and retrieve times can be 20x times slower).
 Another prerequisite is Nokogiri library, you can do that by using "gem install nokogiri" command, for detailed info:
-"Nokogiri installation guide":http://nokogiri.org/tutorials/installing_nokogiri.html
+{Nokogiri installation guide}[http://nokogiri.org/tutorials/installing_nokogiri.html]
 
-h1. PROPOSED FUNCIONALITY
+= PROPOSED FUNCIONALITY
 
-h2. Short-term
+== Short-term
 
 * Completion of proprietary API for managing XML documents (basic operations)
 * Implementation of XML:DB API
 * Implementation of XPath/XQuery language with XQuery Update Facility (subset - most useful queries)
 
-h2. Mid-term
+== Mid-term
 
 * Support for optimistic locking on document-level
 
-h2. Long-term
+== Long-term
 
 * Transactions
 * Indexing
 
-h1. USED LIBRARIES
+= USED LIBRARIES
 
-p. Project uses some libraries, which are not part of this library so you have to install them by hand (see installation)
+Project uses some libraries, which are not part of this library so you have to install them by hand (see installation)
 or use RedXML gem which is coming soon.
-* "Redis-rb":https://github.com/ezmobius/redis-rb - Client for Redis database
-* "Nokogiri":http://nokogiri.org/ - Library for working with XML files
+* {Redis-rb}[https://github.com/ezmobius/redis-rb] - Client for Redis database
+* {Nokogiri}[http://nokogiri.org/] - Library for working with XML files
 
-h1. EXAMPLES
+= EXAMPLES
 
-p. After you have successfully integrate our library into your project and your Redis instance is
+After you have successfully integrate our library into your project and your Redis instance is
 running, you can work with Redis like with native XML database. Examples are based on
-our implementation of "XMLDB:API":http://xmldb-org.sourceforge.net/xapi/api/index.html with a little bit of proprietary code 
+our implementation of {XMLDB:API}[http://xmldb-org.sourceforge.net/xapi/api/index.html] with a little bit of proprietary code 
 to make it more smooth. Examples can be found in examples folder.
 
-h1. AUTHORS
+= AUTHORS
 
-* *Ing. Pavel Strnad* - Leader of the project, author of the basic idea
-* *Bc. Pavel Jíra* - Programming core functions (mapping, database interface, API)
-* *Bc. Martin Kostolný* - Programming XPath/XQuery
+* Ing. Pavel Strnad - Leader of the project, author of the basic idea
+* Bc. Pavel Jíra - Programming core functions (mapping, database interface, API)
+* Bc. Martin Kostolný - Programming XPath/XQuery
