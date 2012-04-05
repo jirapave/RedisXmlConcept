@@ -31,6 +31,10 @@ module XQuery
       return node.xpath(".//#{match_elem_name}")
     end
     
+    def get_node(node)
+      return node
+    end
+    
     def get_attribute(node, attr_name)
       return node.xpath("./@#{attr_name}")
     end

@@ -108,16 +108,12 @@ module XQuery
     end
     
     def get_node(extended_key)
-      # if(extended_key.kind_of?(String) && Transformer::KeyElementBuilder.text?(extended_key))
-        # return XML::TextContent.new(@db.find_value(extended_key), -1, XML::TextContent::PLAIN)
-      # end
       puts "GETTING NODE key=#{extended_key.key_element_builder.to_s}"
       return @xml_transformer.get_node(extended_key.key_element_builder)
     end
     
     def get_attribute(extended_key, attr_name)
       attr_hash = @xml_transformer.get_attributes(extended_key.key_element_builder, false) #TODO resolve with Pavel
-      # attr_hash = get_attribute_hash(extended_key.key_element_builder)
       if(!attr_hash)
         return nil
       end
@@ -129,32 +125,9 @@ module XQuery
     attr_accessor :content_hash_key
     
   private
-    def get_attribute_hash(key)
-      attribute_hash = Hash.new
-      list_str = @db.get_hash_value(@content_hash_key, key.attr)
-      if(list_str == nil)
-        return attribute_hash #empty hash
-      end
-      fields_only = []
-      values_only = []
-      list_str.split('"').each_with_index { |x, index|
-        fields_only << x if(index%2 == 0)
-        values_only << x if(index%2 != 0)
-      }
-      fields_only.each_with_index { |field, index|
-        attribute_hash[field] = values_only[index]
-      }
-      return attribute_hash
-    end
-    
     def get_desc_elements(extended_key)
       start_key_array = []
       start_key_array.concat(get_children_elements(extended_key))
-      # if(extended_key.kind_of?(Transformer::KeyElementBuilder))
-        # start_key_array.concat(get_children_elements(extended_key))
-      # else
-        # start_key_array << @root_key
-      # end
       
       all_round_keys = []
       all_round_keys.concat(start_key_array)
@@ -172,12 +145,7 @@ module XQuery
       if(list_str == nil)
         raise StandardError, "wrong key or content hash_key, nil found instead of descendants, hash_key: #{@content_hash_key}, key: #{key_str}"
       end
-      
-      #TODO experimental shortage - check!
       values = list_str.split(CHILDREN_SEPARATOR)
-      # list_str.split(CHILDREN_SEPARATOR).each { |value|
-        # values << value if(!value.empty?)
-      # }
       return values
     end
     
@@ -186,20 +154,7 @@ module XQuery
         
         return nil
       end
-      
       return get_plainly_children(extended_key.key_element_builder.to_s)
-      
-      # list_str = @db.get_hash_value(@content_hash_key, extended_key.key_element_builder)
-      # if(list_str == nil)
-        # raise StandardError, "wrong key or content hash_key, nil found instead of descendants, hash_key: #{@content_hash_key}, key: #{key}"
-      # end
-#       
-      # #TODO experimental shortage - check!
-      # values = list_str.split(CHILDREN_SEPARATOR)
-      # # list_str.split(CHILDREN_SEPARATOR).each { |value|
-        # # values << value if(!value.empty?)
-      # # }
-      # return values
     end
     
     def get_texts(extended_key)
