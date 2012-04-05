@@ -15,14 +15,18 @@ module XMLDBApi
     TYPE = "XMLResource"
     # Used to represent XMLResource which is empty
     STATE_EMPTY = "empty"
-    # Used to represent XMLResource which has content stored in database but not yet load
+    # Used to represent XMLResource which has content stored in database but not yet loaded
     # it into memory
     STATE_LAZY = "lazy"
-    # Used to represent XMLResource which has it's content in memory = no database connection
-    # resuired
+    # Used to represent XMLResource which has it's content in memory and also stored ins database
+    # = almost no database connection resuired
     STATE_LOADED = "loaded"
+    # Used to represent XMLResource which has it's content loaded ut not yet stored in database
+    # or the content was changed.
+    STATE_UNCOMMITED = "uncommited"
 
-    attr_reader :document, :doc_id, :db_id, :coll_id, :doc_name
+    attr_reader :document, :doc_id, :db_id, :doc_name
+    attr_accessor :state, :coll_id
     # Creates new instance of RedXmlResource. All parameters are required except document. When document
     # is not specified empty resource will be returned
     def initialize(db_id, coll_id, doc_name, doc_id, document = nil, state = RedXmlResource::STATE_EMPTY)
@@ -93,7 +97,7 @@ module XMLDBApi
 
       if content.respond_to?(:root)
       @document = content
-      @state = RedXmlResource::STATE_LOADED
+      @state = RedXmlResource::STATE_UNCOMMITED
       return
       end
 
@@ -102,7 +106,7 @@ module XMLDBApi
           builder = Nokogiri::XML::Builder.new
         @document = builder.doc
         @document.root = content
-        @state = RedXmlResource::STATE_LOADED
+        @state = RedXmlResource::STATE_UNCOMMITED
         return
         end
       end
@@ -125,7 +129,7 @@ module XMLDBApi
         # We are generating events directly from database so we dont have to load the document
         # into memory
         @doc_service.generate_sax_events(@doc_name, handler)
-      when RedXmlResource::STATE_LOADED
+      else
         parser = Nokogiri::XML::SAX::Parser.new(handler)
         parser.parse("#{@document}")
       end
@@ -150,6 +154,15 @@ module XMLDBApi
     # The RedCollection asociated with the resource
     def get_parent_collection()
       return XMLDBApi::RedCollection.new(@db_id, @coll_service.get_collection_id, @coll_service.get_collection_name)
+    end
+    
+    # Move this resource to another collection specified by parameter.
+    def move_to_collection(coll)
+      if @state == STATE_LOADED or @state == STATE_LAZY
+        @doc_service.move_resource(self, coll.coll_id)
+      else
+        raise XMLDBApi::Base::XMLDBException.new(XMLDBApi::Base::ErrorCodes::RESOURCE_NOT_PERSISTENT), "Resource is not persisted, it must be stored in database before moving."
+      end 
     end
 
     # Returns the unique id for this RedXMLResource or nil if the
@@ -185,7 +198,7 @@ module XMLDBApi
     # * +value+ - The XML content value to set for the resource as a String
     def set_content(value)
       @document = Nokogiri::XML(value)
-      @state = RedXmlResource::STATE_LOADED if @document #Resource can now be stored in database
+      @state = RedXmlResource::STATE_UNCOMMITED if @document #Resource can now be stored in database
     end
 
     # Check if the RedXmlResource is empty = cannot be stored in database because it has no

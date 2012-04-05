@@ -67,6 +67,30 @@ class TestDocumentService < Test::Unit::TestCase
     result = doc.xpath("//a:product/colorChoices").first
     assert_equal(true, "#{result}" == "<colorChoices attr:language=\"english\">navy black</colorChoices>")
   end
+  
+  def test_move_resource
+    coll = XMLDBApi::RedCollection.new("1", "2", "coll")
+    res = coll.create_resource("moving_res", XMLDBApi::RedXmlResource::TYPE)
+    res.set_content("<root><something>Let's move it</something></root>")
+    @doc_service.save_resource(res)
+    res = @doc_service.get_resource("moving_res")
+    assert_equal(true, res.get_document_id == "moving_res")
+    assert_equal(true, res.coll_id == "2")
+    number_of_keys = @db_interface.find_keys("*").length
+    @doc_service.move_resource(res, "5") #move to cfifth collection
+    assert_equal(true, res.coll_id == "5")
+    assert_raise Transformer::MappingException do
+      res = @doc_service.get_resource("moving_res")
+    end
+    @doc_service = Transformer::DocumentService.new("1", "5")
+    res = @doc_service.get_resource("moving_res")
+    assert_equal(true, res.get_document_id == "moving_res")
+    result = "#{res.get_content_as_dom.xpath("//something").first}"
+    assert_equal(true, result == "<something>Let's move it</something>")
+    final_number_of_keys = @db_interface.find_keys("*").length
+    # -1 because collection 5 didn't have any document = one mapping for documents was added
+    assert_equal(true, number_of_keys == final_number_of_keys-1)
+  end
 
   def test_generate_sax_events
     file = File.absolute_path(FILE_PATH)

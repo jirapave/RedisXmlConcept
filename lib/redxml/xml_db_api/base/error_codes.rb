@@ -133,6 +133,8 @@ module XMLDBApi
       # * Set if resource with provided ID already exist
       # */
       RESOURCE_ID_ALREADY_EXIST = 303
+      # Set if resource is not persisted in database
+      RESOURCE_NOT_PERSISTENT = 304
 
       # /**
       # * Set if a <code>Database</code> instance can not be located for the
