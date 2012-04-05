@@ -183,6 +183,11 @@ module Transformer
     # ==== Parameters
     # * +node+ - XML::Node
     def save_node(node)
+      # Optimalization based on consolidation of attributes into descendant keys, they now
+      # share one key, which look as following:
+      # 2|1:2>1|1:2>2|attrId|attrValue|attrId|attrValue
+      # First number is used to determine count of descendants easily to enable smooth parsing.
+      
       main_hash = @key_builder.content_key
       key = node.database_key
       descendant_keys = ""
@@ -199,8 +204,24 @@ module Transformer
           end
         end
       end
+      @profile = false
+      if node.attributes
+        node.attributes.attrs.each do |key, value|
+          if key.include?("ye") or value.include?("ye")
+            @profile = true
+          end
+          descendant_keys << key << DESC_SEPARATOR << value << DESC_SEPARATOR
+        end
+      end
+      
       if descendant_keys != ""
         descendant_keys = descendant_keys[0..-2] # Delete useless delimiter at the end
+        # Add number o descendants
+        if node.descendants
+        descendant_keys = "#{node.descendants.length}#{DESC_SEPARATOR}" + descendant_keys
+        else
+          descendant_keys = "0#{DESC_SEPARATOR}" + descendant_keys
+        end
         @db_interface.add_to_hash(main_hash, [key, descendant_keys], true)
       end
       
@@ -209,9 +230,6 @@ module Transformer
       if(!text_content.empty?)
         @db_interface.add_to_hash(main_hash, text_content, true)
       end
-      
-      #And at last we have to save attributes and their order
-      save_attributes(node)
     end
     
     # Saves attributes of a given node in a database, remember that node itself know database key
@@ -326,6 +344,11 @@ module Transformer
     # * +xml+ - Context under which should the element be retrieved. This context can be created by using
     #           Nokogiri::XML::Builder.new { |xml|} or Nokogiri::XML::Builder.with(doc_or_elem) { |xml|}
     def build_node(key, xml)
+      # Optimalization based on consolidation of attributes into descendant keys, they now
+      # share one key, which look as following:
+      # 2|1:2>1|1:2>2|attrId|attrValue|attrId|attrValue
+      # First number is used to determine count of descendants easily to enable smooth parsing.
+      
         elem_name = @mapping_service.unmap_elem_name key.elem_id
         ns_split = elem_name.split(':')
         namespace = nil
@@ -334,7 +357,33 @@ module Transformer
           elem_name = ns_split[1]
         end
         
-        attrs_hash = get_attributes(key)
+        desc_keys = @db_interface.get_hash_value(@key_builder.content_key, key.to_s)
+        attrs_hash = {}
+        part_keys = []
+          if desc_keys != nil
+            all = desc_keys.split(DESC_SEPARATOR)
+            desc_all = all[1..(all[0].to_i)]
+            attr_all = all[(all[0].to_i+1)..-1]
+            desc_all.each do |key|
+             part_keys << key
+            end
+            
+            # Now attributes
+            
+            fields_only = []
+            values_only = []
+            attr_all.each_with_index do |x, index|
+              fields_only << x if index%2 == 0
+              values_only << x if index%2 != 0
+            end
+            #Now we have fields and values apart
+            fields_only.each_with_index do |field, index|
+              attr_name = field
+              #attr_name = @attr_mapping[field] if mapped
+              attr_name = @mapping_service.unmap_attr_name field
+              attrs_hash[attr_name] = values_only[index]
+            end
+          end
         
         #This will ad namespace to the current element in xml, raise ArgumentError if given namespace
         #dos not exist = hasn't been defined in xmlns attribute   
@@ -348,14 +397,6 @@ module Transformer
           # This is crucial, Nokogiri uilder automatically adds namespaces into children
           # if we don't explicily delete them
           elem_xml.parent.namespace = nil unless namespace
-          #add descendants
-          desc_keys = @db_interface.get_hash_value(@key_builder.content_key, key.to_s)
-          part_keys = []
-          if desc_keys != nil
-            desc_keys.split(DESC_SEPARATOR).each do |key|
-             part_keys << key
-            end
-          end
         
            if part_keys # if this element is not empty (like <element />
              part_keys.each do |key_str|
