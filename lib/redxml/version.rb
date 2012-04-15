@@ -1,3 +1,3 @@
 class RedXML
-  VERSION = "0.9.8"
+  VERSION = "0.1.1"
 end
