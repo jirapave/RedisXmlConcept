@@ -1,8 +1,8 @@
-require_relative "key_path_processor"
 require_relative "../ext/delete_key_box"
+require_relative "key_path_processor"
 
 module XQuery
-  class UpdateProcessor < KeyPathProcessor
+  class DeleteProcessor < KeyPathProcessor
     
     attr_reader :key_builder
     
@@ -64,7 +64,7 @@ module XQuery
         pool_key = key_builder.to_s
         processor = @@processor_pool[pool_key]
         if(processor == nil)
-          processor = UpdateProcessor.new(key_builder)
+          processor = DeleteProcessor.new(key_builder)
           @@processor_pool[pool_key] = processor
         end
         

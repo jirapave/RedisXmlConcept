@@ -49,10 +49,12 @@ end
 
 
 #testing
+# XQuery::QueryParser.parse_update('')
+# XQuery::QueryParser.parse_update('insert nodes (attribute A { 2.1 }, <child1 attr1="val1" attr2="val2"><name>text</name><name>text</name></child1>, "text") into doc("catalog.xml")/catalog/product[1]')
 # XQuery::QueryParser.parse_update('insert node doc("catalog.xml")/product/name as first into doc("catalog.xml")/root')
 # XQuery::QueryParser.parse_update('for $prod in doc("catalog.xml")/catalog/product/number[. = 333] let $name := $prod/name  where $prod/@dept = "ACC"    order by $x/title      return delete node $name')
 # XQuery::QueryParser.parse_update('delete node doc("catalog.xml")/root/product')
-# XQuery::QueryParser.parse_update('for $prod in doc("catalog.xml")/catalog/product/number[. = 333] let $name := $prod/name  where $prod/@dept = "ACC"    order by $x/title      return rename node $name as HELL')
+# XQuery::QueryParser.parse_update('for $prod in doc("catalog.xml")/catalog/product/number[. = 333] let $name := $prod/name  where $prod/@dept = "ACC"    order by $x/title      return $x')
 # XQuery::QueryParser.parse_update('for $prod in doc("catalog.xml")/catalog/product/number[. = 333] let $name := $prod/name  where $prod/@dept = "ACC"    order by $x/title      return  $name ')
 # XQuery::QueryParser.parse_update('for $title in collection("/allbooks")//SECTION/TITLE 
 # return rename node $title as SECTION_TITLE')

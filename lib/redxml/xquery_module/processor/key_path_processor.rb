@@ -13,18 +13,20 @@ module XQuery
     
     CHILDREN_SEPARATOR = '|'
     
+    attr_reader :key_builder, :mapping_service, :content_hash_key, :xml_transformer
+    
     #key - Key object
     def initialize(key_builder)
       @db = BaseInterface::DBInterface.instance
       @key_builder = key_builder
       
-      #load file hashes
-      @mapping_service = Transformer::MappingService.new(key_builder)
-      @content_hash_key = key_builder.content_key
-      info_hash = @db.find_value(key_builder.info)
-      
       #init xml transformer
       @xml_transformer = Transformer::XMLTransformer.new(key_builder)
+      
+      #load file hashes
+      @mapping_service = @xml_transformer.mapping_service
+      @content_hash_key = key_builder.content_key
+      info_hash = @db.find_value(key_builder.info)
       
       #load root key - KeyElementBuilder object
       @root_key = Transformer::KeyElementBuilder.new(key_builder, info_hash["root"])
@@ -64,25 +66,34 @@ module XQuery
       return content
     end
     
+    
     def get_children_elements(extended_key, match_elem_name="*")
       key_array = []
+      
+      # get element name id from mapping service
       match_elem_id = match_elem_name
       if(match_elem_name != "*")
         match_elem_id = get_elem_index(match_elem_name)
       end
       
+      # get children in plain text form
       children_array = get_children_plain(extended_key)
       if(children_array == nil)
-        #extended_key is DOCUMENT key
+        # extended_key is DOCUMENT key -> root element is the only child
         return [ ExtendedKey.build_from_key(@root_key, nil, nil) ]
       end
       
+      # filter out element-nodes with given match_elem_name
+      # create ExtendedKey objects for all filtered elements
       children_array.each { |key_str|
         if(Transformer::KeyElementBuilder.element?(key_str))
-          new_key = Transformer::KeyElementBuilder.build_from_s(@key_builder, key_str)
-          #check match_elem_name
+          new_key = Transformer::KeyElementBuilder \
+                      .build_from_s(@key_builder, key_str)
+          # check match_elem_name
           if(match_elem_id == "*" || new_key.elem_id == match_elem_id)
-            new_extended_key = ExtendedKey.build_from_key(new_key, extended_key.key_str, children_array)
+            new_extended_key = ExtendedKey.build_from_key(new_key, \
+                                                          extended_key.key_str, \
+                                                          children_array)
             key_array << new_extended_key
           end
         end
@@ -122,7 +133,7 @@ module XQuery
     end
     
   protected
-    attr_accessor :content_hash_key
+    attr_writer :content_hash_key
     
   private
     def get_desc_elements(extended_key)

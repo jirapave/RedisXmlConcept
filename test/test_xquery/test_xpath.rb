@@ -1,20 +1,12 @@
-# require_relative "../../lib/red_xml_api/environment_manager"
-# require_relative "../../lib/xquery_module/xquery_controller"
-# require_relative "../../lib/xml/node"
+require "test/unit"
 require_relative "xquery_test_helper"
-# require "rubygems"
-# require "nokogiri"
 if File.basename($0) == "#{File.basename(__FILE__)}"
   require_relative "../../lib/redxml.rb"
 else
   require "redxml"
 end
-require "test/unit"
 
-#missing in other files
-# require_relative "../../lib/transformer/exceptions"
 
-module XQuery
   class TestXPath < Test::Unit::TestCase
     
     class TestCase
@@ -112,4 +104,3 @@ module XQuery
     end
     
   end
-end
