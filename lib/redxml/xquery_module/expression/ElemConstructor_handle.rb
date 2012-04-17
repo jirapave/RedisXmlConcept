@@ -13,8 +13,7 @@ module XQuery
         super(node)
         
         #TODO delete
-        puts "initializing ElemConstructor"
-        puts "content: #{node.text}"
+        puts "   content: #{node.text}"
         #TODO delete
         
         # puts node.to_xml(:ident => 2)

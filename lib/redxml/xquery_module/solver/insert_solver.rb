@@ -8,31 +8,50 @@ module XQuery
       @insert_processor = InsertProcessor.new(path_solver)
     end
     
-    def solve(expression, context, pipelined)
+    def solve(expression, contexts, pipelined)
       
       target_location_keys = nil
       
       location = expression.location
-      case location.type
-      when ExpressionModule::RelativePathExpr
-        target_location_keys = @path_solver.solve(location, context)
+      target_location_key = nil
         
-      when ExpressionModule::VarRef
-        target_location_keys = [ context.variables[location.var_name] ]
+      #load all possible locations from all contexts and ensure that there is only one location
+      location_keys = []
+      #load all locations
+      contexts.each { |context|
+        case location.type
+        when ExpressionModule::RelativePathExpr
+          location_keys.concat(@path_solver.solve(location, context))
+        when ExpressionModule::VarRef
+          location_keys << context.variables[location.var_name]
+        else
+          raise NotSupportedError, expression.location.type
+        end
         
-      else
-        raise NotSupportedError, expression.location.type 
-      end
-      
-      if(target_location_keys.length != 1)
+      }
+      #check if they are all identical
+      if(!ensure_identical(location_keys))
         raise StandardError, "wrong number of target location nodes, it is #{target_location_keys.length}, should be 1"
       end
+        
+      #set location extended key
+      target_location_key = location_keys[0]
+        
       
-      puts "TARGET LOCATION KEY: #{target_location_keys[0].inspect}"
-      puts "context: #{context.variables.inspect}"
+      @insert_processor.insert_nodes(expression.items, target_location_key, expression.target, pipelined, contexts)
       
-      @insert_processor.insert_nodes(expression.items, target_location_keys[0], expression.target, pipelined, context)
-      
+    end
+    
+    def ensure_identical(extended_keys)
+      prev_key_str = nil
+      extended_keys.each { |ext_key|
+        if(!prev_key_str)
+          prev_key_str = ext_key.key_str
+        elsif(prev_key_str != ext_key.key_str)
+          return false
+        end
+      }
+      return true
     end
     
   end

@@ -11,58 +11,63 @@ module XQuery
     
     
     #items as array of ExpressionHandles and location as ExtendedKey
-    def insert_nodes(items, location, target=InsertExprHandle::TARGET_INTO_LAST, pipelined=true, context=XQuerySolverContext.new)
-      
-      puts "PROCESSOR: inserting items"
+    def insert_nodes(items, location, target=InsertExprHandle::TARGET_INTO_LAST, pipelined=true, contexts=[])
       
       @location_path_processor = @path_solver.path_processor
       @db = BaseInterface::DBInterface.instance
       @content_hash_key = @location_path_processor.content_hash_key
       @node_store_processor = NodeStoreProcessor.new(@location_path_processor.mapping_service, @content_hash_key)
       
-      if(pipelined)
-        @db.pipelined {
-          insert_nodes_only(items, location, target, context)
-        }
-      else
-        insert_nodes_only(items, location, target, context)
-      end
+      #TODO pipelining not supported here so far 
+      # if(pipelined)
+        # @db.pipelined {
+          # insert_nodes_only(items, location, target, contexts)
+        # }
+      # else
+        insert_nodes_only(items, location, target, contexts)
+      # end
       
     end
     
     
   private
                          #expr handle, extended key
-    def insert_nodes_only(items, location, target, context)
+    def insert_nodes_only(items, location, target, contexts)
       
-      puts "CHECKING location: #{location.key_str}"
       puts @location_path_processor.get_node(location).to_s
       
       #sort items the way they should be stored
       #so for BEFORE, INTO and AS LAST INTO (which are the same) we dont need to sort anything
       #for AFTER and AS FIRST INTO should be sorted reversely because we are going to insert them sequentially
       # - always AFTER the location or AS FIRST  in the location
-      if(target == ExpressionModule::InsertExprHandle::TARGET_AFTER || target == ExpressionModule::InsertExprHandle::TARGET_INTO_FIRST)
-        items.reverse!
-      end 
+      reverse_specific_items = Proc.new { |item_array, specific_target|
+        case specific_target
+        when ExpressionModule::InsertExprHandle::TARGET_AFTER, ExpressionModule::InsertExprHandle::TARGET_INTO_FIRST
+          item_array.reverse!
+        end
+      }
+      reverse_specific_items.call(items, target)
       
       items.each { |item|
         case item.type
-          
-        when ExpressionModule::RelativePathExpr
-          puts "item is relative"
-          extended_keys_to_insert = @path_solver.solve(item, context)
+        #adding relative or previously loaded var
+        when ExpressionModule::RelativePathExpr, ExpressionModule::VarRef
+          extended_keys_to_insert = []
+          contexts.each { |context|
+            case item.type
+            when ExpressionModule::RelativePathExpr
+              extended_keys_to_insert.concat(@path_solver.solve(item, context))
+            when ExpressionModule::VarRef
+              extended_keys_to_insert << context.variables[item.var_name]
+            else
+              raise StandardError, "impossible"
+            end
+          }
+          reverse_specific_items.call(extended_keys_to_insert, target)
           add_elements(extended_keys_to_insert, location, target)
-          
-        when ExpressionModule::VarRef
-          puts "item is var"
-          extended_key_to_insert = context.variables[item.var_name]
-          puts "var item (ext key to insert): #{extended_key_to_insert.inspect}"
-          add_elements([ extended_key_to_insert ], location, target)
           
         #adding constructor
         when ExpressionModule::CompAttrConstructor
-          puts "item is attr"
           case target
           when ExpressionModule::InsertExprHandle::TARGET_BEFORE, ExpressionModule::InsertExprHandle::TARGET_AFTER 
             add_attribute(item, Transformer::KeyElementBuilder.build_from_s(location.key_builder, location.parent_key))
@@ -72,12 +77,10 @@ module XQuery
           
           
         when ExpressionModule::DirElemConstructor
-          puts "item is elem constructor"
           add_node(item.nokogiri_node, location, target)
           
           
         when ExpressionModule::StringLiteral
-          puts "item is string"
           add_text(item.text, location, target)
           
         end
@@ -86,7 +89,6 @@ module XQuery
     
     
     def add_elements(extended_keys, location_extended_key, target)
-      puts "adding elements (relative or var)"
       extended_keys.each { |extended_key|
         #item key path processor, mapping service
         #necessary for each item (extended_key) since they can be from different XML document
@@ -128,7 +130,7 @@ module XQuery
           elem_builder = Transformer::KeyElementBuilder.build_from_s(location_extended_key.key_builder, key_str)
           
           #set order of new node
-          if(elem_builder.elem_id == elem_id)
+          if(elem_builder.elem_id == item_elem_id)
             actual_order = elem_builder.order
             if(actual_order > max_order)
               max_order = actual_order
@@ -177,7 +179,7 @@ module XQuery
             elem_builder = Transformer::KeyElementBuilder.build_from_s(location_extended_key.key_builder, key_str)
             
             #set order of new node
-            if(elem_builder.elem_id == elem_id)
+            if(elem_builder.elem_id == item_elem_id)
               actual_order = elem_builder.order
               if(actual_order > max_order)
                 max_order = actual_order
@@ -211,7 +213,6 @@ module XQuery
     
     
     def add_text(text, location_extended_key, target)
-      puts "adding text"
       #location elem name and id
       elem_id = location_extended_key.key_element_builder.elem_id
       
@@ -306,45 +307,26 @@ module XQuery
     
     def add_attribute(attr_expr, key_element_builder)
       
-      
       #prepare new attr name and value
       attr_name = attr_expr.attr_name
       attr_value = attr_expr.attr_value
       
-      puts "adding attribute #{attr_name}='#{attr_value}' to #{key_element_builder.to_s}"
-      
-      
       #get xml_transformer
       xml_transformer = @location_path_processor.xml_transformer
-      puts "xml_transformer got"
       
       #retrieve new attr_name's ID
       attr_id = @node_store_processor.get_attr_id(attr_name)
-      puts "retrieved attr_id = #{attr_id}"
       
       #get attribute hash
       attr_hash = xml_transformer.get_attributes(key_element_builder, false)
-      puts "got attributes hash: #{attr_hash.inspect}"
       
       #save new attribute to that hash
       attr_hash[attr_id] = attr_value
       
       #save that back to database
       attrs_plain = attr_hash.to_a.flatten.join(Transformer::XMLTransformer::ATTR_SEPARATOR)
-      # attr_hash.each { |key, value|
-        # if(!attrs_plain.empty?)
-          # attrs_plain << Transformer::XMLTransformer::ATTR_SEPARATOR
-        # end
-        # attrs_plain << key << Transformer::XMLTransformer::ATTR_SEPARATOR << value
-      # }
       
       @db.add_to_hash(@content_hash_key, [key_element_builder.attr, attrs_plain], true)
-      
-      puts "saved to database, key=#{key_element_builder.attr}, value=#{attrs_plain}, under content #{@content_hash_key}"
-      
-      puts "check attributes"
-      hash = xml_transformer.get_attributes(key_element_builder, true)
-      puts hash.inspect
       
     end
     

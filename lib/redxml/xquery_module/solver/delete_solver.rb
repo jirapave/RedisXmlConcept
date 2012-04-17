@@ -14,22 +14,24 @@ module XQuery
       @path_solver = path_solver
     end
     
-    def solve(expression, context, pipelined=true)
+    def solve(expression, contexts, pipelined=true)
       
       location = expression.location
       
-      case location.type
-      when ExpressionModule::RelativePathExpr
-        nodes_to_delete = @path_solver.solve(expression.location, context)
-        DeleteProcessor.delete_nodes(nodes_to_delete, pipelined)
-        
-      when ExpressionModule::VarRef
-        nodes_to_delete = [ context.variables[location.var_name] ]
-        DeleteProcessor.delete_nodes(nodes_to_delete, pipelined)
-        
-      else
-        raise NotSupportedError, expression.location.type 
-      end
+      nodes_to_delete = []
+      
+      contexts.each { |context|
+        case location.type
+        when ExpressionModule::RelativePathExpr
+          nodes_to_delete.concat(@path_solver.solve(expression.location, context))
+        when ExpressionModule::VarRef
+          nodes_to_delete << context.variables[location.var_name]
+        else
+          raise NotSupportedError, expression.location.type
+        end
+      }
+      
+      DeleteProcessor.delete_nodes(nodes_to_delete, pipelined)
       
       
     end

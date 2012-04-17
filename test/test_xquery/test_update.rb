@@ -156,17 +156,79 @@ class TestUpdate < Test::Unit::TestCase
        return insert node $n before doc("catalog.xml")/catalog/product[2]/name',
       ['Deluxe Travel Bag', 'Floppy Sun Hat']
     ),
-    
-    # TestCase.new(
-      # 'doc("catalog.xml")/catalog/product[3]/name/text()',
-      # ["Deluxe Travel Bag"],
-      # 'for $p in doc("catalog.xml")/catalog/product
-       # let $n := $p/name
-       # where $n/@language eq "en"
-       # order by $n
-       # return insert node $n before doc("catalog.xml")/catalog/product[3]/name',
-      # ['Cotton Dress Shirt', 'Deluxe Travel Bag', 'Fleece Pullover', 'Floppy Sun Hat', 'Deluxe Travel Bag']
-    # ),
+    #more nodes to insert
+    TestCase.new(
+      'doc("catalog.xml")/catalog/product[3]/name/text()',
+      ["Deluxe Travel Bag"],
+      'for $p in doc("catalog.xml")/catalog/product
+       let $n := $p/name
+       where $n/@language eq "en"
+       order by $n
+       return insert node $n before doc("catalog.xml")/catalog/product[3]/name',
+      ['Cotton Dress Shirt', 'Deluxe Travel Bag', 'Fleece Pullover', 'Floppy Sun Hat', 'Deluxe Travel Bag']
+    ),
+    #check after (nodes need to be reversed for proper insertion)
+    TestCase.new(
+      'doc("catalog.xml")/catalog/product[3]/name/text()',
+      ["Deluxe Travel Bag"],
+      'for $p in doc("catalog.xml")/catalog/product
+       let $n := $p/name
+       where $n/@language eq "en"
+       order by $n
+       return insert node $n after doc("catalog.xml")/catalog/product[3]/name',
+      ['Deluxe Travel Bag', 'Cotton Dress Shirt', 'Deluxe Travel Bag', 'Fleece Pullover', 'Floppy Sun Hat']
+    ),
+    #insertion order
+    TestCase.new(
+      'doc("catalog.xml")/catalog/product[3]/name/text()',
+      ["Deluxe Travel Bag"],
+      'for $p in doc("catalog.xml")/catalog/product
+       let $n := $p/name
+       where $n/@language eq "en"
+       order by $n ascending
+       return insert node $n after doc("catalog.xml")/catalog/product[3]/name',
+      ['Deluxe Travel Bag', 'Cotton Dress Shirt', 'Deluxe Travel Bag', 'Fleece Pullover', 'Floppy Sun Hat']
+    ),
+    TestCase.new(
+      'doc("catalog.xml")/catalog/product[3]/name/text()',
+      ["Deluxe Travel Bag"],
+      'for $p in doc("catalog.xml")/catalog/product
+       let $n := $p/name
+       where $n/@language eq "en"
+       order by $n descending
+       return insert node $n after doc("catalog.xml")/catalog/product[3]/name',
+      ['Deluxe Travel Bag', 'Floppy Sun Hat', 'Fleece Pullover', 'Deluxe Travel Bag', 'Cotton Dress Shirt']
+    ),
+    TestCase.new(
+      'doc("catalog.xml")/catalog/product[3]/name/text()',
+      ["Deluxe Travel Bag"],
+      'for $p in doc("catalog.xml")/catalog/product
+       let $n := $p/name
+       where $n/@language eq "en"
+       order by $n descending
+       return insert node $n before doc("catalog.xml")/catalog/product[3]/name',
+      ['Floppy Sun Hat', 'Fleece Pullover', 'Deluxe Travel Bag', 'Cotton Dress Shirt', 'Deluxe Travel Bag']
+    ),
+    TestCase.new(
+      'doc("catalog.xml")/catalog/product[3]/name/text()',
+      ["Deluxe Travel Bag"],
+      'for $p in doc("catalog.xml")/catalog/product
+       let $n := $p/name
+       where $n/@language eq "en"
+       order by $n descending
+       return insert node $n as first into doc("catalog.xml")/catalog/product[3]',
+      ['Floppy Sun Hat', 'Fleece Pullover', 'Deluxe Travel Bag', 'Cotton Dress Shirt', 'Deluxe Travel Bag']
+    ),
+    TestCase.new(
+      'doc("catalog.xml")/catalog/product[3]/name/text()',
+      ["Deluxe Travel Bag"],
+      'for $p in doc("catalog.xml")/catalog/product
+       let $n := $p/name
+       where $n/@language eq "en"
+       order by $n descending
+       return insert node $n as last into doc("catalog.xml")/catalog/product[3]',
+      ['Deluxe Travel Bag', 'Floppy Sun Hat', 'Fleece Pullover', 'Deluxe Travel Bag', 'Cotton Dress Shirt']
+    ),
     
     
   ]
@@ -201,8 +263,9 @@ class TestUpdate < Test::Unit::TestCase
       #perform update
       xquery_controller.get_results(test_case.update_query)
       
-      puts "PRINT the document"
-      puts xquery_controller.get_results('doc("catalog.xml")/catalog').to_s
+      #DEBUG
+      # puts "PRINT the document"
+      # puts xquery_controller.get_results('doc("catalog.xml")/catalog').to_s
 
       #check results by checking query and after results
       after_results = xquery_controller.get_results(test_case.checking_query)
@@ -212,7 +275,7 @@ class TestUpdate < Test::Unit::TestCase
         if(after.kind_of?(Nokogiri::XML::Node))
         after = after.to_s
         end
-        assert_equal(result, after, "for checking query (AFTER): #{test_case.checking_query}, results are not the same")
+        assert_equal(result, after, "for checking query (AFTER): #{test_case.checking_query}, results are not the same (result index: #{index})")
       }
 
       puts "test #{index+1}/#{TEST_CASES.length} ok"

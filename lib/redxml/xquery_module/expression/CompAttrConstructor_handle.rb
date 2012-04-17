@@ -10,10 +10,6 @@ module XQuery
       def initialize(node)
         super(node)
         
-        #TODO delete
-        puts "initializing CompAttrConstructor"
-        #TODO delete
-        
         @attr_name = node.children[1].content
         @attr_value = ExpressionModule::reduce(node.children[3])
         if(@attr_value.name == StringLiteral)

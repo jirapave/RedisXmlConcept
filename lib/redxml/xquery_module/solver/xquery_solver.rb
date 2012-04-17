@@ -42,10 +42,12 @@ module XQuery
           final_results << result
         end
       }
-      puts "XQuerySolver: FINAL results"
-      final_results.each { |f|
-        puts f
-      }
+      
+      #TODO delete this debug print
+      # puts "XQuerySolver: FINAL results"
+      # final_results.each { |f|
+        # puts f
+      # }
       return final_results
     end
     

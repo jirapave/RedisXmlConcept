@@ -8,12 +8,6 @@ module XQuery
     
     @@processor_pool = Hash.new
     
-    # def initialize(key_builder)
-      # super(key_builder)
-      # puts "init with key_builder: #{key_builder}"
-      # @content_hash_key = content_hash_key
-      # puts "init content hash key: #{@content_hash_key}"
-    # end
     
     #rather use static delete_nodes
     def delete_node(key_str)
@@ -24,14 +18,9 @@ module XQuery
         children.each { |child|
           delete_node(child)
         }
-        # @db.delete_entries([ key_element_builder.attr, key_str ])
-        puts "2deleting key: #{key_element_builder.attr}"
-        puts "3deleting key: #{key_str}"
         
         @db.delete_from_hash(@content_hash_key, [ key_element_builder.attr, key_str ])
       else
-        puts "1deleting key: #{key_str}"
-        # @db.delete_entries([ key_str ])
         
         @db.delete_from_hash(@content_hash_key, [ key_str ])
         

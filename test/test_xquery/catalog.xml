@@ -3,7 +3,7 @@
 		<number>557<![CDATA[
 			cdata cast<>]]></number>
 		<name language="en">Fleece Pullover</name>
-		<colorChoices>navy black</colorChoices>
+		<colorChoices no="four">navy black</colorChoices>
 	</product>
 	<product dept="ACC">
 		<number>563</number>

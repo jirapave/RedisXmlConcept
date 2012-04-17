@@ -27,10 +27,6 @@ module XQuery
       def initialize(node)
         super(node)
         
-        #TODO delete
-        puts "initializing FunctionCall"
-        #TODO delete
-        
         @function_name = node.xpath("./FunctionName")[0].content
         @function_params = []
         node.xpath("./ExprSingle").each { |expr|

@@ -12,10 +12,6 @@ module XQuery
       def initialize(node)
         super(node)
         
-        #TODO delete
-        puts "initializing RelativePathExpr"
-        #TODO delete
-        
         @steps = []
         
         #parse steps and remember // or /

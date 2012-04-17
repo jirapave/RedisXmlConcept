@@ -13,10 +13,6 @@ module XQuery
       def initialize(node)
         super(node)
         
-        #TODO delete
-        puts "initializing Predicate"
-        #TODO delete
-        
         #TODO determine predicate type
         #supported so far: single and tripple
         #single value: last(), 1, 2, ...
@@ -35,17 +31,23 @@ module XQuery
     private
       def get_value(node)
         case node.name
-        when "#{ComparisonExpr}"
+        when ComparisonExpr
           return ComparisonExprHandle.new(node)
           
-        when "#{FunctionCall}"
+        when FunctionCall
           return FunctionCallHandle.new(node)
           
-        when "#{IntegerLiteral}"
+        when IntegerLiteral
           return ExpressionHandle.new(node)
           
+        # when QName #this is probably name of element
+          # return DummyExpressionHandle.new(QName, node.content)
+          
+        when AbbrevForwardStep, QName #attr or elem
+          return AbbrevForwardStepHandle.new(node)
+          
         else
-          raise StandardError, "another predicate type not implemented (#{node.parent.name}), content #{node.content}"
+          raise StandardError, "another predicate type not implemented (#{node.name}), content #{node.content}"
         end
       end
       

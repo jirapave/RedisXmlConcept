@@ -10,10 +10,6 @@ module XQuery
       def initialize(node)
         super(node)
         
-        #TODO delete
-        puts "initializing DeleteExpr"
-        #TODO delete
-        
         location_node = node.children[2]
         reduced_node = ExpressionModule::reduce(location_node) #should give RelativePathExpr - typically
         

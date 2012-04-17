@@ -19,10 +19,6 @@ module XQuery
       def initialize(node)
         super(node)
         
-        #TODO delete
-        puts "initializing InsertExpr"
-        #TODO delete
-        
         items_node = node.children[2]
         location_node = node.children[4]
         @target_choice = nil
@@ -41,7 +37,6 @@ module XQuery
           raise StandardError, "impossible"
         end
         
-        puts "target: #{@target}"
         
         
         #can be more then one, attribute, variable with some nodes, node from documents in database,
@@ -60,23 +55,18 @@ module XQuery
         reduced_node = ExpressionModule::reduce(node) #should give RelativePathExpr - typically
         case reduced_node.name
         when RelativePathExpr
-          puts "determ: relative"
           expr = RelativePathExprHandle.new(reduced_node)
         when VarRef
-          puts "determ: var"
           expr = VarRefHandle.new(reduced_node)
         when ParenthesizedExpr
-          puts "determ: parenthesized"
           expr = Array.new
           singles = reduced_node.children[1].xpath("./ExprSingle")
           singles.each { |expr_single|
             expr << determine_expression(expr_single)
           }
          when CompAttrConstructor
-           puts "determ: attr"
            expr = CompAttrConstructorHandle.new(reduced_node)
          when DirElemConstructor
-           puts "determ: elem"
            expr = ElemConstructorHandle.new(reduced_node)
          when StringLiteral
            expr = DummyExpressionHandle.new("StringLiteral", reduced_node.content[1..-2])

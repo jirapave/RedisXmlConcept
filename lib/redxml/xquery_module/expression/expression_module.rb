@@ -12,6 +12,7 @@ module XQuery
     FLWORExpr = "FLWORExpr"
     RelativePathExpr = "RelativePathExpr"
     FunctionCall = "FunctionCall"
+    QName = "QName"
     AbbrevForwardStep = "AbbrevForwardStep"
     ComparisonExpr = "ComparisonExpr"
     ForClause = "ForClause"

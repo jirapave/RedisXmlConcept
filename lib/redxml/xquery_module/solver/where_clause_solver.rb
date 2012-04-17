@@ -9,7 +9,7 @@ module XQuery
     end
     
     def solve(where_expr, context)
-      puts "solving #{where_expr.type}"
+      # puts "solving #{where_expr.type}"
       
       specific_where_expr = where_expr.value 
       case specific_where_expr.type

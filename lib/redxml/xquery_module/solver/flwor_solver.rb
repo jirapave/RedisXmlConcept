@@ -38,12 +38,7 @@ module XQuery
         @contexts.each { |context|
           @for_let_clause_solver.solve(part, context)
         }
-        puts "before flatten: #{@contexts.inspect}"
         flatten_contexts()
-        puts "after for/let flattening - context count: #{@contexts.length}"
-        @contexts.each { |context|
-          puts "final: #{context.final}, inspect: #{context.variables.inspect}"
-        }
       when ExpressionModule::WhereClause
         new_contexts = []
         @contexts.each { |context|
@@ -52,7 +47,6 @@ module XQuery
             new_contexts << context
           end
         }
-        puts "after where context length: #{new_contexts.length}"
         @contexts = new_contexts
       when ExpressionModule::OrderByClause
         @order_clause_solver.solve(part, @contexts)
@@ -77,7 +71,6 @@ module XQuery
             @contexts.concat(flatten_contexts(ctx))
           end
         }
-        puts "flatten return context count: #{@contexts.length}"
         return
       end
       

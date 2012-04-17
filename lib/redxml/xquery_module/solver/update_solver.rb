@@ -15,12 +15,16 @@ module XQuery
       @insert_solver = InsertSolver.new(@path_solver)
     end
     
-    def solve(expression, context=XQuerySolverContext.new, pipelined=true)
+    def solve(expression, contexts=[], pipelined=true)
+      if(contexts.empty?)
+        contexts << XQuerySolverContext.new
+      end
+      
       case expression.type
       when ExpressionModule::DeleteExpr
-        @delete_solver.solve(expression, context, pipelined)
+        @delete_solver.solve(expression, contexts, pipelined)
       when ExpressionModule::InsertExpr
-        @insert_solver.solve(expression, context, pipelined)
+        @insert_solver.solve(expression, contexts, pipelined)
         
       else
         raise StandardError, "not implemented #{expression.type}"

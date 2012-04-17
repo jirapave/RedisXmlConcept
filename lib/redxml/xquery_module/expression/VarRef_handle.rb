@@ -10,10 +10,6 @@ module XQuery
       def initialize(node)
         super(node)
         
-        #TODO delete
-        puts "initializing VarRef"
-        #TODO delete
-        
         @var_name = node.children[1].content
         
       end

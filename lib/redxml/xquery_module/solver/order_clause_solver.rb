@@ -6,7 +6,6 @@ module XQuery
     end
     
     def solve(order_expr, contexts)
-      puts "solving #{order_expr.type}"
       
       #support for one order so far TODO support for more
       if(order_expr.parts.length > 1)
@@ -18,12 +17,9 @@ module XQuery
       ordering_expr = order_expr.parts[0].expr
 
 
-      # original_order_hash = Hash.new
       original_results_order = Hash.new
       ordering_results = []
       contexts.each_with_index { |context, index|
-        #save current order
-        # original_order_hash[context.last_var_name] = index
         
         #retrieve results for ordering
         result = nil
@@ -41,7 +37,6 @@ module XQuery
         
       }
       
-      puts "UNordered: #{ordering_results.inspect}"
       
       #sort
       case modifier
@@ -55,7 +50,6 @@ module XQuery
       
       
       ordering_results.each_with_index { |sorted_result, index|
-        puts "IN order result: #{sorted_result}"
         contexts[original_results_order[sorted_result]].order = index
       }
       

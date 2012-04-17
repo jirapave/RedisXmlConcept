@@ -22,13 +22,10 @@ module XQuery
       values1.each { |value1|
         values2.each { |value2|
           
-          puts "ComparisonSolver: evaluating #{value1.text} #{operator.text} #{value2.text}"
-          
           case operator.type
           when ExpressionModule::ValueComp
             if(value1.type == value2.type && value1.type != ExpressionModule::Literal)
               result = evaluate_value_comp(value1, operator, value2)
-              puts result
               return true if(result) 
             else
               raise TypeError, "value comp cannot compare different types of values"
@@ -36,7 +33,6 @@ module XQuery
               
           when ExpressionModule::GeneralComp
             result = evaluate_general_comp(value1, operator, value2)
-            puts "GeneralComp result: #{result}" #TODO why the cycle continues after result==true?!
             return true if(result)
             
           else
@@ -79,16 +75,13 @@ module XQuery
       if(no1 != nil)
         no2 = make_number(value2)
         if(no2 != nil)
-          puts "to_i both"
           value1 = no1
           value2 = no2
         else
-          puts "to_s both2"
           value1 = value1.to_s
           value2 = value2.to_s
         end
       else
-        puts "to_s both1"
         value1 = value1.to_s
         value2 = value2.to_s
       end

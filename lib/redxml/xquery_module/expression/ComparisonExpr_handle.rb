@@ -13,10 +13,6 @@ module XQuery
       def initialize(node)
         super(node)
         
-        #TODO delete
-        puts "initializing ComparisonExpr"
-        #TODO delete
-        
         if(node.children.length != 3)
           raise StandardError, "wrong number of values in Comparison - #{node.children.length}"
         end

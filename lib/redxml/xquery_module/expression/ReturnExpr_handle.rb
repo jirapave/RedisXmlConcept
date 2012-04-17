@@ -22,10 +22,7 @@ module XQuery
         super(node)
         
         #TODO delete
-        puts "initializing ReturnExpr"
-        #TODO delete
-        
-        puts "node: #{node.name}"
+        puts "   node: #{node.name}"
         
         @parts = []
         reduced = ExpressionModule::reduce(node)

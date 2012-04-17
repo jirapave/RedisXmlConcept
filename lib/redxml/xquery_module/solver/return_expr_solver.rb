@@ -9,8 +9,6 @@ module XQuery
     end
     
     def solve(return_expr, contexts)
-      puts "solving #{return_expr.type}"
-      puts "return_expr.parts.length: #{return_expr.parts.length}"
       
       results = []
       delete = false
@@ -34,9 +32,7 @@ module XQuery
             result << @path_solver.path_processor.get_node(context.variables[part.var_name]).to_s
             
           when ExpressionModule::DeleteExpr, ExpressionModule::InsertExpr #and other
-            puts "delete or insert expr"
-            puts "context content: #{context.inspect}"
-            @update_solver.solve(part, context, false)
+            raise StandardError, "update expressions should be performed another way -> atomically"
             
           else
             raise NotSupportedError, part.type
@@ -46,31 +42,48 @@ module XQuery
         results << result
       }
       
-      db = BaseInterface::DBInterface.instance
-      db.pipelined do
-        puts "pipelined..., contexts.length: #{contexts.length}"
-        if(contexts.length > 0 && contexts[0].order == -1)
-          puts "non-ordered"
-          contexts.each { |context|
-            puts "one context"
-            add_result.call(context)
-          }
-        else
-          sorting_hash = Hash.new
-          contexts.each_with_index { |context, index|
-            puts "storing in sorting hash. context.order = #{context.order}, index = #{index}"
-            sorting_hash[context.order] = index
-          }
-          sorting_hash.keys.sort.each { |sort_key|
-            
-            context = contexts[sorting_hash[sort_key]]
-            puts "RETURNING according order: #{context.order}"
-            
-            add_result.call(context)
-          }
-        end
+      #declare contexts
+      final_contexts = []
+      
+      if(contexts.length > 0 && contexts[0].order == -1)
+        final_contexts = contexts
+      else
+        sorting_hash = Hash.new
+        contexts.each_with_index { |context, index|
+          sorting_hash[context.order] = index
+        }
+        sorting_hash.keys.sort.each { |sort_key|
+          
+          context = contexts[sorting_hash[sort_key]]
+          
+          final_contexts << context
+        }
       end
       
+      
+      first_part = return_expr.parts[0]
+      if(first_part.type == ExpressionModule::DeleteExpr \
+          || first_part.type == ExpressionModule::InsertExpr)
+         
+        if(return_expr.parts.length > 1)
+          raise NotImplementedError, "more update expressions within one query not implemented"
+        end
+        
+        #update operations will take care of their own pipelining
+        
+        #performing update here, sending all contexts
+        @update_solver.solve(first_part, final_contexts, true)
+        
+        
+      else
+        #perform all other operations (non-update ones) here
+        db = BaseInterface::DBInterface.instance
+        db.pipelined do
+          final_contexts.each { |context|
+            add_result.call(context)
+          }
+        end #end of pipelined
+      end
       
       return results      
     end

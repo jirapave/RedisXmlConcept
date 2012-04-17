@@ -31,7 +31,7 @@ module XQuery
       path_expr.steps.each { |step|
         
         #debug TODO delete
-        puts "step, type: #{step.step_type}, content: #{step.text}"
+        # puts "step, type: #{step.step_type}, content: #{step.text}"
         #debug TODO delete
          
         if(step.step_type == ExpressionModule::StepExprHandle::STARTING)
@@ -137,12 +137,10 @@ module XQuery
           case specified_step.value_type
           when ExpressionModule::AbbrevForwardStepHandle::ELEMENT
             ### results setting
-            # puts "element" TODO delete
             results = get_child_elements(actual_result, specified_step.value_name, step_expression.step_type)
 
             
           when ExpressionModule::AbbrevForwardStepHandle::ATTRIBUTE
-            # puts "attr" TODO delete
             @last_step = true
             case step_expression.step_type
             when ExpressionModule::StepExprHandle::ORDINARY
@@ -157,7 +155,6 @@ module XQuery
             
             
           when ExpressionModule::AbbrevForwardStepHandle::TEXT
-            # puts "text" TODO delete
             @last_step = true
             case step_expression.step_type
             when ExpressionModule::StepExprHandle::ORDINARY
@@ -205,13 +202,14 @@ module XQuery
           return results
         end
         
+
+        
         #predicate solving for NEXT steps
         final_results = []
         results_size = results.length 
         results.each_with_index { |res, index|
           predicate_solver = PredicateSolver.new(@path_processor)
           predicates_result = predicate_solver.evaluate(predicates, res, index+1, results_size)
-          #TODO TODO TODO review - this must be wrong, is predicate solver prepared for all kinds of results? (especially texts?)
           if(predicates_result)
             final_results << res
           end 
