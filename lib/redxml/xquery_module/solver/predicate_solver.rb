@@ -128,8 +128,8 @@ module XQuery
         end
         
         typed_results = []
-        results.each { |res|
-          typed_results << ExpressionModule::DummyExpressionHandle.new(ExpressionModule::StringLiteral, res) #returning string
+        results.each { |rs|
+          typed_results << ExpressionModule::DummyExpressionHandle.new(ExpressionModule::StringLiteral, rs) #returning string
         }
         return typed_results
         

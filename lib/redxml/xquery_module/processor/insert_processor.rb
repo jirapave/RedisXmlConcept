@@ -109,7 +109,6 @@ module XQuery
     
     
     def add_node(root_node, location_extended_key, target)
-      puts "adding node"
       
       #location elem name and id
       elem_id = location_extended_key.key_element_builder.elem_id

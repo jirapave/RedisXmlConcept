@@ -230,6 +230,18 @@ class TestUpdate < Test::Unit::TestCase
       ['Deluxe Travel Bag', 'Floppy Sun Hat', 'Fleece Pullover', 'Deluxe Travel Bag', 'Cotton Dress Shirt']
     ),
     
+    #inserting multiple
+    TestCase.new(
+      'doc("catalog.xml")/catalog/product[@ATTR = "seek"]/name/text()',
+      [],
+      'for $p in doc("catalog.xml")/catalog/product
+       let $n := $p/name
+       where $n/@language eq "en"
+       order by $n descending
+       return insert nodes ($n, <name>Another Name</name>, attribute ATTR { "seek" }, "twenty something") as last into doc("catalog.xml")/catalog/product[3]',
+      ['Deluxe Travel Bag', 'Floppy Sun Hat', 'Fleece Pullover', 'Deluxe Travel Bag', 'Cotton Dress Shirt', 'Another Name']
+    ),
+    
     
   ]
 
@@ -252,8 +264,8 @@ class TestUpdate < Test::Unit::TestCase
       #check before
       before_results = xquery_controller.get_results(test_case.checking_query)
       assert_equal(test_case.before_results.length, before_results.length, "for checking query (BEFORE): #{test_case.checking_query}, result count not the same")
-      test_case.before_results.each_with_index { |result, index|
-        before = before_results[index]
+      test_case.before_results.each_with_index { |result, indx|
+        before = before_results[indx]
         if(before.kind_of?(Nokogiri::XML::Node))
         before = before.to_s
         end
@@ -265,13 +277,16 @@ class TestUpdate < Test::Unit::TestCase
       
       #DEBUG
       # puts "PRINT the document"
-      # puts xquery_controller.get_results('doc("catalog.xml")/catalog').to_s
+      # xml_doc = Nokogiri.XML(xquery_controller.get_results('doc("catalog.xml")/catalog')[0].to_xml) do |config|
+        # config.default_xml.noblanks
+      # end
+      # puts xml_doc.to_xml(:ident => 2)
 
       #check results by checking query and after results
       after_results = xquery_controller.get_results(test_case.checking_query)
       assert_equal(test_case.after_results.length, after_results.length, "for checking query (AFTER): #{test_case.checking_query}, result count not the same")
-      test_case.after_results.each_with_index { |result, index|
-        after = after_results[index]
+      test_case.after_results.each_with_index { |result, indx|
+        after = after_results[indx]
         if(after.kind_of?(Nokogiri::XML::Node))
         after = after.to_s
         end

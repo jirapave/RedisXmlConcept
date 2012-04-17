@@ -37,6 +37,9 @@ module XQuery
     end
     
     def get_text(extended_key)
+      if(extended_key.kind_of?(String))
+        return extended_key
+      end
       return get_texts(extended_key).join
     end
     
@@ -123,6 +126,9 @@ module XQuery
     end
     
     def get_node(extended_key)
+      if(extended_key.kind_of?(String))
+        return extended_key
+      end
       return @xml_transformer.get_node(extended_key.key_element_builder)
     end
     
@@ -163,7 +169,8 @@ module XQuery
     def get_plainly_children(key_str)
       list_str = @db.get_hash_value(@content_hash_key, key_str)
       if(list_str == nil)
-        raise StandardError, "wrong key or content hash_key, nil found instead of descendants, hash_key: #{@content_hash_key}, key: #{key_str}"
+        return []
+        # raise StandardError, "wrong key or content hash_key, nil found instead of descendants, hash_key: #{@content_hash_key}, key: #{key_str}"
       end
       values = list_str.split(CHILDREN_SEPARATOR)
       return values

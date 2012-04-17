@@ -93,8 +93,8 @@ class TestXPath < Test::Unit::TestCase
       
       assert_equal(right_results.length, new_results.length, "for query: #{test_case.query}, result count not the same")
       
-      right_results.each_with_index { |right_result, index|
-        new_result = new_results[index]
+      right_results.each_with_index { |right_result, indx|
+        new_result = new_results[indx]
         if(new_result.kind_of?(Nokogiri::XML::Node))
           new_result = new_result.to_s
         end
