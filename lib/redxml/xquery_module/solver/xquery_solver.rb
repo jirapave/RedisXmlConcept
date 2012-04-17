@@ -24,7 +24,7 @@ module XQuery
         return prepare_results(results)
         
       #simple update queries
-      when ExpressionModule::DeleteExpr
+      when ExpressionModule::DeleteExpr, ExpressionModule::InsertExpr
         @update_solver.solve(expression)
         
       else

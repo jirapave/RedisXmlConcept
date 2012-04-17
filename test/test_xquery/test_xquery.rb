@@ -50,6 +50,31 @@ class TestXQuery < Test::Unit::TestCase
     #let
     TestCase.new("for $prod in doc(  \"catalog.xml\"  )/catalog/product[position()<=3] let $name := $prod/name where $prod/@dept<=\"ACC\" order by $name return <elem>$name</elem>",
       ["<elem><name language=\"en\">Deluxe Travel Bag</name></elem>", "<elem><name language=\"en\">Floppy Sun Hat</name></elem>"]),
+    #all
+    TestCase.new(
+      'for $p in doc("catalog.xml")/catalog/product
+       let $n := $p/name
+       where $n/@language eq "en"
+       order by $n
+       return <names>$n/text()</names>',
+      ['<names>Cotton Dress Shirt</names>', '<names>Deluxe Travel Bag</names>', '<names>Fleece Pullover</names>', '<names>Floppy Sun Hat</names>']
+    ),
+    TestCase.new(
+      'for $p in doc("catalog.xml")/catalog/product
+       let $n := $p/name
+       where $n/@language ne "een"
+       order by $n
+       return $n/text()',
+      ['Cotton Dress Shirt', 'Deluxe Travel Bag', 'Fleece Pullover', 'Floppy Sun Hat']
+    ),
+    TestCase.new(
+      'for $p in doc("catalog.xml")/catalog/product
+       let $n := $p/name
+       where $n/@language ne "een"
+       order by $n
+       return $p/name/text()',
+      ['Cotton Dress Shirt', 'Deluxe Travel Bag', 'Fleece Pullover', 'Floppy Sun Hat']
+    ),
   ]
   
   

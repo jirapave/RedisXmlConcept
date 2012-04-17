@@ -14,7 +14,7 @@ module XQuery
       TARGET_BEFORE = :TARGET_BEFORE
       TARGET_AFTER = :TARGET_AFTER
       
-      attr_reader :items, :location, :target_choice
+      attr_reader :items, :location, :target
       
       def initialize(node)
         super(node)
@@ -30,16 +30,18 @@ module XQuery
         #determine which one
         case node.children[3].content
         when "into", "aslastinto"
-          @target_choice = TARGET_INTO_LAST
+          @target = TARGET_INTO_LAST
         when "asfirstinto"
-          @target_choice = TARGET_INTO_FIRST
+          @target = TARGET_INTO_FIRST
         when "before"
-          @target_choice = TARGET_BEFORE
+          @target = TARGET_BEFORE
         when "after"
-          @target_choice = TARGET_AFTER
+          @target = TARGET_AFTER
         else
           raise StandardError, "impossible"
         end
+        
+        puts "target: #{@target}"
         
         
         #can be more then one, attribute, variable with some nodes, node from documents in database,

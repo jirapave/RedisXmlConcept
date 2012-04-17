@@ -20,6 +20,8 @@ end
     end
     
     TEST_CASES = [
+      TestCase.new("doc(  \"catalog.xml\"  )/catalog/product[1]/@dept",
+        ["WMN"]),
       TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. = 443]",
         ["<number>443</number>"]),
       # TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. eq 443]",
@@ -81,7 +83,7 @@ end
       xquery_controller = XQuery::XQueryController.new(XQueryTestHelper::ENV_NAME, XQueryTestHelper::COLL_NAME)
       
       TEST_CASES.each_with_index { |test_case, index|
-        puts "QUERY: #{test_case.query}"
+        # puts "QUERY: #{test_case.query}"
         new_results = xquery_controller.get_results(test_case.query)
         right_results = test_case.results
         

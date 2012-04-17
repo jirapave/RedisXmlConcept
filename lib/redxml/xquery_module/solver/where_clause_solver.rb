@@ -42,6 +42,11 @@ module XQuery
         }
         return final_values
         
+      when ExpressionModule::VarRef
+        result = context.variables[expression.var_name]
+        final_value = @path_solver.path_processor.get_node_content(result)
+        return [ ExpressionModule::DummyExpressionHandle.new(ExpressionModule::StringLiteral, final_value) ]
+        
       #String and Numeric literals return as are - literal objects, so it is recognisable the type
       when ExpressionModule::NumericLiteral
         #returning numeric

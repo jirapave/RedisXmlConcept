@@ -17,7 +17,6 @@ class XQueryTestHelper
   end
 
   def create_test_file
-    puts "FILE_PATH: #{FILE_PATH}"
     begin
       @coll.save_document(FILE_PATH)
     rescue Transformer::MappingException

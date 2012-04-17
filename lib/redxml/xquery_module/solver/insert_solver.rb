@@ -28,6 +28,9 @@ module XQuery
         raise StandardError, "wrong number of target location nodes, it is #{target_location_keys.length}, should be 1"
       end
       
+      puts "TARGET LOCATION KEY: #{target_location_keys[0].inspect}"
+      puts "context: #{context.variables.inspect}"
+      
       @insert_processor.insert_nodes(expression.items, target_location_keys[0], expression.target, pipelined, context)
       
     end

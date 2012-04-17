@@ -15,7 +15,7 @@ module XQuery
       @insert_solver = InsertSolver.new(@path_solver)
     end
     
-    def solve(expression, context=Hash.new, pipelined=true)
+    def solve(expression, context=XQuerySolverContext.new, pipelined=true)
       case expression.type
       when ExpressionModule::DeleteExpr
         @delete_solver.solve(expression, context, pipelined)

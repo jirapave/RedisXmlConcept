@@ -16,7 +16,7 @@ module XQuery
       #debug TODO delete
       # puts "getsome: #{str}"
       # puts xml_doc.to_xml(:ident => 2)
-      puts "query: #{query}"
+      # puts "query: #{query}"
       
       return ExpressionModule.create_expr(xml_doc)
     end
@@ -25,9 +25,12 @@ module XQuery
     def self.parse_update(query)
       str = get_parsed_str(query)
       
+      
       xml_doc = Nokogiri.XML(str) do |config|
         config.default_xml.noblanks
       end
+      
+      puts "QUERY: #{xml_doc.text}"
       
       #debug TODO delete
       # puts "getsome: #{str}"

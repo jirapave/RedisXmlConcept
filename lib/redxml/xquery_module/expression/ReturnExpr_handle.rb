@@ -71,6 +71,9 @@ module XQuery
         when DeleteExpr
           @parts << DeleteExprHandle.new(reduced)
           
+        when InsertExpr
+          @parts << InsertExprHandle.new(reduced)
+          
           
         else
           raise NotSupportedError, reduced.name

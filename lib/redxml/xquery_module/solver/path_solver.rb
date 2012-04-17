@@ -2,7 +2,6 @@ require_relative "function_solver"
 require_relative "predicate_solver"
 require_relative "xquery_solver_context"
 require_relative "../processor/key_path_processor"
-require_relative "../processor/node_path_processor"
 require_relative "../exceptions"
 require_relative "../expression/expression_module"
 require_relative "../expression/AbbrevForwardStep_handle"
@@ -21,7 +20,8 @@ module XQuery
     def solve(path_expr, context=XQuerySolverContext.new) #returns keys or nodes, DOESN'T change context
       #here is nothing to cycle, solved in FLWOR solvers only
       
-      puts "PATH solver, step count: #{path_expr.steps.length}"
+      #TODO delete
+      # puts "PATH solver, step count: #{path_expr.steps.length}"
       
       @path_processor = nil
       @last_step = false
@@ -50,22 +50,22 @@ module XQuery
         end
         
         #debug TODO delete
-        puts "===>STEP RESULTS start"
-        results.each { |res|
-          puts res.inspect
-        }
-        puts "===<STEP RESULTS end"
+        # puts "===>STEP RESULTS start"
+        # results.each { |res|
+          # puts res.inspect
+        # }
+        # puts "===<STEP RESULTS end"
         #debug TODO delete
         
       }
       
       #debug TODO delete
-      puts "Path Solver RETURNING: "
-      puts "===>STEP RESULTS start"
-      results.each { |res|
-        puts res.inspect
-      }
-      puts "===<STEP RESULTS end"
+      # puts "Path Solver RETURNING: "
+      # puts "===>STEP RESULTS start"
+      # results.each { |res|
+        # puts res.inspect
+      # }
+      # puts "===<STEP RESULTS end"
       #debug TODO delete
       
       return results
@@ -110,14 +110,6 @@ module XQuery
           
           @path_processor = KeyPathProcessor.new(node.key_builder)
           
-          # if(node.kind_of?(Transformer::KeyBuilder))
-            # @path_processor = KeyPathProcessor.new(node)
-          # elsif(node.kind_of?(Transformer::KeyElementBuilder))
-            # @path_processor = KeyPathProcessor.new(node.key_builder)
-          # else
-            # raise StandardError, "unknown type of node in variable: #{node.class}"
-          # end
-          
           
           #maybe predicates?
           if(!predicates.empty?)
@@ -145,12 +137,12 @@ module XQuery
           case specified_step.value_type
           when ExpressionModule::AbbrevForwardStepHandle::ELEMENT
             ### results setting
-            puts "element"
+            # puts "element" TODO delete
             results = get_child_elements(actual_result, specified_step.value_name, step_expression.step_type)
 
             
           when ExpressionModule::AbbrevForwardStepHandle::ATTRIBUTE
-            puts "attr"
+            # puts "attr" TODO delete
             @last_step = true
             case step_expression.step_type
             when ExpressionModule::StepExprHandle::ORDINARY
@@ -165,7 +157,7 @@ module XQuery
             
             
           when ExpressionModule::AbbrevForwardStepHandle::TEXT
-            puts "text"
+            # puts "text" TODO delete
             @last_step = true
             case step_expression.step_type
             when ExpressionModule::StepExprHandle::ORDINARY

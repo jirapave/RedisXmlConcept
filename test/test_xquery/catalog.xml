@@ -12,6 +12,7 @@
 	<product dept="ACC">
 		<!-- Commentary -->
 		<number>443</number>
+		one text
 		<name language="en">Deluxe Travel Bag</name>
 	</product>
 	<product dept="MEN">

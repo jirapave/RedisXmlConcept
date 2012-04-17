@@ -33,8 +33,9 @@ module XQuery
             #should return only one value
             result << @path_solver.path_processor.get_node(context.variables[part.var_name]).to_s
             
-          when ExpressionModule::DeleteExpr #and other
-            puts "delete expr"
+          when ExpressionModule::DeleteExpr, ExpressionModule::InsertExpr #and other
+            puts "delete or insert expr"
+            puts "context content: #{context.inspect}"
             @update_solver.solve(part, context, false)
             
           else
@@ -57,6 +58,7 @@ module XQuery
         else
           sorting_hash = Hash.new
           contexts.each_with_index { |context, index|
+            puts "storing in sorting hash. context.order = #{context.order}, index = #{index}"
             sorting_hash[context.order] = index
           }
           sorting_hash.keys.sort.each { |sort_key|

@@ -42,6 +42,9 @@ module XQuery
         when RelativePathExpr
           return RelativePathExprHandle.new(val)  
           
+        when VarRef
+          return VarRefHandle.new(val)
+          
         when StringLiteral
           return ExpressionHandle.new(val)
           
