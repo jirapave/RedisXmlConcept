@@ -17,6 +17,9 @@ module XQuery
         def text
           @node.content
         end
+        
+      protected
+        attr_reader :node
       
     end
   end

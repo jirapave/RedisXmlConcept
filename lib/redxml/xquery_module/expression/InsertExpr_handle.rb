@@ -1,7 +1,7 @@
 require_relative "expression_module"
 require_relative "expression_handle"
 require_relative "CompAttrConstructor_handle"
-require_relative "ElemConstructor_handle"
+require_relative "DirElemConstructor_handle"
 require_relative "dummy_expression_handle"
 
 module XQuery
@@ -64,12 +64,12 @@ module XQuery
           singles.each { |expr_single|
             expr << determine_expression(expr_single)
           }
-         when CompAttrConstructor
-           expr = CompAttrConstructorHandle.new(reduced_node)
-         when DirElemConstructor
-           expr = ElemConstructorHandle.new(reduced_node)
-         when StringLiteral
-           expr = DummyExpressionHandle.new("StringLiteral", reduced_node.content[1..-2])
+        when CompAttrConstructor
+          expr = CompAttrConstructorHandle.new(reduced_node)
+        when DirElemConstructor
+          expr = DirElemConstructorHandle.new(reduced_node)
+        when StringLiteral
+          expr = DummyExpressionHandle.new("StringLiteral", reduced_node.content[1..-2])
          
         else
           raise NotSupportedError, reduced_node.name

@@ -103,25 +103,29 @@ module XQuery
           
           
         when ExpressionModule::VarRef
-          node = context.variables[specified_step.var_name]
-          if(node == nil)
-            raise QueryStringError, "such variable (#{specified_step.var_name}) not found in current context"
+          nodes = context.variables[specified_step.var_name]
+          if(!nodes || nodes.empty?)
+            raise QueryStringError, "such variable (#{specified_step.var_name}) not found in current context, or content sequence is empty"
           end
           
-          @path_processor = KeyPathProcessor.new(node.key_builder)
+          @path_processor = KeyPathProcessor.new(nodes[0].key_builder)
           
+          final_nodes = nodes
           
           #maybe predicates?
           if(!predicates.empty?)
+            final_nodes = []
+          
             #solve predicates
             predicate_solver = PredicateSolver.new(@path_processor)
-            predicates_result = predicate_solver.evaluate(predicates, node, 1, 1)
-            if(!predicates_result)
-              return []
-            end
+            nodes.each { |node|
+              if(predicate_solver.evaluate(predicates, node, 1, 1))
+                final_nodes << node
+              end
+            }
           end
           
-          return [ node ]
+          return final_nodes
           
         end
         

@@ -23,7 +23,7 @@ module XQuery
         when ExpressionModule::RelativePathExpr
           location_keys.concat(@path_solver.solve(location, context))
         when ExpressionModule::VarRef
-          location_keys << context.variables[location.var_name]
+          location_keys.concat(context.variables[location.var_name])
         else
           raise NotSupportedError, expression.location.type
         end

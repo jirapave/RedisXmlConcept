@@ -20,16 +20,24 @@ module XQuery
           case part.type
           when ExpressionModule::ReturnText
             result << part.text
-          when ExpressionModule::RelativePathExpr
-            #should return only one value
-            path_result = @path_solver.solve(part, context)[0]
-            if(!path_result.kind_of?(String))
-              path_result = @path_solver.path_processor.get_node(path_result).to_s #TODO do it differently - to return node
+            
+          when ExpressionModule::RelativePathExpr, ExpressionModule::VarRef
+            ext_keys = []
+            if(ExpressionModule::RelativePathExpr)
+              ext_keys = @path_solver.solve(part, context)
+            else
+              ext_keys = context.variables[part.var_name]
+            end
+            path_result = ""
+            if(ext_keys)
+              ext_keys.each { |key|
+                path_result << @path_solver.path_processor.get_node(key).to_s
+              }
             end
             result << path_result
-          when ExpressionModule::VarRef
-            #should return only one value
-            result << @path_solver.path_processor.get_node(context.variables[part.var_name]).to_s
+            
+          when ExpressionModule::DirElemConstructor
+            result << part.get_elem_str(@path_solver, context)
             
           when ExpressionModule::DeleteExpr, ExpressionModule::InsertExpr #and other
             raise StandardError, "update expressions should be performed another way -> atomically"

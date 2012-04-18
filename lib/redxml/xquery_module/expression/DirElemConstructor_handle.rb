@@ -5,7 +5,7 @@ require "nokogiri"
 
 module XQuery
   module ExpressionModule
-    class ElemConstructorHandle < ExpressionHandle
+    class DirElemConstructorHandle < ExpressionHandle
       
       def initialize(node)
         super(node)
@@ -24,17 +24,35 @@ module XQuery
       #find enclosed path expressions and vars
       #resolve them
       #build string with tags and these resolved results 
-      def get_elem_str(path_solver, context)
+      def get_elem_str(path_solver, context=XQuerySolverContext.new, flwor_solver=nil)
         
         #hash with results
         enclosed_expr_hash = Hash.new
         
         #find eclosed expressions
-        enclosed_nodes = node.xpath(".//EnclosedExpr/Expr")
+        enclosed_nodes = node.xpath(".//EnclosedExpr/Expr") #predicate [not(descendant::EnclosedExpr)] do not work
+        
+        done_enclosed_nodes = []
+        
         enclosed_nodes.each { |enclosed_node|
+          
           #reduce them
           reduced = ExpressionModule::reduce(enclosed_node)
           reduced_text = reduced.text
+          
+          #reduce enclosed nodes so they do not embed each other
+          incl = false
+          done_enclosed_nodes.each { |done_str|
+            puts "done: #{done_str} vs actual: #{reduced_text}"
+            if(done_str.include?("{#{reduced_text}}"))
+              incl = true
+              break
+            end
+          }
+          if(incl)
+            next
+          end
+          
           #if already resolved -> skip
           if(enclosed_expr_hash[reduced_text])
             next
@@ -45,10 +63,17 @@ module XQuery
             results = context.variables[reduced.children[1].text]
             
           when RelativePathExpr #enclosed expr RelativePathExpr type
-            enclosed_expr_hash[reduced_text] = path_solver.solve(RelativePathExpr.new(reduced), context)
+            results = path_solver.solve(RelativePathExprHandle.new(reduced), context)
+            
+          when FLWORExpr
+            results = flwor_solver.solve(FLWORExprHandle.new(reduced))
+            enclosed_expr_hash[reduced_text] = results.join
+            results = nil
+            
           else
             raise NotSupportedError, reduced.name
           end
+          
           
           if(results)
             result_str = ""
@@ -57,26 +82,26 @@ module XQuery
             }
             enclosed_expr_hash[reduced_text] = result_str
           end
+          
+          
+          done_enclosed_nodes << reduced_text
+        }
+        final_elem_str = node.text#.gsub("{#{reduced_text}}", "#{reduced_text}")
+        enclosed_expr_hash.keys.sort.reverse.each { |key|
+          final_elem_str.gsub!("{#{key}}", enclosed_expr_hash[key])
         }
         
-        final_elem_str = node.text
-        enclosed_expr_hash.each { |key, value|
-          final_elem_str.gsub!(key, value)
-        }
-        
-        puts "elem_str: #{final_elem_str}"
         
         return final_elem_str
-        
       end
       
       
       def nokogiri_node(path_solver, context)
         if(!@elem_str)
-          @elem_str = get_elem_str(path_solver)
+          @elem_str = get_elem_str(path_solver, context)
         end
         
-        xml_doc = Nokogiri.XML(node.text) do |config|
+        xml_doc = Nokogiri.XML(@elem_str) do |config|
           config.default_xml.noblanks
         end
         return xml_doc.root

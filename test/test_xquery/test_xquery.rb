@@ -34,21 +34,23 @@ class TestXQuery < Test::Unit::TestCase
       ["<name language=\"en\">Floppy Sun Hat</name>", '<name language="en">Fleece Pullover</name>', "<name language=\"en\">Deluxe Travel Bag</name>"]),
     #check return element wrap
     TestCase.new("for $prod in doc(  \"catalog.xml\"  )/catalog/product[position()<=3]  where $prod/@dept<=\"ACC\" order by $prod/name return <elem>$prod/name</elem>",
+      ["<elem>$prod/name</elem>", "<elem>$prod/name</elem>"]),
+    TestCase.new("for $prod in doc(  \"catalog.xml\"  )/catalog/product[position()<=3]  where $prod/@dept<=\"ACC\" order by $prod/name return <elem>{$prod/name}</elem>",
       ["<elem><name language=\"en\">Deluxe Travel Bag</name></elem>", "<elem><name language=\"en\">Floppy Sun Hat</name></elem>"]),
     #check whitespaces and without order
-    TestCase.new("for $prod in  doc(  \"catalog.xml\"  ) /  catalog/ product[position() <=3 ]  where $prod/@dept<=\"ACC\" return <elem>$prod/name</elem>",
+    TestCase.new("for $prod in  doc(  \"catalog.xml\"  ) /  catalog/ product[position() <=3 ]  where $prod/@dept<=\"ACC\" return <elem>{$prod/name}</elem>",
       ["<elem><name language=\"en\">Floppy Sun Hat</name></elem>", "<elem><name language=\"en\">Deluxe Travel Bag</name></elem>"]),
     #check without where and order
-    TestCase.new('for $prod in doc("catalog.xml")/catalog/product  return <elem>$prod/name</elem>',
+    TestCase.new('for $prod in doc("catalog.xml")/catalog/product  return <elem>{$prod/name}</elem>',
       ['<elem><name language="en">Fleece Pullover</name></elem>', "<elem><name language=\"en\">Floppy Sun Hat</name></elem>", "<elem><name language=\"en\">Deluxe Travel Bag</name></elem>", '<elem><name language="en">Cotton Dress Shirt</name></elem>']),
     #check text
-    TestCase.new('for $prod in doc("catalog.xml")/catalog/product[2]  return <elem>$prod/name/text()</elem>',
+    TestCase.new('for $prod in doc("catalog.xml")/catalog/product[2]  return <elem>{$prod/name/text()}</elem>',
       ['<elem>Floppy Sun Hat</elem>']),
     #check let
-    TestCase.new('for $prod in doc("catalog.xml")/catalog/product[2] let $name := $prod/name  return <elem>$name/text()</elem>',
+    TestCase.new('for $prod in doc("catalog.xml")/catalog/product[2] let $name := $prod/name  return <elem>{$name/text()}</elem>',
       ['<elem>Floppy Sun Hat</elem>']),
     #let
-    TestCase.new("for $prod in doc(  \"catalog.xml\"  )/catalog/product[position()<=3] let $name := $prod/name where $prod/@dept<=\"ACC\" order by $name return <elem>$name</elem>",
+    TestCase.new("for $prod in doc(  \"catalog.xml\"  )/catalog/product[position()<=3] let $name := $prod/name where $prod/@dept<=\"ACC\" order by $name return <elem>{$name}</elem>",
       ["<elem><name language=\"en\">Deluxe Travel Bag</name></elem>", "<elem><name language=\"en\">Floppy Sun Hat</name></elem>"]),
     #all
     TestCase.new(
@@ -56,7 +58,7 @@ class TestXQuery < Test::Unit::TestCase
        let $n := $p/name
        where $n/@language eq "en"
        order by $n
-       return <names>$n/text()</names>',
+       return <names>{$n/text()}</names>',
       ['<names>Cotton Dress Shirt</names>', '<names>Deluxe Travel Bag</names>', '<names>Fleece Pullover</names>', '<names>Floppy Sun Hat</names>']
     ),
     TestCase.new(
@@ -75,6 +77,39 @@ class TestXQuery < Test::Unit::TestCase
        return $p/name/text()',
       ['Cotton Dress Shirt', 'Deluxe Travel Bag', 'Fleece Pullover', 'Floppy Sun Hat']
     ),
+    #multiple result occurence
+    TestCase.new(
+      'for $p in doc("catalog.xml")/catalog/product
+       let $n := $p/name
+       where $n/@language ne "een"
+       order by $n
+       return <elem att="{$p/name/text()}" nextattr="{$p/number}">{$p/name}</elem>',
+      ['<elem att="Cotton Dress Shirt" nextattr="<number>784</number>"><name language="en">Cotton Dress Shirt</name></elem>',
+       '<elem att="Deluxe Travel Bag" nextattr="<number>443</number>"><name language="en">Deluxe Travel Bag</name></elem>',
+       '<elem att="Fleece Pullover" nextattr="<number>557<![CDATA[cdata cast<>]]></number>"><name language="en">Fleece Pullover</name></elem>',
+       '<elem att="Floppy Sun Hat" nextattr="<number>563</number>"><name language="en">Floppy Sun Hat</name></elem>']
+    ),
+    TestCase.new(
+      'for $p in doc("catalog.xml")/catalog/product
+       let $n := $p/name
+       where $n/@language ne "een"
+       order by $n
+       return <elem att="{$p/name}" nextattr="{$p/number}">{$p/name/text()}</elem>',
+      ['<elem att="<name language="en">Cotton Dress Shirt</name>" nextattr="<number>784</number>">Cotton Dress Shirt</elem>',
+       '<elem att="<name language="en">Deluxe Travel Bag</name>" nextattr="<number>443</number>">Deluxe Travel Bag</elem>',
+       '<elem att="<name language="en">Fleece Pullover</name>" nextattr="<number>557<![CDATA[cdata cast<>]]></number>">Fleece Pullover</elem>',
+       '<elem att="<name language="en">Floppy Sun Hat</name>" nextattr="<number>563</number>">Floppy Sun Hat</elem>']
+    ),
+    #overal wrap
+    TestCase.new(
+      '<ul>{for $p in doc("catalog.xml")/catalog/product
+       let $n := $p/name
+       where $n/@language ne "een"
+       order by $n
+       return <elem att="{$p/name}" nextattr="{$p/number}">{$p/name/text()}</elem>}</ul>',
+      ['<ul><elem att="<name language="en">Cotton Dress Shirt</name>" nextattr="<number>784</number>">Cotton Dress Shirt</elem><elem att="<name language="en">Deluxe Travel Bag</name>" nextattr="<number>443</number>">Deluxe Travel Bag</elem><elem att="<name language="en">Fleece Pullover</name>" nextattr="<number>557<![CDATA[cdata cast<>]]></number>">Fleece Pullover</elem><elem att="<name language="en">Floppy Sun Hat</name>" nextattr="<number>563</number>">Floppy Sun Hat</elem></ul>']
+    ),
+    
   ]
   
   

@@ -2,29 +2,20 @@ require_relative "parser_extension/Parsers"
 require_relative "expression/expression_module"
 require "rubygems"
 require "nokogiri"
+require "singleton"
 
 module XQuery
   class QueryParser
+    include Singleton
     
-    def self.parse_xquery(query)
-      str = get_parsed_str(query)
-      
-      xml_doc = Nokogiri.XML(str) do |config|
-        config.default_xml.noblanks
-      end
-      
-      #debug TODO delete
-      # puts "getsome: #{str}"
-      # puts xml_doc.to_xml(:ident => 2)
-      # puts "query: #{query}"
-      
-      return ExpressionModule.create_expr(xml_doc)
+    def initialize
+      @parser = Parsers::UpdateParser.new()
     end
     
-    #looks like update is backward compatible as xquery - so it is really the extension
-    def self.parse_update(query)
-      str = get_parsed_str(query)
-      
+    
+    
+    def parse(query)
+      str = @parser.parse_XQuery(query)
       
       xml_doc = Nokogiri.XML(str) do |config|
         config.default_xml.noblanks
@@ -41,18 +32,18 @@ module XQuery
       
     end
     
-  private
-    def self.get_parsed_str(query)
-      parser = Parsers::UpdateParser.new(query)
-      return parser.parse_XQuery();
-    end
-    
   end
 end
 
 
 #testing
+# XQuery::QueryParser.instance.parse('<ul>{for $p in doc("catalog.xml")/catalog/product
+       # let $n := $p/name
+       # where $n/@language ne "een"
+       # order by $n
+       # return <elem att="{$p/name}" nextattr="{$p/number}">{$p/name/text()}</elem>}</ul>')
 # XQuery::QueryParser.parse_update('')
+# XQuery::QueryParser.parse_update('for $prod in doc("catalog.xml")/catalog/product/number return <n>{$prod/neco}</n>')
 # XQuery::QueryParser.parse_update('doc("catalog.xml")/catalog/product[colorChoices]')
 # XQuery::QueryParser.parse_update('insert nodes (attribute A { 2.1 }, <child1 attr1="val1" attr2="val2"><name>text</name><name>text</name></child1>, "text") into doc("catalog.xml")/catalog/product[1]')
 # XQuery::QueryParser.parse_update('insert node doc("catalog.xml")/product/name as first into doc("catalog.xml")/root')

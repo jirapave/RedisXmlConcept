@@ -20,6 +20,12 @@ class TestXPath < Test::Unit::TestCase
   end
   
   TEST_CASES = [
+    TestCase.new('doc("catalog.xml")/catalog/product[colorChoices][number gt "500"][@dept = "MEN"]/colorChoices',
+      ['<colorChoices>white gray</colorChoices>']),
+    TestCase.new('doc("catalog.xml")/catalog/product[colorChoices][number gt "500"][@dept = "WMN"]/colorChoices',
+      ['<colorChoices no="four">navy black</colorChoices>']),
+    TestCase.new("doc(  \"catalog.xml\"  )/catalog/product[colorChoices][number=784]/number",
+      ['<number>784</number>']),
     TestCase.new("doc(  \"catalog.xml\"  )/catalog/product[colorChoices]/number",
       ['<number>557<![CDATA[cdata cast<>]]></number>', '<number>784</number>']),
     TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/colorChoices[@no]",
@@ -28,8 +34,6 @@ class TestXPath < Test::Unit::TestCase
       ["WMN"]),
     TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. = 443]",
       ["<number>443</number>"]),
-    # TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. eq 443]",
-      # []),#TODO this should be TypeError #TODO do another test class for errors TODO
     TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/number[. eq '443']",
       ["<number>443</number>"]),
     TestCase.new("doc(  \"catalog.xml\"  )/catalog/product/name",

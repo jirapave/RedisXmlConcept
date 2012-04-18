@@ -239,7 +239,7 @@ class TestUpdate < Test::Unit::TestCase
        where $n/@language eq "en"
        order by $n descending
        return insert nodes ($n, <name>Another Name</name>, attribute ATTR { "seek" }, "twenty something") as last into doc("catalog.xml")/catalog/product[3]',
-      ['Deluxe Travel Bag', 'Floppy Sun Hat', 'Fleece Pullover', 'Deluxe Travel Bag', 'Cotton Dress Shirt', 'Another Name']
+      ['Deluxe Travel Bag', 'Floppy Sun Hat', 'Fleece Pullover', 'Deluxe Travel Bag', 'Cotton Dress Shirt', 'Another Name', 'Another Name', 'Another Name', 'Another Name']
     ),
     
     
@@ -276,11 +276,11 @@ class TestUpdate < Test::Unit::TestCase
       xquery_controller.get_results(test_case.update_query)
       
       #DEBUG
-      # puts "PRINT the document"
-      # xml_doc = Nokogiri.XML(xquery_controller.get_results('doc("catalog.xml")/catalog')[0].to_xml) do |config|
-        # config.default_xml.noblanks
-      # end
-      # puts xml_doc.to_xml(:ident => 2)
+      puts "PRINT the document"
+      xml_doc = Nokogiri.XML(xquery_controller.get_results('doc("catalog.xml")/catalog')[0].to_xml) do |config|
+        config.default_xml.noblanks
+      end
+      puts xml_doc.to_xml(:ident => 2)
 
       #check results by checking query and after results
       after_results = xquery_controller.get_results(test_case.checking_query)

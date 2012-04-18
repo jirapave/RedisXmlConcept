@@ -1817,13 +1817,12 @@ int SWIG_Ruby_arity( VALUE proc, int minimal )
 #define SWIGTYPE_p_ParseException swig_types[1]
 #define SWIGTYPE_p_UpdateParser swig_types[2]
 #define SWIGTYPE_p_Utf8Encoder swig_types[3]
-#define SWIGTYPE_p_XQueryParser swig_types[4]
-#define SWIGTYPE_p_char swig_types[5]
-#define SWIGTYPE_p_p_wchar_t swig_types[6]
-#define SWIGTYPE_p_std__string swig_types[7]
-#define SWIGTYPE_p_wchar_t swig_types[8]
-static swig_type_info *swig_types[10];
-static swig_module_info swig_module = {swig_types, 9, 0, 0, 0, 0};
+#define SWIGTYPE_p_char swig_types[4]
+#define SWIGTYPE_p_p_wchar_t swig_types[5]
+#define SWIGTYPE_p_std__string swig_types[6]
+#define SWIGTYPE_p_wchar_t swig_types[7]
+static swig_type_info *swig_types[9];
+static swig_module_info swig_module = {swig_types, 8, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -1933,6 +1932,51 @@ SWIG_From_int  (int value)
 }
 
 
+/*@SWIG:/usr/share/swig/2.0.4/ruby/rubyprimtypes.swg,19,%ruby_aux_method@*/
+SWIGINTERN VALUE SWIG_AUX_NUM2LONG(VALUE *args)
+{
+  VALUE obj = args[0];
+  VALUE type = TYPE(obj);
+  long *res = (long *)(args[1]);
+  *res = type == T_FIXNUM ? NUM2LONG(obj) : rb_big2long(obj);
+  return obj;
+}
+/*@SWIG@*/
+
+SWIGINTERN int
+SWIG_AsVal_long (VALUE obj, long* val)
+{
+  VALUE type = TYPE(obj);
+  if ((type == T_FIXNUM) || (type == T_BIGNUM)) {
+    long v;
+    VALUE a[2];
+    a[0] = obj;
+    a[1] = (VALUE)(&v);
+    if (rb_rescue(RUBY_METHOD_FUNC(SWIG_AUX_NUM2LONG), (VALUE)a, RUBY_METHOD_FUNC(SWIG_ruby_failed), 0) != Qnil) {
+      if (val) *val = v;
+      return SWIG_OK;
+    }
+  }
+  return SWIG_TypeError;
+}
+
+
+SWIGINTERN int
+SWIG_AsVal_int (VALUE obj, int *val)
+{
+  long v;
+  int res = SWIG_AsVal_long (obj, &v);
+  if (SWIG_IsOK(res)) {
+    if ((v < INT_MIN || v > INT_MAX)) {
+      return SWIG_OverflowError;
+    } else {
+      if (val) *val = static_cast< int >(v);
+    }
+  }  
+  return res;
+}
+
+
 SWIGINTERN swig_type_info*
 SWIG_pchar_descriptor(void)
 {
@@ -1985,51 +2029,6 @@ SWIG_AsCharPtrAndSize(VALUE obj, char** cptr, size_t* psize, int *alloc)
 
 
 
-
-
-/*@SWIG:/usr/share/swig/2.0.4/ruby/rubyprimtypes.swg,19,%ruby_aux_method@*/
-SWIGINTERN VALUE SWIG_AUX_NUM2LONG(VALUE *args)
-{
-  VALUE obj = args[0];
-  VALUE type = TYPE(obj);
-  long *res = (long *)(args[1]);
-  *res = type == T_FIXNUM ? NUM2LONG(obj) : rb_big2long(obj);
-  return obj;
-}
-/*@SWIG@*/
-
-SWIGINTERN int
-SWIG_AsVal_long (VALUE obj, long* val)
-{
-  VALUE type = TYPE(obj);
-  if ((type == T_FIXNUM) || (type == T_BIGNUM)) {
-    long v;
-    VALUE a[2];
-    a[0] = obj;
-    a[1] = (VALUE)(&v);
-    if (rb_rescue(RUBY_METHOD_FUNC(SWIG_AUX_NUM2LONG), (VALUE)a, RUBY_METHOD_FUNC(SWIG_ruby_failed), 0) != Qnil) {
-      if (val) *val = v;
-      return SWIG_OK;
-    }
-  }
-  return SWIG_TypeError;
-}
-
-
-SWIGINTERN int
-SWIG_AsVal_int (VALUE obj, int *val)
-{
-  long v;
-  int res = SWIG_AsVal_long (obj, &v);
-  if (SWIG_IsOK(res)) {
-    if ((v < INT_MIN || v > INT_MAX)) {
-      return SWIG_OverflowError;
-    } else {
-      if (val) *val = static_cast< int >(v);
-    }
-  }  
-  return res;
-}
 
 
 SWIGINTERNINLINE VALUE 
@@ -2437,26 +2436,15 @@ _wrap_UpdateParser_allocate(VALUE self) {
 
 SWIGINTERN VALUE
 _wrap_new_UpdateParser(int argc, VALUE *argv, VALUE self) {
-  char *arg1 = (char *) 0 ;
-  int res1 ;
-  char *buf1 = 0 ;
-  int alloc1 = 0 ;
   UpdateParser *result = 0 ;
   
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
+  if ((argc < 0) || (argc > 0)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
   }
-  res1 = SWIG_AsCharPtrAndSize(argv[0], &buf1, NULL, &alloc1);
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "char const *","UpdateParser", 1, argv[0] ));
-  }
-  arg1 = reinterpret_cast< char * >(buf1);
-  result = (UpdateParser *)new UpdateParser((char const *)arg1);
+  result = (UpdateParser *)new UpdateParser();
   DATA_PTR(self) = result;
-  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
   return self;
 fail:
-  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
   return Qnil;
 }
 
@@ -2734,362 +2722,34 @@ fail:
 SWIGINTERN VALUE
 _wrap_UpdateParser_parse_XQuery(int argc, VALUE *argv, VALUE self) {
   UpdateParser *arg1 = (UpdateParser *) 0 ;
+  char *arg2 = (char *) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
+  int res2 ;
+  char *buf2 = 0 ;
+  int alloc2 = 0 ;
   char *result = 0 ;
   VALUE vresult = Qnil;
   
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
+  if ((argc < 1) || (argc > 1)) {
+    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
   }
   res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_UpdateParser, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "UpdateParser *","parse_XQuery", 1, self )); 
   }
   arg1 = reinterpret_cast< UpdateParser * >(argp1);
-  result = (char *)(arg1)->parse_XQuery();
-  vresult = SWIG_FromCharPtr((const char *)result);
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-swig_class SwigClassXQueryParser;
-
-#ifdef HAVE_RB_DEFINE_ALLOC_FUNC
-SWIGINTERN VALUE
-_wrap_XQueryParser_allocate(VALUE self) {
-#else
-  SWIGINTERN VALUE
-  _wrap_XQueryParser_allocate(int argc, VALUE *argv, VALUE self) {
-#endif
-    
-    
-    VALUE vresult = SWIG_NewClassInstance(self, SWIGTYPE_p_XQueryParser);
-#ifndef HAVE_RB_DEFINE_ALLOC_FUNC
-    rb_obj_call_init(vresult, argc, argv);
-#endif
-    return vresult;
-  }
-  
-
-SWIGINTERN VALUE
-_wrap_new_XQueryParser(int argc, VALUE *argv, VALUE self) {
-  char *arg1 = (char *) 0 ;
-  int res1 ;
-  char *buf1 = 0 ;
-  int alloc1 = 0 ;
-  XQueryParser *result = 0 ;
-  
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
-  }
-  res1 = SWIG_AsCharPtrAndSize(argv[0], &buf1, NULL, &alloc1);
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "char const *","XQueryParser", 1, argv[0] ));
-  }
-  arg1 = reinterpret_cast< char * >(buf1);
-  result = (XQueryParser *)new XQueryParser((char const *)arg1);
-  DATA_PTR(self) = result;
-  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
-  return self;
-fail:
-  if (alloc1 == SWIG_NEWOBJ) delete[] buf1;
-  return Qnil;
-}
-
-
-SWIGINTERN void
-free_XQueryParser(XQueryParser *arg1) {
-    delete arg1;
-}
-
-SWIGINTERN VALUE
-_wrap_XQueryParser_getInput(int argc, VALUE *argv, VALUE self) {
-  XQueryParser *arg1 = (XQueryParser *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  wchar_t *result = 0 ;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_XQueryParser, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "XQueryParser const *","getInput", 1, self )); 
-  }
-  arg1 = reinterpret_cast< XQueryParser * >(argp1);
-  result = (wchar_t *)((XQueryParser const *)arg1)->getInput();
-  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_wchar_t, 0 |  0 );
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_XQueryParser_getTokenOffset(int argc, VALUE *argv, VALUE self) {
-  XQueryParser *arg1 = (XQueryParser *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int result;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_XQueryParser, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "XQueryParser const *","getTokenOffset", 1, self )); 
-  }
-  arg1 = reinterpret_cast< XQueryParser * >(argp1);
-  result = (int)((XQueryParser const *)arg1)->getTokenOffset();
-  vresult = SWIG_From_int(static_cast< int >(result));
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_XQueryParser_getTokenEnd(int argc, VALUE *argv, VALUE self) {
-  XQueryParser *arg1 = (XQueryParser *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int result;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_XQueryParser, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "XQueryParser const *","getTokenEnd", 1, self )); 
-  }
-  arg1 = reinterpret_cast< XQueryParser * >(argp1);
-  result = (int)((XQueryParser const *)arg1)->getTokenEnd();
-  vresult = SWIG_From_int(static_cast< int >(result));
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_XQueryParser_reset__SWIG_0(int argc, VALUE *argv, VALUE self) {
-  XQueryParser *arg1 = (XQueryParser *) 0 ;
-  int arg2 ;
-  int arg3 ;
-  int arg4 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  int val4 ;
-  int ecode4 = 0 ;
-  
-  if ((argc < 3) || (argc > 3)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 3)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_XQueryParser, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "XQueryParser *","reset", 1, self )); 
-  }
-  arg1 = reinterpret_cast< XQueryParser * >(argp1);
-  ecode2 = SWIG_AsVal_int(argv[0], &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), Ruby_Format_TypeError( "", "int","reset", 2, argv[0] ));
-  } 
-  arg2 = static_cast< int >(val2);
-  ecode3 = SWIG_AsVal_int(argv[1], &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), Ruby_Format_TypeError( "", "int","reset", 3, argv[1] ));
-  } 
-  arg3 = static_cast< int >(val3);
-  ecode4 = SWIG_AsVal_int(argv[2], &val4);
-  if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), Ruby_Format_TypeError( "", "int","reset", 4, argv[2] ));
-  } 
-  arg4 = static_cast< int >(val4);
-  (arg1)->reset(arg2,arg3,arg4);
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_XQueryParser_reset__SWIG_1(int argc, VALUE *argv, VALUE self) {
-  XQueryParser *arg1 = (XQueryParser *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_XQueryParser, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "XQueryParser *","reset", 1, self )); 
-  }
-  arg1 = reinterpret_cast< XQueryParser * >(argp1);
-  (arg1)->reset();
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE _wrap_XQueryParser_reset(int nargs, VALUE *args, VALUE self) {
-  int argc;
-  VALUE argv[5];
-  int ii;
-  
-  argc = nargs + 1;
-  argv[0] = self;
-  if (argc > 5) SWIG_fail;
-  for (ii = 1; (ii < argc); ++ii) {
-    argv[ii] = args[ii-1];
-  }
-  if (argc == 1) {
-    int _v;
-    void *vptr = 0;
-    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_XQueryParser, 0);
-    _v = SWIG_CheckState(res);
-    if (_v) {
-      return _wrap_XQueryParser_reset__SWIG_1(nargs, args, self);
-    }
-  }
-  if (argc == 4) {
-    int _v;
-    void *vptr = 0;
-    int res = SWIG_ConvertPtr(argv[0], &vptr, SWIGTYPE_p_XQueryParser, 0);
-    _v = SWIG_CheckState(res);
-    if (_v) {
-      {
-        int res = SWIG_AsVal_int(argv[1], NULL);
-        _v = SWIG_CheckState(res);
-      }
-      if (_v) {
-        {
-          int res = SWIG_AsVal_int(argv[2], NULL);
-          _v = SWIG_CheckState(res);
-        }
-        if (_v) {
-          {
-            int res = SWIG_AsVal_int(argv[3], NULL);
-            _v = SWIG_CheckState(res);
-          }
-          if (_v) {
-            return _wrap_XQueryParser_reset__SWIG_0(nargs, args, self);
-          }
-        }
-      }
-    }
-  }
-  
-fail:
-  Ruby_Format_OverloadedError( argc, 5, "XQueryParser.reset", 
-    "    void XQueryParser.reset(int l, int b, int e)\n"
-    "    void XQueryParser.reset()\n");
-  
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_XQueryParser_getOffendingToken(int argc, VALUE *argv, VALUE self) {
-  SwigValueWrapper< ParseException > arg1 ;
-  void *argp1 ;
-  int res1 = 0 ;
-  wchar_t *result = 0 ;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 1) || (argc > 1)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 1)",argc); SWIG_fail;
-  }
-  {
-    res1 = SWIG_ConvertPtr(argv[0], &argp1, SWIGTYPE_p_ParseException,  0 );
-    if (!SWIG_IsOK(res1)) {
-      SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "ParseException","XQueryParser::getOffendingToken", 1, argv[0] )); 
-    }  
-    if (!argp1) {
-      SWIG_exception_fail(SWIG_ValueError, Ruby_Format_TypeError("invalid null reference ", "ParseException","XQueryParser::getOffendingToken", 1, argv[0]));
-    } else {
-      arg1 = *(reinterpret_cast< ParseException * >(argp1));
-    }
-  }
-  result = (wchar_t *)XQueryParser::getOffendingToken(arg1);
-  vresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_wchar_t, 0 |  0 );
-  return vresult;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_XQueryParser_getExpectedTokenSet(int argc, VALUE *argv, VALUE self) {
-  ParseException *arg1 = 0 ;
-  wchar_t **arg2 = (wchar_t **) 0 ;
-  int arg3 ;
-  void *argp1 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  
-  if ((argc < 3) || (argc > 3)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 3)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(argv[0], &argp1, SWIGTYPE_p_ParseException,  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "ParseException const &","XQueryParser::getExpectedTokenSet", 1, argv[0] )); 
-  }
-  if (!argp1) {
-    SWIG_exception_fail(SWIG_ValueError, Ruby_Format_TypeError("invalid null reference ", "ParseException const &","XQueryParser::getExpectedTokenSet", 1, argv[0])); 
-  }
-  arg1 = reinterpret_cast< ParseException * >(argp1);
-  res2 = SWIG_ConvertPtr(argv[1], &argp2,SWIGTYPE_p_p_wchar_t, 0 |  0 );
+  res2 = SWIG_AsCharPtrAndSize(argv[0], &buf2, NULL, &alloc2);
   if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), Ruby_Format_TypeError( "", "wchar_t const **","XQueryParser::getExpectedTokenSet", 2, argv[1] )); 
+    SWIG_exception_fail(SWIG_ArgError(res2), Ruby_Format_TypeError( "", "char const *","parse_XQuery", 2, argv[0] ));
   }
-  arg2 = reinterpret_cast< wchar_t ** >(argp2);
-  ecode3 = SWIG_AsVal_int(argv[2], &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), Ruby_Format_TypeError( "", "int","XQueryParser::getExpectedTokenSet", 3, argv[2] ));
-  } 
-  arg3 = static_cast< int >(val3);
-  XQueryParser::getExpectedTokenSet((ParseException const &)*arg1,(wchar_t const **)arg2,arg3);
-  return Qnil;
-fail:
-  return Qnil;
-}
-
-
-SWIGINTERN VALUE
-_wrap_XQueryParser_parse_XQuery(int argc, VALUE *argv, VALUE self) {
-  XQueryParser *arg1 = (XQueryParser *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  char *result = 0 ;
-  VALUE vresult = Qnil;
-  
-  if ((argc < 0) || (argc > 0)) {
-    rb_raise(rb_eArgError, "wrong # of arguments(%d for 0)",argc); SWIG_fail;
-  }
-  res1 = SWIG_ConvertPtr(self, &argp1,SWIGTYPE_p_XQueryParser, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), Ruby_Format_TypeError( "", "XQueryParser *","parse_XQuery", 1, self )); 
-  }
-  arg1 = reinterpret_cast< XQueryParser * >(argp1);
-  result = (char *)(arg1)->parse_XQuery();
+  arg2 = reinterpret_cast< char * >(buf2);
+  result = (char *)(arg1)->parse_XQuery((char const *)arg2);
   vresult = SWIG_FromCharPtr((const char *)result);
+  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
   return vresult;
 fail:
+  if (alloc2 == SWIG_NEWOBJ) delete[] buf2;
   return Qnil;
 }
 
@@ -3101,7 +2761,6 @@ static swig_type_info _swigt__p_MalformedInputException = {"_p_MalformedInputExc
 static swig_type_info _swigt__p_ParseException = {"_p_ParseException", "ParseException *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_UpdateParser = {"_p_UpdateParser", "UpdateParser *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Utf8Encoder = {"_p_Utf8Encoder", "Utf8Encoder *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_XQueryParser = {"_p_XQueryParser", "XQueryParser *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p_wchar_t = {"_p_p_wchar_t", "wchar_t **", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_std__string = {"_p_std__string", "std::string *", 0, 0, (void*)0, 0};
@@ -3112,7 +2771,6 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_ParseException,
   &_swigt__p_UpdateParser,
   &_swigt__p_Utf8Encoder,
-  &_swigt__p_XQueryParser,
   &_swigt__p_char,
   &_swigt__p_p_wchar_t,
   &_swigt__p_std__string,
@@ -3123,7 +2781,6 @@ static swig_cast_info _swigc__p_MalformedInputException[] = {  {&_swigt__p_Malfo
 static swig_cast_info _swigc__p_ParseException[] = {  {&_swigt__p_ParseException, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_UpdateParser[] = {  {&_swigt__p_UpdateParser, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Utf8Encoder[] = {  {&_swigt__p_Utf8Encoder, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_XQueryParser[] = {  {&_swigt__p_XQueryParser, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_p_wchar_t[] = {  {&_swigt__p_p_wchar_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_std__string[] = {  {&_swigt__p_std__string, 0, 0, 0},{0, 0, 0, 0}};
@@ -3134,7 +2791,6 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_ParseException,
   _swigc__p_UpdateParser,
   _swigc__p_Utf8Encoder,
-  _swigc__p_XQueryParser,
   _swigc__p_char,
   _swigc__p_p_wchar_t,
   _swigc__p_std__string,
@@ -3445,20 +3101,5 @@ SWIGEXPORT void Init_Parsers(void) {
   SwigClassUpdateParser.mark = 0;
   SwigClassUpdateParser.destroy = (void (*)(void *)) free_UpdateParser;
   SwigClassUpdateParser.trackObjects = 0;
-  
-  SwigClassXQueryParser.klass = rb_define_class_under(mParsers, "XQueryParser", rb_cObject);
-  SWIG_TypeClientData(SWIGTYPE_p_XQueryParser, (void *) &SwigClassXQueryParser);
-  rb_define_alloc_func(SwigClassXQueryParser.klass, _wrap_XQueryParser_allocate);
-  rb_define_method(SwigClassXQueryParser.klass, "initialize", VALUEFUNC(_wrap_new_XQueryParser), -1);
-  rb_define_method(SwigClassXQueryParser.klass, "getInput", VALUEFUNC(_wrap_XQueryParser_getInput), -1);
-  rb_define_method(SwigClassXQueryParser.klass, "getTokenOffset", VALUEFUNC(_wrap_XQueryParser_getTokenOffset), -1);
-  rb_define_method(SwigClassXQueryParser.klass, "getTokenEnd", VALUEFUNC(_wrap_XQueryParser_getTokenEnd), -1);
-  rb_define_method(SwigClassXQueryParser.klass, "reset", VALUEFUNC(_wrap_XQueryParser_reset), -1);
-  rb_define_singleton_method(SwigClassXQueryParser.klass, "getOffendingToken", VALUEFUNC(_wrap_XQueryParser_getOffendingToken), -1);
-  rb_define_singleton_method(SwigClassXQueryParser.klass, "getExpectedTokenSet", VALUEFUNC(_wrap_XQueryParser_getExpectedTokenSet), -1);
-  rb_define_method(SwigClassXQueryParser.klass, "parse_XQuery", VALUEFUNC(_wrap_XQueryParser_parse_XQuery), -1);
-  SwigClassXQueryParser.mark = 0;
-  SwigClassXQueryParser.destroy = (void (*)(void *)) free_XQueryParser;
-  SwigClassXQueryParser.trackObjects = 0;
 }
 

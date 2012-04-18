@@ -27,6 +27,9 @@ module XQuery
       when ExpressionModule::DeleteExpr, ExpressionModule::InsertExpr
         @update_solver.solve(expression)
         
+      when ExpressionModule::DirElemConstructor
+        return [ expression.get_elem_str(@path_solver, XQuerySolverContext.new, @flwor_solver) ]
+        
       else
         raise StandardError, "not implemented #{expression.type}"
       end

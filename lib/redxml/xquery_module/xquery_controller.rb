@@ -13,7 +13,7 @@ module XQuery
       
       #parse query into Expression object
       # expression = QueryParser.parse_xquery(query)
-      expression = QueryParser.parse_update(query)
+      expression = QueryParser.instance.parse(query)
       
       #solve parsed expression
       return @xquery_solver.solve(expression)

@@ -12,6 +12,19 @@ module XQuery
     def solve(clause_expr, context)
       # puts "solving #{clause_expr.type}"
       
+      #LET clause
+      if(clause_expr.type == ExpressionModule::LetClause)
+        clause_expr.parts.each { |part|
+          context.cycles.each { |cycle|
+            cycle.variables[part.var_name] = @path_solver.solve(part.path_expr, cycle)
+          }
+        }
+        return
+      end
+      
+      
+      #FOR clause
+      
       #clone parts
       clause_parts = clause_expr.parts.clone
       

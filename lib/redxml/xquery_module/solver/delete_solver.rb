@@ -25,7 +25,7 @@ module XQuery
         when ExpressionModule::RelativePathExpr
           nodes_to_delete.concat(@path_solver.solve(expression.location, context))
         when ExpressionModule::VarRef
-          nodes_to_delete << context.variables[location.var_name]
+          nodes_to_delete.concat(context.variables[location.var_name])
         else
           raise NotSupportedError, expression.location.type
         end

@@ -58,7 +58,7 @@ module XQuery
             when ExpressionModule::RelativePathExpr
               extended_keys_to_insert.concat(@path_solver.solve(item, context))
             when ExpressionModule::VarRef
-              extended_keys_to_insert << context.variables[item.var_name]
+              extended_keys_to_insert.concat(context.variables[item.var_name])
             else
               raise StandardError, "impossible"
             end
@@ -77,11 +77,16 @@ module XQuery
           
           
         when ExpressionModule::DirElemConstructor
-          add_node(item.nokogiri_node, location, target)
+          contexts.each { |context|
+            add_node(item.nokogiri_node(@path_solver, context), location, target)
+          }
           
           
         when ExpressionModule::StringLiteral
-          add_text(item.text, location, target)
+          contexts.each { |context|
+            add_text(item.text, location, target)
+          }
+          
           
         end
       }

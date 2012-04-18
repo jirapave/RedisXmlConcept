@@ -22,16 +22,22 @@ module XQuery
       contexts.each_with_index { |context, index|
         
         #retrieve results for ordering
-        result = nil
+        results = nil
         case ordering_expr.type
         when ExpressionModule::RelativePathExpr
-          result = @path_solver.solve(ordering_expr, context)[0] # should be the same count
+          results = @path_solver.solve(ordering_expr, context)
         when ExpressionModule::VarRef
-          result = context.variables[ordering_expr.var_name] # should be the same count
+          results = context.variables[ordering_expr.var_name]
         else
           raise NotSupportedError, ordering_expr.type
         end
-        result_str = @path_solver.path_processor.get_text(result)
+        
+        #retrieve text content from results and join that
+        result_str = ""
+        results.each { |result|
+          result_str << @path_solver.path_processor.get_text(result)
+        }
+        
         original_results_order[result_str] = index
         ordering_results << result_str
         

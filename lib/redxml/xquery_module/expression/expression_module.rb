@@ -62,6 +62,9 @@ module XQuery
       when VarRef
         return VarRefHandle.new(reduced_node)
         
+      when DirElemConstructor
+        return DirElemConstructorHandle.new(reduced_node)
+        
       when DeleteExpr
         return DeleteExprHandle.new(reduced_node)
         
