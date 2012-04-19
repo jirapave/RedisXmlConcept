@@ -31,7 +31,7 @@ class TestUpdate < Test::Unit::TestCase
     TestCase.new(
       'doc("catalog.xml")/catalog/product[2]/name/text()',
       [ "Floppy Sun Hat" ],
-      'for $prod in doc("catalog.xml")/catalog/product where $prod/number = 563 return delete node $prod',
+      'for $prod in doc("catalog.xml")/catalog/product where $prod[nocdata]/number = 563 return delete node $prod',
       # [ "Cotton Dress Shirt" ]
       [ "Deluxe Travel Bag" ]
     ),

@@ -53,16 +53,7 @@ module XQuery
     end
     
     def get_node_content(extended_key)
-      content = ""
-      key_array = get_children_plain(extended_key)
-      key_array.each { |key_str|
-        if(Transformer::KeyElementBuilder.element?(key_str))
-          content << get_node(Transformer::KeyElementBuilder.build_from_s(@key_builder, key_str)).to_stripped_s
-        else
-          content << @db.get_hash_value(@content_hash_key, key_str)
-        end
-      }
-      return content
+      return get_node(extended_key).content
     end
     
     

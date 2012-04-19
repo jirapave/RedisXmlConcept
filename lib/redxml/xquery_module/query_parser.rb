@@ -37,11 +37,11 @@ end
 
 
 #testing
-# XQuery::QueryParser.instance.parse('<ul>{for $p in doc("catalog.xml")/catalog/product
+# XQuery::QueryParser.instance.parse('for $p in doc("catalog.xml")/catalog/product
        # let $n := $p/name
        # where $n/@language ne "een"
        # order by $n
-       # return <elem att="{$p/name}" nextattr="{$p/number}">{$p/name/text()}</elem>}</ul>')
+       # return <elem att="{$p/name}"></elem>')
 # XQuery::QueryParser.parse_update('')
 # XQuery::QueryParser.parse_update('for $prod in doc("catalog.xml")/catalog/product/number return <n>{$prod/neco}</n>')
 # XQuery::QueryParser.parse_update('doc("catalog.xml")/catalog/product[colorChoices]')

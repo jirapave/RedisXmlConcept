@@ -1,5 +1,6 @@
 require_relative "expression_module"
 require_relative "expression_handle"
+require "set"
 require "rubygems"
 require "nokogiri"
 
@@ -28,11 +29,18 @@ module XQuery
         
         #hash with results
         enclosed_expr_hash = Hash.new
+        #hash with attr indication
+        enclosed_expr_hash_attr = Hash.new 
         
         #find eclosed expressions
         enclosed_nodes = node.xpath(".//EnclosedExpr/Expr") #predicate [not(descendant::EnclosedExpr)] do not work
+        attr_encl_nodes = Set.new
+        node.xpath(".//DirAttributeValue//EnclosedExpr/Expr").each { |attr_node|
+          attr_encl_nodes << attr_node.text
+        }
         
         done_enclosed_nodes = []
+        final_elem_str = node.text
         
         enclosed_nodes.each { |enclosed_node|
           
@@ -67,28 +75,58 @@ module XQuery
             
           when FLWORExpr
             results = flwor_solver.solve(FLWORExprHandle.new(reduced))
-            enclosed_expr_hash[reduced_text] = results.join
+            enclosed_expr_hash[reduced_text] = [ results.join ]
             results = nil
             
           else
             raise NotSupportedError, reduced.name
           end
           
-          
           if(results)
-            result_str = ""
-            results.each { |result|
-              result_str << path_solver.path_processor.get_node(result).to_s
-            }
-            enclosed_expr_hash[reduced_text] = result_str
+            enclosed_expr_hash[reduced_text] = results
           end
+
+          
+          # if(results)
+            # result_str = ""
+            # results.each { |result|
+#               
+                # if(result.kind_of?(String))
+                  # result_str << result
+                # else
+                  # result_str << path_solver.path_processor.get_node(result).content
+                # end
+              # else
+                # if(result.kind_of?(String))
+                  # result_str << result
+                # else
+                  # result_str << path_solver.path_processor.get_node(result).to_html
+                # end
+              # end
+#               
+            # }
+            # enclosed_expr_hash[reduced_text] = result_str
+          # end
           
           
           done_enclosed_nodes << reduced_text
         }
         final_elem_str = node.text#.gsub("{#{reduced_text}}", "#{reduced_text}")
         enclosed_expr_hash.keys.sort.reverse.each { |key|
-          final_elem_str.gsub!("{#{key}}", enclosed_expr_hash[key])
+          elem_str = ""
+          attr_str = ""
+          results = enclosed_expr_hash[key]
+          results.each {|result|
+            if(result.kind_of?(String))
+              elem_str << result
+              attr_str << result
+            else
+              elem_str << path_solver.path_processor.get_node(result).to_html
+              attr_str << path_solver.path_processor.get_node(result).content
+            end
+          }
+          final_elem_str.gsub!("=\"{#{key}}\"", "=\"#{attr_str}\"")
+          final_elem_str.gsub!("{#{key}}", elem_str)
         }
         
         

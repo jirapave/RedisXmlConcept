@@ -83,11 +83,11 @@ class TestXQuery < Test::Unit::TestCase
        let $n := $p/name
        where $n/@language ne "een"
        order by $n
-       return <elem att="{$p/name/text()}" nextattr="{$p/number}">{$p/name}</elem>',
-      ['<elem att="Cotton Dress Shirt" nextattr="<number>784</number>"><name language="en">Cotton Dress Shirt</name></elem>',
-       '<elem att="Deluxe Travel Bag" nextattr="<number>443</number>"><name language="en">Deluxe Travel Bag</name></elem>',
-       '<elem att="Fleece Pullover" nextattr="<number>557<![CDATA[cdata cast<>]]></number>"><name language="en">Fleece Pullover</name></elem>',
-       '<elem att="Floppy Sun Hat" nextattr="<number>563</number>"><name language="en">Floppy Sun Hat</name></elem>']
+       return <elem att="{$p/name}" nextattr="{$p/number/text()}">{$p/name}</elem>',
+      ['<elem att="Cotton Dress Shirt" nextattr="784"><name language="en">Cotton Dress Shirt</name></elem>',
+       '<elem att="Deluxe Travel Bag" nextattr="443"><name language="en">Deluxe Travel Bag</name></elem>',
+       '<elem att="Fleece Pullover" nextattr="557cdata cast<>"><name language="en">Fleece Pullover</name></elem>',
+       '<elem att="Floppy Sun Hat" nextattr="563"><name language="en">Floppy Sun Hat</name></elem>']
     ),
     TestCase.new(
       'for $p in doc("catalog.xml")/catalog/product
@@ -95,10 +95,10 @@ class TestXQuery < Test::Unit::TestCase
        where $n/@language ne "een"
        order by $n
        return <elem att="{$p/name}" nextattr="{$p/number}">{$p/name/text()}</elem>',
-      ['<elem att="<name language="en">Cotton Dress Shirt</name>" nextattr="<number>784</number>">Cotton Dress Shirt</elem>',
-       '<elem att="<name language="en">Deluxe Travel Bag</name>" nextattr="<number>443</number>">Deluxe Travel Bag</elem>',
-       '<elem att="<name language="en">Fleece Pullover</name>" nextattr="<number>557<![CDATA[cdata cast<>]]></number>">Fleece Pullover</elem>',
-       '<elem att="<name language="en">Floppy Sun Hat</name>" nextattr="<number>563</number>">Floppy Sun Hat</elem>']
+      ['<elem att="Cotton Dress Shirt" nextattr="784">Cotton Dress Shirt</elem>',
+       '<elem att="Deluxe Travel Bag" nextattr="443">Deluxe Travel Bag</elem>',
+       '<elem att="Fleece Pullover" nextattr="557cdata cast<>">Fleece Pullover</elem>',
+       '<elem att="Floppy Sun Hat" nextattr="563">Floppy Sun Hat</elem>']
     ),
     #overal wrap
     TestCase.new(
@@ -107,7 +107,15 @@ class TestXQuery < Test::Unit::TestCase
        where $n/@language ne "een"
        order by $n
        return <elem att="{$p/name}" nextattr="{$p/number}">{$p/name/text()}</elem>}</ul>',
-      ['<ul><elem att="<name language="en">Cotton Dress Shirt</name>" nextattr="<number>784</number>">Cotton Dress Shirt</elem><elem att="<name language="en">Deluxe Travel Bag</name>" nextattr="<number>443</number>">Deluxe Travel Bag</elem><elem att="<name language="en">Fleece Pullover</name>" nextattr="<number>557<![CDATA[cdata cast<>]]></number>">Fleece Pullover</elem><elem att="<name language="en">Floppy Sun Hat</name>" nextattr="<number>563</number>">Floppy Sun Hat</elem></ul>']
+      ['<ul><elem att="Cotton Dress Shirt" nextattr="784">Cotton Dress Shirt</elem><elem att="Deluxe Travel Bag" nextattr="443">Deluxe Travel Bag</elem><elem att="Fleece Pullover" nextattr="557cdata cast<>">Fleece Pullover</elem><elem att="Floppy Sun Hat" nextattr="563">Floppy Sun Hat</elem></ul>']
+    ),
+    TestCase.new(
+      '<ul>{for $p in doc("catalog.xml")/catalog/product
+       let $n := $p/name
+       where $n/@language ne "een"
+       order by $n
+       return <elem att="{$p/name/text()}" nextattr="{$p/number/text()}">{$p/name/text()}</elem>}</ul>',
+      ['<ul><elem att="Cotton Dress Shirt" nextattr="784">Cotton Dress Shirt</elem><elem att="Deluxe Travel Bag" nextattr="443">Deluxe Travel Bag</elem><elem att="Fleece Pullover" nextattr="557cdata cast<>">Fleece Pullover</elem><elem att="Floppy Sun Hat" nextattr="563">Floppy Sun Hat</elem></ul>']
     ),
     
   ]
@@ -130,7 +138,7 @@ class TestXQuery < Test::Unit::TestCase
       right_results.each_with_index { |right_result, indx|
         new_result = new_results[indx]
         if(new_result.kind_of?(Nokogiri::XML::Node))
-          new_result = new_result.to_s
+          new_result = new_result.to_html
         end
         assert_equal(right_result, new_result, "for query: #{test_case.query}, results are not the same")
       }

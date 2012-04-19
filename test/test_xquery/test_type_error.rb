@@ -12,7 +12,10 @@ class TestTypeError < Test::Unit::TestCase
   QUERIES = [
     'doc("catalog.xml")/catalog/product/number[. eq 443]',
     'doc("catalog.xml")/catalog/product[number ge 443]',
-    'doc("catalog.xml")/catalog/product/number["443" eq 443]'
+    'doc("catalog.xml")/catalog/product/number["443" eq 443]',
+    'doc("catalog.xml")/catalog/product[colorChoices][number = 784]/number',
+    'doc("catalog.xml")/catalog/product/number[. = 443]',
+    'doc("catalog.xml")/catalog/product[nocdata eq "1"]/@dept'
   ]  
   
   
