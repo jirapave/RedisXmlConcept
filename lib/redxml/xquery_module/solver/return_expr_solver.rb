@@ -23,7 +23,7 @@ module XQuery
             
           when ExpressionModule::RelativePathExpr, ExpressionModule::VarRef
             ext_keys = []
-            if(ExpressionModule::RelativePathExpr)
+            if(part.type == ExpressionModule::RelativePathExpr)
               ext_keys = @path_solver.solve(part, context)
             else
               ext_keys = context.variables[part.var_name]

@@ -20,6 +20,22 @@ class TestXQuery < Test::Unit::TestCase
   end
   
   TEST_CASES = [
+    #more for
+    TestCase.new('for $prod in doc("catalog.xml")/catalog/product
+                  for $name in doc("catalog.xml")/catalog/product/name
+                  return $name',
+      ['<name language="en">Fleece Pullover</name>', '<name language="en">Floppy Sun Hat</name>', '<name language="en">Deluxe Travel Bag</name>', '<name language="en">Cotton Dress Shirt</name>',
+       '<name language="en">Fleece Pullover</name>', '<name language="en">Floppy Sun Hat</name>', '<name language="en">Deluxe Travel Bag</name>', '<name language="en">Cotton Dress Shirt</name>',
+       '<name language="en">Fleece Pullover</name>', '<name language="en">Floppy Sun Hat</name>', '<name language="en">Deluxe Travel Bag</name>', '<name language="en">Cotton Dress Shirt</name>',
+       '<name language="en">Fleece Pullover</name>', '<name language="en">Floppy Sun Hat</name>', '<name language="en">Deluxe Travel Bag</name>', '<name language="en">Cotton Dress Shirt</name>',]),
+    #second let instead of that for
+    TestCase.new('for $prod in doc("catalog.xml")/catalog/product
+                  let $name := doc("catalog.xml")/catalog/product/name
+                  return $name',
+      ['<name language="en">Fleece Pullover</name><name language="en">Floppy Sun Hat</name><name language="en">Deluxe Travel Bag</name><name language="en">Cotton Dress Shirt</name>',
+       '<name language="en">Fleece Pullover</name><name language="en">Floppy Sun Hat</name><name language="en">Deluxe Travel Bag</name><name language="en">Cotton Dress Shirt</name>',
+       '<name language="en">Fleece Pullover</name><name language="en">Floppy Sun Hat</name><name language="en">Deluxe Travel Bag</name><name language="en">Cotton Dress Shirt</name>',
+       '<name language="en">Fleece Pullover</name><name language="en">Floppy Sun Hat</name><name language="en">Deluxe Travel Bag</name><name language="en">Cotton Dress Shirt</name>']),
     #regular for, where, order by, return
     TestCase.new("for $prod in doc(  \"catalog.xml\"  )/catalog/product[position()<=3]  where $prod/@dept<=\"ACC\" order by $prod/name return $prod/name",
       ["<name language=\"en\">Deluxe Travel Bag</name>", "<name language=\"en\">Floppy Sun Hat</name>"]),
