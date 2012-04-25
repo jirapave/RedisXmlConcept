@@ -7,6 +7,7 @@ module XQuery
       @db = BaseInterface::DBInterface.instance
     end
     
+    
     def save_node(nokogiri_node, key_element_builder)
       
       #save attributes
@@ -62,14 +63,18 @@ module XQuery
     end
     
     def save_attributes(nokogiri_node, key_element_builder)
-      #create attributes with ids
+      #map attribute names to IDs
       attributes = Hash.new
       nokogiri_node.attributes.each { |key, value|
         attributes[get_attr_id(key)] = value
       }
-      #store attributes
+      #store attributes do database
       if(!attributes.empty?)
-        @db.add_to_hash(@content_hash_key, [ key_element_builder.attr, attributes.to_a.flatten.join(Transformer::XMLTransformer::ATTR_SEPARATOR) ])
+        @db.add_to_hash(@content_hash_key, \
+            [ key_element_builder.attr, \
+              attributes.to_a.flatten.join( \
+                Transformer::XMLTransformer::ATTR_SEPARATOR \
+              ) ])
       end
     end
     
@@ -77,7 +82,6 @@ module XQuery
       begin
         return @mapping_service.map_attr_name(attr_name)
       rescue Transformer::MappingException
-        puts "creating new attr mapping"
         return @mapping_service.create_attr_mapping(attr_name)
       end
     end
@@ -86,7 +90,6 @@ module XQuery
       begin
         return @mapping_service.map_elem_name(elem_name)
       rescue Transformer::MappingException
-        puts "creating new elem mapping"
         return @mapping_service.create_elem_mapping(elem_name)
       end
     end
