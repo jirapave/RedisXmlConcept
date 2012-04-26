@@ -9,7 +9,7 @@ module XQuery
       
       #support for one order so far TODO support for more
       if(order_expr.parts.length > 1)
-        raise StandardError, "more then one order part not supported yet: #{order_expr.parts.length}"
+        raise NotSupportedError, "more then one order part not supported yet: #{order_expr.parts.length}"
       end
 
       
@@ -19,6 +19,7 @@ module XQuery
 
       original_results_order = Hash.new
       ordering_results = []
+      puts "context length: #{contexts.length}"
       contexts.each_with_index { |context, index|
         
         #retrieve results for ordering
@@ -37,6 +38,9 @@ module XQuery
         results.each { |result|
           result_str << @path_solver.path_processor.get_text(result)
         }
+        
+        #some results could be the same
+        result_str << " <#{index}"
         
         original_results_order[result_str] = index
         ordering_results << result_str
