@@ -1,6 +1,10 @@
 require "singleton"
 require "yaml"
-require "redis/connection/hiredis"
+
+if(RUBY_PLATFORM.downcase.include?("linux"))
+  require "redis/connection/hiredis"
+end
+
 require "redis"
 require "rubygems"
 require "nokogiri"

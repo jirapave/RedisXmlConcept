@@ -1,3 +1,8 @@
+
+
+puts RUBY_PLATFORM
+exit
+
 require_relative "xquery_test_helper"
 require_relative "../../lib/redxml.rb"
 
