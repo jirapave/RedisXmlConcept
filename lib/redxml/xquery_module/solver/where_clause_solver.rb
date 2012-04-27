@@ -9,7 +9,7 @@ module XQuery
     end
     
     def solve(where_expr, context)
-      puts "solving #{where_expr.type}"
+      # puts "solving #{where_expr.type}"
       
       specific_where_expr = where_expr.value 
       case specific_where_expr.type
@@ -30,8 +30,13 @@ module XQuery
     
     def get_comparison_values(expression, context)
       case expression.type
-      when ExpressionModule::RelativePathExpr
-        results = @path_solver.solve(expression, context)
+      when ExpressionModule::RelativePathExpr, ExpressionModule::VarRef
+        results = []
+        if(expression.type == ExpressionModule::RelativePathExpr)
+          results = @path_solver.solve(expression, context)
+        else
+          results = context.variables[expression.var_name]
+        end
         final_values = []
         results.each { |result|
           final_result = result
@@ -49,7 +54,7 @@ module XQuery
          
       when ExpressionModule::StringLiteral
         #returning string
-        return [ ExpressionModule::DummyExpressionHandle.new(ExpressionModule::StringLiteral, expression.text.gsub("'", "").gsub('"', "")) ]
+        return [ ExpressionModule::DummyExpressionHandle.new(ExpressionModule::StringLiteral, expression.text[1..-2]) ]
          
       else
         raise StandardError, "other types of predicate values are not supported yet: #{expression.type}"

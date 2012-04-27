@@ -305,7 +305,7 @@ module Transformer
     # and does not contain ID. Refresh could help.
     def unmap_attr_name(attr_id)
       attr_name = Transformer::MappingService.find_hash_key(@attr_hash, attr_id)
-      raise Transformer::MappingException, "Mapping for attribute with id:#{attr_name} does not exist" unless attr_name
+      raise Transformer::MappingException, "Mapping for attribute with id:#{attr_id} does not exist" unless attr_name
       attr_name
     end
     

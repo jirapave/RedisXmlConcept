@@ -3,21 +3,26 @@
 		<number>557<![CDATA[
 			cdata cast<>]]></number>
 		<name language="en">Fleece Pullover</name>
-		<colorChoices>navy black</colorChoices>
+		<colorChoices no="four">navy black</colorChoices>
 	</product>
 	<product dept="ACC">
 		<number>563</number>
 		<name language="en">Floppy Sun Hat</name>
+		<nocdata>1</nocdata>
+		<nocdata>2</nocdata>
 	</product>
 	<product dept="ACC">
 		<!-- Commentary -->
 		<number>443</number>
+		one text
 		<name language="en">Deluxe Travel Bag</name>
+		<nocdata/>
 	</product>
 	<product dept="MEN">
 		<number>784</number>
 		<name language="en">Cotton Dress Shirt</name>
 		<colorChoices>white gray</colorChoices>
 		<desc>Our <i>favorite</i> shirt! <!-- Second commentary --></desc>
+		<nocdata/>
 	</product>
 </catalog>

@@ -2,7 +2,6 @@ require_relative "function_solver"
 require_relative "predicate_solver"
 require_relative "xquery_solver_context"
 require_relative "../processor/key_path_processor"
-require_relative "../processor/node_path_processor"
 require_relative "../exceptions"
 require_relative "../expression/expression_module"
 require_relative "../expression/AbbrevForwardStep_handle"
@@ -21,7 +20,8 @@ module XQuery
     def solve(path_expr, context=XQuerySolverContext.new) #returns keys or nodes, DOESN'T change context
       #here is nothing to cycle, solved in FLWOR solvers only
       
-      puts "PATH solver, step count: #{path_expr.steps.length}"
+      #TODO delete
+      # puts "PATH solver, step count: #{path_expr.steps.length}"
       
       @path_processor = nil
       @last_step = false
@@ -31,7 +31,7 @@ module XQuery
       path_expr.steps.each { |step|
         
         #debug TODO delete
-        puts "step, type: #{step.step_type}, content: #{step.text}"
+        # puts "step, type: #{step.step_type}, content: #{step.text}"
         #debug TODO delete
          
         if(step.step_type == ExpressionModule::StepExprHandle::STARTING)
@@ -50,22 +50,22 @@ module XQuery
         end
         
         #debug TODO delete
-        puts "===>STEP RESULTS start"
-        results.each { |res|
-          puts res.inspect
-        }
-        puts "===<STEP RESULTS end"
+        # puts "===>STEP RESULTS start"
+        # results.each { |res|
+          # puts res.inspect
+        # }
+        # puts "===<STEP RESULTS end"
         #debug TODO delete
         
       }
       
       #debug TODO delete
-      puts "Path Solver RETURNING: "
-      puts "===>STEP RESULTS start"
-      results.each { |res|
-        puts res.inspect
-      }
-      puts "===<STEP RESULTS end"
+      # puts "Path Solver RETURNING: "
+      # puts "===>STEP RESULTS start"
+      # results.each { |res|
+        # puts res.inspect
+      # }
+      # puts "===<STEP RESULTS end"
       #debug TODO delete
       
       return results
@@ -103,33 +103,29 @@ module XQuery
           
           
         when ExpressionModule::VarRef
-          node = context.variables[specified_step.var_name]
-          if(node == nil)
-            raise QueryStringError, "such variable (#{specified_step.var_name}) not found in current context"
+          nodes = context.variables[specified_step.var_name]
+          if(!nodes || nodes.empty?)
+            raise QueryStringError, "such variable (#{specified_step.var_name}) not found in current context, or content sequence is empty"
           end
           
-          @path_processor = KeyPathProcessor.new(node.key_builder)
+          @path_processor = KeyPathProcessor.new(nodes[0].key_builder)
           
-          # if(node.kind_of?(Transformer::KeyBuilder))
-            # @path_processor = KeyPathProcessor.new(node)
-          # elsif(node.kind_of?(Transformer::KeyElementBuilder))
-            # @path_processor = KeyPathProcessor.new(node.key_builder)
-          # else
-            # raise StandardError, "unknown type of node in variable: #{node.class}"
-          # end
-          
+          final_nodes = nodes
           
           #maybe predicates?
           if(!predicates.empty?)
+            final_nodes = []
+          
             #solve predicates
             predicate_solver = PredicateSolver.new(@path_processor)
-            predicates_result = predicate_solver.evaluate(predicates, node, 1, 1)
-            if(!predicates_result)
-              return []
-            end
+            nodes.each { |node|
+              if(predicate_solver.evaluate(predicates, node, 1, 1))
+                final_nodes << node
+              end
+            }
           end
           
-          return [ node ]
+          return final_nodes
           
         end
         
@@ -145,12 +141,10 @@ module XQuery
           case specified_step.value_type
           when ExpressionModule::AbbrevForwardStepHandle::ELEMENT
             ### results setting
-            puts "element"
             results = get_child_elements(actual_result, specified_step.value_name, step_expression.step_type)
 
             
           when ExpressionModule::AbbrevForwardStepHandle::ATTRIBUTE
-            puts "attr"
             @last_step = true
             case step_expression.step_type
             when ExpressionModule::StepExprHandle::ORDINARY
@@ -165,7 +159,6 @@ module XQuery
             
             
           when ExpressionModule::AbbrevForwardStepHandle::TEXT
-            puts "text"
             @last_step = true
             case step_expression.step_type
             when ExpressionModule::StepExprHandle::ORDINARY
@@ -213,13 +206,14 @@ module XQuery
           return results
         end
         
+
+        
         #predicate solving for NEXT steps
         final_results = []
         results_size = results.length 
         results.each_with_index { |res, index|
           predicate_solver = PredicateSolver.new(@path_processor)
           predicates_result = predicate_solver.evaluate(predicates, res, index+1, results_size)
-          #TODO TODO TODO review - this must be wrong, is predicate solver prepared for all kinds of results? (especially texts?)
           if(predicates_result)
             final_results << res
           end 

@@ -21,5 +21,9 @@ Gem::Specification.new do |s|
   s.has_rdoc = true
   s.add_dependency('nokogiri', '>= 1.5.2')
   s.add_dependency('redis', '>= 2.2.2')
-  s.add_dependency('hiredis', '>= 0.4.5')
+  
+  if(RUBY_PLATFORM.downcase.include?("linux"))
+    s.add_dependency('hiredis', '>= 0.4.5')
+  end
+  
 end

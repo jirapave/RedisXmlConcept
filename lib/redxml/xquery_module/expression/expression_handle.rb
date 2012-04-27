@@ -4,6 +4,10 @@ module XQuery
       
         def initialize(node)
           @node = node
+          
+          #TODO delete
+          # puts "initializing #{type}"
+          #TODO delete
         end
 
         def type
@@ -13,6 +17,9 @@ module XQuery
         def text
           @node.content
         end
+        
+      protected
+        attr_reader :node
       
     end
   end

@@ -16,6 +16,8 @@ module Transformer
     # Separator of direct descendants of the certain element, used as delimiter
     DESC_SEPARATOR = "|"
     
+    attr_reader :mapping_service
+    
     # Creates new instance of XmlTransformer to work with document.
     # ==== Parameters
     # * +key_builder+ - KeyBuilder which is used to determine the document with which we are working

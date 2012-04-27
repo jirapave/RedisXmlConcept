@@ -14,7 +14,7 @@ Dir["test/test_transformer/*.rb"].each {|file| tests << file }
 Dir["test/test_base_interface/*.rb"].each {|file| tests << file }
 Dir["test/test_xml_db_api/*.rb"].each {|file| tests << file }
 Dir["test/integration_tests/*.rb"].each {|file| tests << file }
-# Dir["test/test_xquery/test_*.rb"].each {|file| tests << file }
+Dir["test/test_xquery/test_*.rb"].each {|file| tests << file }
 
 Rake::TestTask.new do |t|
   t.libs << 'test'

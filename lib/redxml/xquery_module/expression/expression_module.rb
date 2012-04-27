@@ -1,6 +1,7 @@
 require_relative "FLWORExpr_handle"
 require_relative "RelativePathExpr_handle"
 require_relative "DeleteExpr_handle"
+require_relative "InsertExpr_handle"
 require_relative "expression_handle"
 require_relative "../exceptions"
 
@@ -11,6 +12,7 @@ module XQuery
     FLWORExpr = "FLWORExpr"
     RelativePathExpr = "RelativePathExpr"
     FunctionCall = "FunctionCall"
+    QName = "QName"
     AbbrevForwardStep = "AbbrevForwardStep"
     ComparisonExpr = "ComparisonExpr"
     ForClause = "ForClause"
@@ -41,6 +43,9 @@ module XQuery
     ValueComp = "ValueComp"
     
     DeleteExpr = "DeleteExpr"
+    InsertExpr = "InsertExpr" 
+    ParenthesizedExpr = "ParenthesizedExpr"
+    CompAttrConstructor = "CompAttrConstructor"
     #expression types
      
     
@@ -57,8 +62,14 @@ module XQuery
       when VarRef
         return VarRefHandle.new(reduced_node)
         
+      when DirElemConstructor
+        return DirElemConstructorHandle.new(reduced_node)
+        
       when DeleteExpr
         return DeleteExprHandle.new(reduced_node)
+        
+      when InsertExpr
+        return InsertExprHandle.new(reduced_node)
         
       else
         puts "WARNING: creating generic expression #{reduced_node.name}"

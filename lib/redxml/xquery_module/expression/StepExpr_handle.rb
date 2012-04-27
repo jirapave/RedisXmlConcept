@@ -19,10 +19,6 @@ module XQuery
       def initialize(node, step_type=START)
         super(node)
         
-        #TODO delete
-        puts "initializing StepExpr"
-        #TODO delete
-        
         @step_type = step_type
         
         @value = nil

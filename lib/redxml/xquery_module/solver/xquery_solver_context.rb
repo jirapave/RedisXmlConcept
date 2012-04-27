@@ -1,8 +1,8 @@
 module XQuery
   class XQuerySolverContext
     
-    attr_reader :variables, :final
-    attr_accessor :passed, :order#, :last_var_name
+    attr_reader :final
+    attr_accessor :passed, :order, :variables
     
     def initialize(variables=Hash.new)
       @variables = variables #in hash can be KeyElementBuilders or prepared Nodes
@@ -24,7 +24,7 @@ module XQuery
     def populate(var_name, var_contents)
       var_contents.each { |content|
         @new_variables = @variables.clone
-        @new_variables[var_name] = content
+        @new_variables[var_name] = [ content ]
         new_context = XQuerySolverContext.new(@new_variables)
         @cycles << new_context
       }

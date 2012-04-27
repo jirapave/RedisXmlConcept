@@ -11,10 +11,6 @@ module XQuery
       def initialize(node)
         super(node)
         
-        #TODO delete
-        puts "initializing WhereClause"
-        #TODO delete
-        
         reduced = ExpressionModule::reduce(node.children[1])
         if(reduced.name == ComparisonExpr)
           @value = ComparisonExprHandle.new(reduced)

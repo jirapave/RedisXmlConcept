@@ -12,16 +12,10 @@ module XQuery
       def initialize(node)
         super(node)
         
-        #TODO delete
-        puts "initializing FLWOR"
-        #TODO delete
-        
         #scan for clauses and prepare parts this time
         @children = []
         was_return = false
-        puts "children count: #{node.children.length}"
         node.children.each { |child|
-          puts "child name: #{child.name}, child content: #{child.content}"
           if(child.name == "TOKEN" && child.content == "return")
             was_return = true
             next

@@ -24,8 +24,11 @@ module XQuery
         return prepare_results(results)
         
       #simple update queries
-      when ExpressionModule::DeleteExpr
+      when ExpressionModule::DeleteExpr, ExpressionModule::InsertExpr
         @update_solver.solve(expression)
+        
+      when ExpressionModule::DirElemConstructor
+        return [ expression.get_elem_str(@path_solver, XQuerySolverContext.new, @flwor_solver) ]
         
       else
         raise StandardError, "not implemented #{expression.type}"
@@ -42,10 +45,12 @@ module XQuery
           final_results << result
         end
       }
-      puts "XQuerySolver: FINAL results"
-      final_results.each { |f|
-        puts f
-      }
+      
+      #TODO delete this debug print
+      # puts "XQuerySolver: FINAL results"
+      # final_results.each { |f|
+        # puts f
+      # }
       return final_results
     end
     

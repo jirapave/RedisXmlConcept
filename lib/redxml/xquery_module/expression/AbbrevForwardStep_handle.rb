@@ -17,7 +17,7 @@ module XQuery
         super(node)
         
         #TODO delete
-        puts "initializing AbbrevForwardStep, content: #{node.content}, node type: #{type}"
+        # puts "   content: #{node.content}, node type: #{type}"
         #TODO delete
         
         #function test
@@ -35,7 +35,11 @@ module XQuery
           @value_type = ATTRIBUTE
           @value_name = node.children[1].content
         end
-         
+        
+      end
+      
+      def type
+        return AbbrevForwardStep
       end
       
     end

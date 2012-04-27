@@ -40,6 +40,29 @@ module XQuery
         values2 = get_predicate_values(predicate.value2, actual_result, position, max_position)
         #value1 and value2 are always arrays - even with only one participant
         return ComparisonSolver.evaluate(values1, operator, values2)
+        
+      
+      ######################
+      # Element or Attribute exists handling
+      ######################  
+      when ExpressionModule::AbbrevForwardStep
+        puts "solving predicate"
+        if(predicate.value_type == ExpressionModule::AbbrevForwardStepHandle::ELEMENT)
+          res = @path_processor.get_children_elements(actual_result, predicate.value_name)
+          if(res.empty?)
+            return false
+          end
+          puts "----RETURNING true"
+          
+        elsif(predicate.value_type == ExpressionModule::AbbrevForwardStepHandle::ATTRIBUTE)
+          if(!@path_processor.get_attribute(actual_result, predicate.value_name))
+            return false
+          end
+          
+        else
+          raise StandardError, "impossible"
+        end
+        return true
 
 
       ######################
@@ -105,8 +128,8 @@ module XQuery
         end
         
         typed_results = []
-        results.each { |res|
-          typed_results << ExpressionModule::DummyExpressionHandle.new(ExpressionModule::StringLiteral, res) #returning string
+        results.each { |rs|
+          typed_results << ExpressionModule::DummyExpressionHandle.new(ExpressionModule::StringLiteral, rs) #returning string
         }
         return typed_results
         

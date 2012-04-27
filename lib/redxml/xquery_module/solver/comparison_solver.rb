@@ -19,16 +19,20 @@ module XQuery
     
     def self.evaluate(values1, operator, values2) #returns true or false
       
+      if(operator.type == ExpressionModule::ValueComp \
+         && (values1.length > 1 || values2.length > 1))
+         raise TypeError, "unable to compare sequences with more then one item with respect to VALUE comparison"
+      end
+      
       values1.each { |value1|
         values2.each { |value2|
           
-          puts "ComparisonSolver: evaluating #{value1.text} #{operator.text} #{value2.text}"
+          # puts "comparison: #{value1.text}:#{value1.type} vs #{value2.text}:#{value2.type}"
           
           case operator.type
           when ExpressionModule::ValueComp
             if(value1.type == value2.type && value1.type != ExpressionModule::Literal)
               result = evaluate_value_comp(value1, operator, value2)
-              puts result
               return true if(result) 
             else
               raise TypeError, "value comp cannot compare different types of values"
@@ -36,7 +40,6 @@ module XQuery
               
           when ExpressionModule::GeneralComp
             result = evaluate_general_comp(value1, operator, value2)
-            puts "GeneralComp result: #{result}" #TODO why the cycle continues after result==true?!
             return true if(result)
             
           else
@@ -72,26 +75,46 @@ module XQuery
     end
     
     
-    def self.evaluate_general_comp(value1, operator, value2)
-      value1 = value1.text
-      value2 = value2.text
-      no1 = make_number(value1)
-      if(no1 != nil)
-        no2 = make_number(value2)
-        if(no2 != nil)
-          puts "to_i both"
-          value1 = no1
-          value2 = no2
-        else
-          puts "to_s both2"
-          value1 = value1.to_s
-          value2 = value2.to_s
+    def self.evaluate_general_comp(val1, operator, val2)
+      value1 = nil
+      value2 = nil
+      if(val1.type == ExpressionModule::NumericLiteral)
+        #try to cast value2 to numeric
+        value2 = make_number(val2.text)
+        if(!value2)
+          raise TypeError, "unable to cast '#{val2.text}' to numeric value while comparing with: #{val1.text}"
         end
+        value1 = make_number(val1.text)
+        
+      elsif(val2.type == ExpressionModule::NumericLiteral)
+        #try to cast value1 to numeric
+        value1 = make_number(val1.text)
+        if(!value1)
+          raise TypeError, "unable to cast '#{val1.text}' to numeric value while comparing with: #{val2.text}"
+        end
+        value2 = make_number(val2.text)
+        
       else
-        puts "to_s both1"
-        value1 = value1.to_s
-        value2 = value2.to_s
+        value1 = val1.text
+        value2 = val2.text
+        
       end
+      # value1 = value1.text
+      # value2 = value2.text
+      # no1 = make_number(value1)
+      # if(no1 != nil)
+        # no2 = make_number(value2)
+        # if(no2 != nil)
+          # value1 = no1
+          # value2 = no2
+        # else
+          # value1 = value1.to_s
+          # value2 = value2.to_s
+        # end
+      # else
+        # value1 = value1.to_s
+        # value2 = value2.to_s
+      # end
       
       
       case operator.text

@@ -22,10 +22,6 @@ module XQuery
       def initialize(node)
         super(node)
         
-        #TODO delete
-        puts "initializing For/LetClause"
-        #TODO delete
-        
         #generate parts
         @parts = []
         var_node_set = node.xpath("./VarName")

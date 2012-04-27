@@ -23,10 +23,6 @@ module XQuery
       def initialize(node)
         super(node)
         
-        #TODO delete
-        puts "initializing OrderByClause"
-        #TODO delete
-        
         #generate parts
         @parts = []
         order_spec_list = node.children[2]

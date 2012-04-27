@@ -1,4 +1,3 @@
-require_relative "path_processor"
 require_relative "../ext/extended_key"
 require_relative "../../base_interface/db_interface"
 require_relative "../../transformer/key_element_builder"
@@ -6,25 +5,25 @@ require_relative "../../transformer/key_builder"
 require_relative "../../transformer/mapping_service"
 
 
-#TODO dodelat!!! zkontrolovat!
-
 module XQuery
-  class KeyPathProcessor < PathProcessor
+  class KeyPathProcessor
     
-    CHILDREN_SEPARATOR = '|'
+    CHILDREN_SEPARATOR = Transformer::XMLTransformer::DESC_SEPARATOR
+    
+    attr_reader :key_builder, :mapping_service, :content_hash_key, :xml_transformer
     
     #key - Key object
     def initialize(key_builder)
       @db = BaseInterface::DBInterface.instance
       @key_builder = key_builder
       
-      #load file hashes
-      @mapping_service = Transformer::MappingService.new(key_builder)
-      @content_hash_key = key_builder.content_key
-      info_hash = @db.find_value(key_builder.info)
-      
       #init xml transformer
       @xml_transformer = Transformer::XMLTransformer.new(key_builder)
+      
+      #load file hashes
+      @mapping_service = @xml_transformer.mapping_service
+      @content_hash_key = key_builder.content_key
+      info_hash = @db.find_value(key_builder.info)
       
       #load root key - KeyElementBuilder object
       @root_key = Transformer::KeyElementBuilder.new(key_builder, info_hash["root"])
@@ -35,10 +34,12 @@ module XQuery
     
     def valid_elem?(incomming) #return true/false
       return incomming.kind_of?(ExtendedKey)
-      # return incomming.kind_of?(Transformer::KeyElementBuilder) || incomming.kind_of?(Transformer::KeyBuilder) 
     end
     
     def get_text(extended_key)
+      if(extended_key.kind_of?(String))
+        return extended_key
+      end
       return get_texts(extended_key).join
     end
     
@@ -52,37 +53,41 @@ module XQuery
     end
     
     def get_node_content(extended_key)
-      content = ""
-      key_array = get_children_plain(extended_key)
-      key_array.each { |key_str|
-        if(Transformer::KeyElementBuilder.element?(key_str))
-          content << get_node(Transformer::KeyElementBuilder.build_from_s(@key_builder, key_str)).to_stripped_s
-        else
-          content << @db.get_hash_value(@content_hash_key, key_str)
-        end
-      }
-      return content
+      return get_node(extended_key).content
     end
+    
     
     def get_children_elements(extended_key, match_elem_name="*")
       key_array = []
+      
+      # get element name id from mapping service
       match_elem_id = match_elem_name
       if(match_elem_name != "*")
         match_elem_id = get_elem_index(match_elem_name)
       end
       
+      if(!match_elem_id)
+        return []
+      end
+      
+      # get children in plain text form
       children_array = get_children_plain(extended_key)
       if(children_array == nil)
-        #extended_key is DOCUMENT key
+        # extended_key is DOCUMENT key -> root element is the only child
         return [ ExtendedKey.build_from_key(@root_key, nil, nil) ]
       end
       
+      # filter out element-nodes with given match_elem_name
+      # create ExtendedKey objects for all filtered elements
       children_array.each { |key_str|
         if(Transformer::KeyElementBuilder.element?(key_str))
-          new_key = Transformer::KeyElementBuilder.build_from_s(@key_builder, key_str)
-          #check match_elem_name
+          new_key = Transformer::KeyElementBuilder \
+                      .build_from_s(@key_builder, key_str)
+          # check match_elem_name
           if(match_elem_id == "*" || new_key.elem_id == match_elem_id)
-            new_extended_key = ExtendedKey.build_from_key(new_key, extended_key.key_str, children_array)
+            new_extended_key = ExtendedKey.build_from_key(new_key, \
+                                                          extended_key.key_str, \
+                                                          children_array)
             key_array << new_extended_key
           end
         end
@@ -94,6 +99,10 @@ module XQuery
       match_elem_id = match_elem_name
       if(match_elem_name != "*")
         match_elem_id = get_elem_index(match_elem_name)
+      end
+      
+      if(!match_elem_id)
+        return []
       end
       
       all_keys = get_desc_elements(extended_key)
@@ -108,21 +117,31 @@ module XQuery
     end
     
     def get_node(extended_key)
-      puts "GETTING NODE key=#{extended_key.key_element_builder.to_s}"
+      if(extended_key.kind_of?(String))
+        return extended_key
+      end
       return @xml_transformer.get_node(extended_key.key_element_builder)
     end
     
     def get_attribute(extended_key, attr_name)
       attr_hash = @xml_transformer.get_attributes(extended_key.key_element_builder, false) #TODO resolve with Pavel
+      # puts "getting attribute has from XMLTransformer: #{attr_hash.inspect}"
       if(!attr_hash)
         return nil
       end
-      puts "ATTRS: #{attr_hash.inspect}"
       return attr_hash[get_attr_index(attr_name)]
     end
     
+    def get_children_plain(extended_key)#String Array
+      if(extended_key.type == ExtendedKey::DOCUMENT)
+        
+        return nil
+      end
+      return get_plainly_children(extended_key.key_element_builder.to_s)
+    end
+    
   protected
-    attr_accessor :content_hash_key
+    attr_writer :content_hash_key
     
   private
     def get_desc_elements(extended_key)
@@ -139,22 +158,13 @@ module XQuery
     end
     
     def get_plainly_children(key_str)
-      puts "getting plainly children key: #{key_str}"
       list_str = @db.get_hash_value(@content_hash_key, key_str)
-      puts "got: #{list_str}"
       if(list_str == nil)
-        raise StandardError, "wrong key or content hash_key, nil found instead of descendants, hash_key: #{@content_hash_key}, key: #{key_str}"
+        return []
+        # raise StandardError, "wrong key or content hash_key, nil found instead of descendants, hash_key: #{@content_hash_key}, key: #{key_str}"
       end
       values = list_str.split(CHILDREN_SEPARATOR)
       return values
-    end
-    
-    def get_children_plain(extended_key)#String Array
-      if(extended_key.type == ExtendedKey::DOCUMENT)
-        
-        return nil
-      end
-      return get_plainly_children(extended_key.key_element_builder.to_s)
     end
     
     def get_texts(extended_key)
@@ -174,11 +184,19 @@ module XQuery
     end
     
     def get_elem_index(elem_name)
-      @mapping_service.map_elem_name(elem_name)
+      begin
+        return @mapping_service.map_elem_name(elem_name)
+      rescue Transformer::MappingException
+        return nil
+      end
     end
     
     def get_attr_index(attr_name)
-      @mapping_service.map_attr_name(attr_name)
+      begin
+        return @mapping_service.map_attr_name(attr_name)
+      rescue Transformer::MappingException
+        return nil
+      end
     end
     
   end
