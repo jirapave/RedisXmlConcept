@@ -1,4 +1,4 @@
-require_relative "../lib/redxml"
+require "redxml"
 
 db = XMLDBApi::RedDatabase.new("db_name")
 XMLDBApi::DatabaseManager.register_database(db)
