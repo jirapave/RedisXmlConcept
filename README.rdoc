@@ -1,9 +1,9 @@
-= ABOUT
+= RedXML
 
 RedXml library is a project focusing on creating a basis for new XML native database. It is based on {Redis}[http://redis.io/]
 key-value database as it's underlying storage. RedXml uses own mapping of XML files into Redis and creates new
-abstraction layer to easily work with those documents. Currently proprietary API is supported (XML:DB API in the
-future) to work with environments, collections and documents. XPath/XQuery languages are beying implemented as a
+abstraction layer to easily work with those documents. Currently XML:DB API is supported with some proprietary methods
+to enable faster work with document. API provides methods to work with environments, collections and documents. XPath/XQuery languages are beying implemented as a
 main way to query stored XML files.
 
 Important: Project is still under development
@@ -11,9 +11,9 @@ Important: Project is still under development
 = INSTALLATION
 
 It is now possible to use gem to install this project including all dependencies. RedXML gem is not
-yet published so it is needed download gem file here on github and than just use:
+yet published so it is needed to download gem file here on github and than just use:
 
-gem install redxml-0.9.8
+gem install redxml-0.1.1.gem
 
 To use this project correctly, it is needed to download and start Redis database instance. It is strongly
 recommended to use official redis binaries:
@@ -48,9 +48,9 @@ If you didn't install project as a gem, than it is needed to install following p
 
 = USED LIBRARIES
 
-Project uses some libraries, which are not part of this library itself. If you used gem to install, those
-libraries were automatically installed, otherwise you have to install the by hand, see Installation.
-Following libraries were used
+Project uses some libraries, which are not part of the library itself. If you used gem to install, those
+libraries were automatically installed, otherwise you have to install them by hand, see Installation.
+Following libraries are being used
 * {Redis-rb}[https://github.com/redis/redis-rb] - Client for Redis database
 * {Nokogiri}[http://nokogiri.org/] - Library for working with XML files
 * {Hiredis}[https://github.com/antirez/hiredis] - driver for redis-rb client to speed up communication with Redis

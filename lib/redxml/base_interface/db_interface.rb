@@ -8,7 +8,10 @@ unless $:.include?(redis_dir) || $:.include?(File.expand_path(redis_dir))
   $:.unshift(File.expand_path(redis_dir))
 end
 
-require "redis/connection/hiredis"
+if(RUBY_PLATFORM.downcase.include?("linux"))
+  require "redis/connection/hiredis"
+end
+
 require "redis"
 
 #WORKING WITH HASHES

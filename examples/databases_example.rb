@@ -1,4 +1,4 @@
-require_relative "../lib/redxml"
+require "redxml"
 
 # First we have to create database, if database already exist, it is just retrieved
 db_first = XMLDBApi::RedDatabase.new("first")
