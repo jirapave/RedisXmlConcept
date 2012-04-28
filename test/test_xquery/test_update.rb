@@ -32,8 +32,21 @@ class TestUpdate < Test::Unit::TestCase
       'doc("catalog.xml")/catalog/product[2]/name/text()',
       [ "Floppy Sun Hat" ],
       'for $prod in doc("catalog.xml")/catalog/product where $prod[nocdata]/number = 563 return delete node $prod',
-      # [ "Cotton Dress Shirt" ]
       [ "Deluxe Travel Bag" ]
+    ),
+    TestCase.new(
+      'doc("catalog.xml")/catalog/product[1]/name/text()',
+      [ "Fleece Pullover" ],
+      'for $prod in doc("catalog.xml")/catalog/product
+       where $prod/@dept != "MEN"
+       return delete nodes $prod',
+      [ "Cotton Dress Shirt" ]
+    ),
+    TestCase.new(
+      'doc("catalog.xml")/catalog/product[1]/name/text()',
+      [ "Fleece Pullover" ],
+      'delete nodes doc("catalog.xml")/catalog/product[@dept != "MEN"]',
+      [ "Cotton Dress Shirt" ]
     ),
 
     # INSERT
