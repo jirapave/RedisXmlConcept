@@ -21,9 +21,6 @@ module XQuery
       def initialize(node)
         super(node)
         
-        #TODO delete
-        puts "   node: #{node.name}"
-        
         @parts = []
         reduced = ExpressionModule::reduce(node)
         case reduced.name
@@ -39,32 +36,6 @@ module XQuery
           
         when DirElemConstructor
           @parts << DirElemConstructorHandle.new(reduced)
-          # path_expr = ""
-          # return_text = ""
-          # reduced.children.each { |child|
-            # if(child.name == DirElemContent)
-              # if(!return_text.empty?)
-                # @parts << ReturnTextHandle.new(return_text)
-                # return_text = ""
-              # end
-              # path_expr << child.content
-            # else
-              # if(!path_expr.empty?)
-                # @parts << XQuery::QueryParser.parse_xquery(path_expr)
-                # path_expr = ""
-              # end
-              # return_text << child.content
-            # end
-          # }
-#           
-          # if(!return_text.empty?)
-            # @parts << ReturnTextHandle.new(return_text)
-            # return_text = ""
-          # elsif(!path_expr.empty?)
-            # @parts << XQuery::QueryParser.parse_query(path_expr)
-            # path_expr = ""
-          # end
-          
           
         when DeleteExpr
           @parts << DeleteExprHandle.new(reduced)

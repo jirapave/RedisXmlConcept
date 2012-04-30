@@ -21,10 +21,7 @@ module XQuery
         else
           raise NotSupportedError, @location.name
         end
-        
-        
       end
-      
       
     end
   end

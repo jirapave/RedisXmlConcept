@@ -16,10 +16,6 @@ module XQuery
       def initialize(node)
         super(node)
         
-        #TODO delete
-        # puts "   content: #{node.content}, node type: #{type}"
-        #TODO delete
-        
         #function test
         try_func = ExpressionModule::reduce(node)
         if(try_func.name == "TextTest")

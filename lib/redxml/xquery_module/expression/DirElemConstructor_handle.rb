@@ -10,15 +10,7 @@ module XQuery
       
       def initialize(node)
         super(node)
-        
-        #TODO delete
-        puts "   content: #{node.text}"
-        #TODO delete
-        
-        
         @elem_str = nil
-        
-        
       end
       
       
@@ -51,7 +43,6 @@ module XQuery
           #reduce enclosed nodes so they do not embed each other
           incl = false
           done_enclosed_nodes.each { |done_str|
-            puts "done: #{done_str} vs actual: #{reduced_text}"
             if(done_str.include?("{#{reduced_text}}"))
               incl = true
               break
@@ -86,29 +77,6 @@ module XQuery
             enclosed_expr_hash[reduced_text] = results
           end
 
-          
-          # if(results)
-            # result_str = ""
-            # results.each { |result|
-#               
-                # if(result.kind_of?(String))
-                  # result_str << result
-                # else
-                  # result_str << path_solver.path_processor.get_node(result).content
-                # end
-              # else
-                # if(result.kind_of?(String))
-                  # result_str << result
-                # else
-                  # result_str << path_solver.path_processor.get_node(result).to_html
-                # end
-              # end
-#               
-            # }
-            # enclosed_expr_hash[reduced_text] = result_str
-          # end
-          
-          
           done_enclosed_nodes << reduced_text
         }
         final_elem_str = node.text#.gsub("{#{reduced_text}}", "#{reduced_text}")

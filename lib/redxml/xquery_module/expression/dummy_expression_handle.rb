@@ -5,10 +5,6 @@ module XQuery
       attr_reader :type, :text
       
       def initialize(type, content)
-        #TODO delete
-        # puts "initializing #{type} (dummy)"
-        #TODO delete
-        
         @type = type
         @text = content
       end

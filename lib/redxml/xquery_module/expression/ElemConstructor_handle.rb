@@ -9,15 +9,7 @@ module XQuery
       
       def initialize(node)
         super(node)
-        
-        #TODO delete
-        puts "   content: #{node.text}"
-        #TODO delete
-        
-        
         @elem_str = nil
-        
-        
       end
       
       
@@ -64,10 +56,7 @@ module XQuery
           final_elem_str.gsub!(key, value)
         }
         
-        puts "elem_str: #{final_elem_str}"
-        
         return final_elem_str
-        
       end
       
       

@@ -4,10 +4,6 @@ module XQuery
       
         def initialize(node)
           @node = node
-          
-          #TODO delete
-          # puts "initializing #{type}"
-          #TODO delete
         end
 
         def type

@@ -13,12 +13,6 @@ module XQuery
       def initialize(node)
         super(node)
         
-        #TODO determine predicate type
-        #supported so far: single and tripple
-        #single value: last(), 1, 2, ...
-        #tripple: comparison
-        
-        
         #we suppose, that predicate consists of '[' Expr ']' - so children[1] is our choice
         if(node.children.length != 3)
           raise StandardError, "other children length (node.children.length) than 3 not supported"
@@ -39,9 +33,6 @@ module XQuery
           
         when IntegerLiteral
           return ExpressionHandle.new(node)
-          
-        # when QName #this is probably name of element
-          # return DummyExpressionHandle.new(QName, node.content)
           
         when AbbrevForwardStep, QName #attr or elem
           return AbbrevForwardStepHandle.new(node)
